@@ -71,6 +71,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
    hnskimed->SetBinContent(1,nentries);
 
 
+   float zmwinlow = 70.;
+   float zmwinhi  = 110.;
+   float hptcut   = 250.;
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -96,11 +99,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
 	std::vector<TLorentzVector>::iterator zit;
 	for (zit = ZCandidates->begin(); zit != ZCandidates->end(); ++zit) {
 	  double massZdiff = std::abs(91.1876 - zit->M());
-	  if ((massZdiff < baseZdiff) && (zit->M() >= 70.) && (zit->M() <= 110.)) {
+	  if ((massZdiff < baseZdiff) && (zit->M() >= zmwinlow) && (zit->M() <= zmwinhi)) {
 	    baseZdiff = massZdiff;
 	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Phi(),zit->Eta(),zit->M());
-	    //std::cout<<"The Zit  pt "<<zit->Pt()<<std::endl;
-	    //std::cout<<"   The Z pt "<<theZ.Pt()<<std::endl;
 	    passZ = true;
 	  }
 	}
@@ -110,16 +111,31 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
       unsigned int nfat = JetsAK8Clean->size();
       TLorentzVector theh;
       double basehdiff = 99999;
+      int fIdx;
+      int hIdx;
+      double fsd;
+      unsigned int nsd = JetsAK8Clean_softDropMass->size();
+      //std::cout<<"should be a soft drop mass vec "<<JetsAK8Clean_softDropMass<<std::endl;
+
+      for (int i = 0; i < nsd;++i) {
+	//std::cout<<"should be a soft drop mass "<<JetsAK8Clean_softDropMass[i]<<std::endl;
+	std::cout<<"should be a soft drop mass "<<JetsAK8Clean_softDropMass[i];
+      }
+      
       if (nfat > 0) {
 	std::vector<TLorentzVector>::iterator fit;
 	for (fit = JetsAK8Clean->begin(); fit != JetsAK8Clean->end(); ++fit) {
+	  fIdx = std::distance(JetsAK8Clean->begin(),fit);
+	  //std::cout<<"the weird index "<<fIdx<<std::endl;
+	  //std::cout<<"the softdrop mass at that  index "<<JetsAK8Clean_softDropMass[fIdx]<<std::endl;
+	  //fsd = JetsAK8Clean_softDropMass[fIdx];
+	  //std::cout<<JetsAK8Clean_softDropMass[fIdx]<<std::endl;
 	  double masshdiff = std::abs(125.18 - fit->M());
-	  if ((masshdiff < basehdiff) && (fit->Pt() > 250.)) {
+	  if ((masshdiff < basehdiff) && (fit->Pt() > hptcut)) {
 	    basehdiff = masshdiff;
 	    theh.SetPtEtaPhiM(fit->Pt(),fit->Phi(),fit->Eta(),fit->M());
-	    //std::cout<<"The fit  pt "<<fit->Pt()<<std::endl;
-	    //std::cout<<"   The h pt "<<theh.Pt()<<std::endl;
 	    passh = true;
+	    hIdx = fIdx;
 	  }
 	}
       }

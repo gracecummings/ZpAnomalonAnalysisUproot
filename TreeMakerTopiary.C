@@ -53,6 +53,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
    double hCandidate_phi;
    double hCandidate_eta;
    double hCandidate_m;
+   double hCandidate_sd;
+   double hCandidate_dmdhbbvqcd;
+   double hCandidate_dmdzbbvqcd;
+   double hCandidate_dmdzhbbvqcd;
+   double hCandidate_middb;
    
    //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
@@ -63,11 +68,21 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
    TBranch *hCand_phi = trimTree->Branch("hCandidate_phi",&hCandidate_phi,"hCandidate_phi/D");
    TBranch *hCand_eta = trimTree->Branch("hCandidate_eta",&hCandidate_eta,"hCandidate_eta/D");
    TBranch *hCand_m   = trimTree->Branch("hCandidate_m",&hCandidate_m,"hCandidate_m/D");
+   TBranch *hCand_sd  = trimTree->Branch("hCandidate_sd",&hCandidate_sd,"hCandidate_sd/D");
+   TBranch *hCand_dmdhbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagHbbvsQCD",&hCandidate_dmdhbbvqcd,"hCandidate_dmdhbbvqcd/D");
+   TBranch *hCand_dmdzbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagZbbvsQCD",&hCandidate_dmdzbbvqcd,"hCandidate_dmdzbbvqcd/D");
+   TBranch *hCand_dmdzhbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagZHbbvsQCD",&hCandidate_dmdzhbbvqcd,"hCandidate_dmdzhbbvqcd/D");
+   TBranch *hCand_middb  = trimTree->Branch("hCandidate__pfMassIndependentDeepDoubleBvLJetTagsProbHbb",&hCandidate_middb,"hCandidate_middb/D");
+
+
+
+
    TBranch *ZCand     = trimTree->Branch("ZCandidate","TLorentzVector",&ZCandidate);
    TBranch *ZCand_pt  = trimTree->Branch("ZCandidate_pt",&ZCandidate_pt,"ZCandidate_pt/D");
    TBranch *ZCand_phi = trimTree->Branch("ZCandidate_phi",&ZCandidate_phi,"ZCandidate_phi/D");
    TBranch *ZCand_eta = trimTree->Branch("ZCandidate_eta",&ZCandidate_eta,"ZCandidate_eta/D");
    TBranch *ZCand_m   = trimTree->Branch("ZCandidate_m",&ZCandidate_m,"ZCandidate_m/D");
+   
    hnskimed->SetBinContent(1,nentries);
 
 
@@ -108,34 +123,45 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
       }
 
       //Higgs Candidates
-      unsigned int nfat = JetsAK8Clean->size();
+      unsigned long nfat = JetsAK8Clean->size();
       TLorentzVector theh;
+      TLorentzVector fat;
       double basehdiff = 99999;
-      int fIdx;
-      int hIdx;
+      double hsd;
       double fsd;
-      unsigned int nsd = JetsAK8Clean_softDropMass->size();
+      double hdmdhbbvqcd;
+      double hdmdzbbvqcd;
+      double hdmdzhbbvqcd;
+      double hmiddb;
+      //unsigned long nsd = JetsAK8Clean_softDropMass->size();
       //std::cout<<"should be a soft drop mass vec "<<JetsAK8Clean_softDropMass<<std::endl;
 
-      for (int i = 0; i < nsd;++i) {
+      //for (unsigned long i = 0; i < nsd;++i) {
 	//std::cout<<"should be a soft drop mass "<<JetsAK8Clean_softDropMass[i]<<std::endl;
-	std::cout<<"should be a soft drop mass "<<JetsAK8Clean_softDropMass[i];
-      }
+	//std::cout<<"should be a soft drop mass "<<JetsAK8Clean_softDropMass->at(i);
+      //}
       
       if (nfat > 0) {
-	std::vector<TLorentzVector>::iterator fit;
-	for (fit = JetsAK8Clean->begin(); fit != JetsAK8Clean->end(); ++fit) {
-	  fIdx = std::distance(JetsAK8Clean->begin(),fit);
+	//std::vector<TLorentzVector>::iterator fit;
+	//for (fit = JetsAK8Clean->begin(); fit != JetsAK8Clean->end(); ++fit) {//switch to a standard iteration, remove distance
+	//fIdx = std::distance(JetsAK8Clean->begin(),fit);
 	  //std::cout<<"the weird index "<<fIdx<<std::endl;
 	  //std::cout<<"the softdrop mass at that  index "<<JetsAK8Clean_softDropMass[fIdx]<<std::endl;
 	  //fsd = JetsAK8Clean_softDropMass[fIdx];
 	  //std::cout<<JetsAK8Clean_softDropMass[fIdx]<<std::endl;
-	  double masshdiff = std::abs(125.18 - fit->M());
-	  if ((masshdiff < basehdiff) && (fit->Pt() > hptcut)) {
+	for (unsigned long i =0; i < nfat; ++i) {
+	  fat = JetsAK8Clean->at(i);
+	  fsd = JetsAK8Clean_softDropMass->at(i);
+	  double masshdiff = std::abs(125.18 - fsd);
+	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut)) {
 	    basehdiff = masshdiff;
-	    theh.SetPtEtaPhiM(fit->Pt(),fit->Phi(),fit->Eta(),fit->M());
+	    theh = fat;
+	    hsd = fsd;
+	    hdmdhbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD->at(i);
+	    hdmdzbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD->at(i);
+	    hdmdzhbbvqcd = JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD->at(i);
+	    hmiddb = JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
 	    passh = true;
-	    hIdx = fIdx;
 	  }
 	}
       }
@@ -144,7 +170,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
       if (passZ) {
 	ZCandidate = theZ;
 	ZCandidate_pt  = theZ.Pt();
-	ZCand_pt->Fill();
 	ZCandidate_phi = theZ.Phi();
 	ZCandidate_eta = theZ.Eta();
 	ZCandidate_m   = theZ.M();
@@ -153,10 +178,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
       if (passh) {
 	hCandidate = theh;
 	hCandidate_pt  = theh.Pt();
-	//std::cout<<"   The h pt "<<hCandidate_pt<<std::endl;
 	hCandidate_phi = theh.Phi();
 	hCandidate_eta = theh.Eta();
 	hCandidate_m   = theh.M();
+	hCandidate_sd  = hsd;
+	hCandidate_dmdhbbvqcd = hdmdhbbvqcd;
+	hCandidate_dmdzbbvqcd = hdmdzbbvqcd;
+	hCandidate_dmdzhbbvqcd = hdmdzhbbvqcd;
+	hCandidate_middb = hmiddb;
       }
       //debug
       if (jentry == 200) {

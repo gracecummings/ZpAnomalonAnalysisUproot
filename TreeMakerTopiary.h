@@ -15,9 +15,6 @@
 
 // Header file for the classes stored in the TTree if any.
 #include "vector"
-#include "vector"
-#include "vector"
-#include "vector"
 
 class TreeMakerTopiary {
 public :
@@ -684,7 +681,7 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Loop(std::string entry);
+   virtual void     Loop(std::string entry,float entry1);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };

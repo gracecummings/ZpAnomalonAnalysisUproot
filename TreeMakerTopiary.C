@@ -1,15 +1,13 @@
 #define TreeMakerTopiary_cxx
 #include "TreeMakerTopiary.h"
 #include "RestFrames/RestFrames.hh"
-#include <TH2.h>
-#include <TStyle.h>
-#include <TCanvas.h>
+#include <TLeaf.h>
 #include <iostream>
 
 RestFrames::RFKey ensure_autoload(1);
 using namespace RestFrames;
 
-void TreeMakerTopiary::Loop(std::string outputFileName)
+void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents)
 {
 //   In a ROOT session, you can do:
 //      root> .L TreeMakerTopiary.C
@@ -62,11 +60,15 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
    double hCandidate_dmdzbbvqcd;
    double hCandidate_dmdzhbbvqcd;
    double hCandidate_middb;
+   double mEstZp;
+   double mEstND;
+   double mEstNS;
    
    //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
    TTree* trimTree = fChain->CloneTree(0);
-   TH1F*  hnskimed = new TH1F("hnskimed","first skimmed entires entries",1,0,1);
+   TH1F*  hnskimed = new TH1F("hnskimed","number of events at skim level",1,0,1);
+   TH1F*  hnorigevnts = new TH1F("hnorigevnts","original number of events, preskim",1,0,1);
    TBranch *hCand     = trimTree->Branch("hCandidate","TLorentzVector",&hCandidate);
    TBranch *hCand_pt  = trimTree->Branch("hCandidate_pt",&hCandidate_pt,"hCandidate_pt/D");
    TBranch *hCand_phi = trimTree->Branch("hCandidate_phi",&hCandidate_phi,"hCandidate_phi/D");
@@ -82,8 +84,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
    TBranch *ZCand_phi = trimTree->Branch("ZCandidate_phi",&ZCandidate_phi,"ZCandidate_phi/D");
    TBranch *ZCand_eta = trimTree->Branch("ZCandidate_eta",&ZCandidate_eta,"ZCandidate_eta/D");
    TBranch *ZCand_m   = trimTree->Branch("ZCandidate_m",&ZCandidate_m,"ZCandidate_m/D");
+   TBranch *ZpMest    = trimTree->Branch("ZPrime_mass_est",&mEstZp,"mEstZp/D");
+   TBranch *NDMest    = trimTree->Branch("ND_mass_est",&mEstND,"mEstND/D");
+   TBranch *NSMest    = trimTree->Branch("NS_mass_est",&mEstNS,"mEstNS/D");
    hnskimed->SetBinContent(1,nentries);
-
+   hnorigevnts->SetBinContent(1,totalOriginalEvents);
 
    float zmwinlow = 70.;
    float zmwinhi  = 110.;
@@ -107,6 +112,30 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
    NDbar.AddChildFrame(h);
    NDbar.AddChildFrame(NSbar);
 
+   LAB.InitializeTree();
+   
+   // Invisible Group
+   InvisibleGroup INV("INV","NS NS Jigsaws");
+   INV.AddFrame(NS);
+   INV.AddFrame(NSbar);
+   
+   // Set NS NS~ mass equal to Z h mass
+   SetMassInvJigsaw NSNSM("NSNSM", "M_{NSNS} = m_{Zh}");
+   INV.AddJigsaw(NSNSM);
+   
+   SetRapidityInvJigsaw NSNSR("NSNSR", "#eta_{NSNS} = #eta_{ZH}");
+   INV.AddJigsaw(NSNSR);
+   NSNSR.AddVisibleFrames(LAB.GetListVisibleFrames());
+   
+   //MinMassesSqInvJigsaw MinMND("MinMND","min M_{D}, M_{ND}= M_{NDbar}",2);
+   ContraBoostInvJigsaw MinMND("MinMND","min M_{ND}, M_{ND}= M_{NDbar}");
+   INV.AddJigsaw(MinMND);
+   MinMND.AddVisibleFrame(Z, 0);
+   MinMND.AddVisibleFrame(h, 1);
+   MinMND.AddInvisibleFrame(NS, 0);
+   MinMND.AddInvisibleFrame(NSbar, 1);
+
+   LAB.InitializeAnalysis();
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -124,7 +153,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
       //	std::cout<<"skimming event "<<jentry<<std::endl;
       //}
 
-      //Z Candidate Check
+      //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
       TLorentzVector theZ;
       double baseZdiff = 99999;
@@ -140,7 +169,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
 	}
       }
 
-      //Higgs Candidates
+      //Higgs Candidate Build
       unsigned long nfat = JetsAK8Clean->size();
       TLorentzVector theh;
       TLorentzVector fat;
@@ -151,22 +180,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
       double hdmdzbbvqcd;
       double hdmdzhbbvqcd;
       double hmiddb;
-      //unsigned long nsd = JetsAK8Clean_softDropMass->size();
-      //std::cout<<"should be a soft drop mass vec "<<JetsAK8Clean_softDropMass<<std::endl;
-
-      //for (unsigned long i = 0; i < nsd;++i) {
-	//std::cout<<"should be a soft drop mass "<<JetsAK8Clean_softDropMass[i]<<std::endl;
-	//std::cout<<"should be a soft drop mass "<<JetsAK8Clean_softDropMass->at(i);
-      //}
       
       if (nfat > 0) {
-	//std::vector<TLorentzVector>::iterator fit;
-	//for (fit = JetsAK8Clean->begin(); fit != JetsAK8Clean->end(); ++fit) {//switch to a standard iteration, remove distance
-	//fIdx = std::distance(JetsAK8Clean->begin(),fit);
-	  //std::cout<<"the weird index "<<fIdx<<std::endl;
-	  //std::cout<<"the softdrop mass at that  index "<<JetsAK8Clean_softDropMass[fIdx]<<std::endl;
-	  //fsd = JetsAK8Clean_softDropMass[fIdx];
-	  //std::cout<<JetsAK8Clean_softDropMass[fIdx]<<std::endl;
 	for (unsigned long i =0; i < nfat; ++i) {
 	  fat = JetsAK8Clean->at(i);
 	  fsd = JetsAK8Clean_softDropMass->at(i);
@@ -183,8 +198,24 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
 	  }
 	}
       }
+
+      //MET
+      double ptmiss     = fChain->GetLeaf("METclean")->GetValue(0);
+      double ptmiss_phi = fChain->GetLeaf("METPhiclean")->GetValue();
+      double ptmiss_px  = ptmiss*std::cos(ptmiss_phi);
+      double ptmiss_py  = ptmiss*std::sin(ptmiss_phi);
+      TVector3 met3     = TVector3(ptmiss_px,ptmiss_py,0.0);
       
-	
+      //recursive jigsaw
+      LAB.ClearEvent();
+      INV.SetLabFrameThreeVector(met3);
+      Z.SetLabFrameFourVector(theZ);
+      h.SetLabFrameFourVector(theh);
+      LAB.AnalyzeEvent();
+      mEstZp = Zp.GetMass();
+      mEstND = ND.GetMass();
+      mEstNS = NS.GetMass();
+      
       if (passZ) {
 	ZCandidate = theZ;
 	ZCandidate_pt  = theZ.Pt();
@@ -205,8 +236,10 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
 	hCandidate_dmdzhbbvqcd = hdmdzhbbvqcd;
 	hCandidate_middb = hmiddb;
       }
+
+      
       //debug
-      if (jentry == 200) {
+      if (jentry == 2000) {
 	break;
       }
 
@@ -214,7 +247,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
       if (Cut(ientry) < 0) continue;
       if (passZ) {
 	trimTree->Fill();
-      }
+	}
       
    }
 

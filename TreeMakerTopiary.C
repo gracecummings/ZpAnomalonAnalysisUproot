@@ -1,9 +1,13 @@
 #define TreeMakerTopiary_cxx
 #include "TreeMakerTopiary.h"
+#include "RestFrames/RestFrames.hh"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <iostream>
+
+RestFrames::RFKey ensure_autoload(1);
+using namespace RestFrames;
 
 void TreeMakerTopiary::Loop(std::string outputFileName)
 {
@@ -73,22 +77,36 @@ void TreeMakerTopiary::Loop(std::string outputFileName)
    TBranch *hCand_dmdzbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagZbbvsQCD",&hCandidate_dmdzbbvqcd,"hCandidate_dmdzbbvqcd/D");
    TBranch *hCand_dmdzhbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagZHbbvsQCD",&hCandidate_dmdzhbbvqcd,"hCandidate_dmdzhbbvqcd/D");
    TBranch *hCand_middb  = trimTree->Branch("hCandidate__pfMassIndependentDeepDoubleBvLJetTagsProbHbb",&hCandidate_middb,"hCandidate_middb/D");
-
-
-
-
    TBranch *ZCand     = trimTree->Branch("ZCandidate","TLorentzVector",&ZCandidate);
    TBranch *ZCand_pt  = trimTree->Branch("ZCandidate_pt",&ZCandidate_pt,"ZCandidate_pt/D");
    TBranch *ZCand_phi = trimTree->Branch("ZCandidate_phi",&ZCandidate_phi,"ZCandidate_phi/D");
    TBranch *ZCand_eta = trimTree->Branch("ZCandidate_eta",&ZCandidate_eta,"ZCandidate_eta/D");
    TBranch *ZCand_m   = trimTree->Branch("ZCandidate_m",&ZCandidate_m,"ZCandidate_m/D");
-   
    hnskimed->SetBinContent(1,nentries);
 
 
    float zmwinlow = 70.;
    float zmwinhi  = 110.;
    float hptcut   = 250.;
+
+   //Recursive Jigsaw Part
+   LabRecoFrame         LAB("LAB","LAB");
+   DecayRecoFrame       Zp("Zp","Z'");
+   DecayRecoFrame       ND("ND","N_{D}");
+   DecayRecoFrame       NDbar("NDbar","N_{Dbar}");
+   VisibleRecoFrame     Z("Z","Z");
+   InvisibleRecoFrame   NS("NS","N_{S}");
+   VisibleRecoFrame     h("h","h");
+   InvisibleRecoFrame   NSbar("NSbar","Z_{Sbar}");
+
+   LAB.SetChildFrame(Zp);
+   Zp.AddChildFrame(ND);
+   Zp.AddChildFrame(NDbar);
+   ND.AddChildFrame(Z);
+   ND.AddChildFrame(NS);
+   NDbar.AddChildFrame(h);
+   NDbar.AddChildFrame(NSbar);
+
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);

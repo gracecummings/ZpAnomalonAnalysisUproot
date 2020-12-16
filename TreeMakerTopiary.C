@@ -166,7 +166,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  fsd = JetsAK8Clean_softDropMass->at(i);
 	  fid = JetsAK8Clean_ID->at(i);
 	  double masshdiff = std::abs(125.18 - fsd);
-	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid) {
+	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid %% fat.Eta() > 2.4) {
 	    basehdiff = masshdiff;
 	    theh = fat;
 	    hsd = fsd;

@@ -25,31 +25,29 @@ if __name__=='__main__':
     isSig  = args.isSig
     isData = args.isData
 
-    inputfiles = glob.glob('../dataHandling/MCskims_redo/skimsoct28/'+samp+'*.root')
+    inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-16/'+samp+'*_topiary.root')
 
-    branches = [b'JetsAK8Clean_ID',
-                b'JetsAK8Clean_softDropMass',
-                b'JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD',
-                #b'JetsAK8Clean_DeepMassDecorrelTagbbvsLight',
-                #b'JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD',
-                #b'JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD',
-                #b'JetsAK8Clean_DeepMassDecorrelTagZvsQCD',
-                #b'JetsAK8Clean_DeepTagHbbvsQCD',
-                #b'JetsAK8Clean_DeepTagZbbvsQCD',
-                #b'JetsAK8Clean_DeepTagZvsQCD',
-                #b'JetsAK8Clean_doubleBDiscriminator',
-                #b'JetsAK8Clean_jecFactor',
-                #b'JetsAK8Clean_jerFactor',
-                #b'JetsAK8Clean_origIndex',
-                #b'JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb',
-                b'ZCandidates',]
+    branches = [b'ZCandidate_pt',
+                b'ZCandidate_eta',
+                b'ZCandidate_phi',
+                b'ZCandidate_m',
+                b'hCandidate_pt',
+                b'hCandidate_eta',
+                b'hCandidate_phi',
+                b'hCandidate_m',
+                b'hCandidate_sd',
+                b'METclean',
+    ]
 
-    df = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
+    #events = up3.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
+    events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)#pandas dies with ZCandidates
+
 
     #print(jets.ls))
     
-    for d in df:
-        #print("I gave it something valid?")
-        print(type(d))
-        print(d.keys())
-    
+    for b in events:
+        print(type(b))
+        print(b.keys())
+        print(b)
+
+

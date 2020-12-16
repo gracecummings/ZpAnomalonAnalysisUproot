@@ -158,13 +158,15 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       double hdmdzbbvqcd;
       double hdmdzhbbvqcd;
       double hmiddb;
+      bool   fid;
       
       if (nfat > 0) {
 	for (unsigned long i =0; i < nfat; ++i) {
 	  fat = JetsAK8Clean->at(i);
 	  fsd = JetsAK8Clean_softDropMass->at(i);
+	  fid = JetsAK8Clean_ID->at(i);
 	  double masshdiff = std::abs(125.18 - fsd);
-	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut)) {
+	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid) {
 	    basehdiff = masshdiff;
 	    theh = fat;
 	    hsd = fsd;

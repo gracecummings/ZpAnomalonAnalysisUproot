@@ -245,7 +245,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
       //Fill the Tree
       if (Cut(ientry) < 0) continue;
-      if (passZ) {
+      if (passZ && passh) {
 	trimTree->Fill();
 	}
       

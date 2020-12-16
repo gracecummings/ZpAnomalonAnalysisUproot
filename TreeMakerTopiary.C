@@ -9,29 +9,7 @@ using namespace RestFrames;
 
 void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents)
 {
-//   In a ROOT session, you can do:
-//      root> .L TreeMakerTopiary.C
-//      root> TreeMakerTopiary t
-//      root> t.GetEntry(12); // Fill t data members with entry number 12
-//      root> t.Show();       // Show values of entry 12
-//      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
-//
 
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
-//    fChain->SetBranchStatus("*",0);  // disable all branches
-//    fChain->SetBranchStatus("branchname",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
    if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
@@ -95,7 +73,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    float hptcut   = 250.;
 
    //Recursive Jigsaw Part
-   LabRecoFrame         LAB("LAB","LAB");
+   LabRecoFrame         LABcontra("LABcontra","LABcontra");
    DecayRecoFrame       Zp("Zp","Z'");
    DecayRecoFrame       ND("ND","N_{D}");
    DecayRecoFrame       NDbar("NDbar","N_{Dbar}");
@@ -104,7 +82,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    VisibleRecoFrame     h("h","h");
    InvisibleRecoFrame   NSbar("NSbar","Z_{Sbar}");
 
-   LAB.SetChildFrame(Zp);
+   LABcontra.SetChildFrame(Zp);
    Zp.AddChildFrame(ND);
    Zp.AddChildFrame(NDbar);
    ND.AddChildFrame(Z);
@@ -112,30 +90,30 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    NDbar.AddChildFrame(h);
    NDbar.AddChildFrame(NSbar);
 
-   LAB.InitializeTree();
+   LABcontra.InitializeTree();
    
    // Invisible Group
-   InvisibleGroup INV("INV","NS NS Jigsaws");
-   INV.AddFrame(NS);
-   INV.AddFrame(NSbar);
+   InvisibleGroup INVcontra("INVcontra","NS NS Jigsaws");
+   INVcontra.AddFrame(NS);
+   INVcontra.AddFrame(NSbar);
    
    // Set NS NS~ mass equal to Z h mass
    SetMassInvJigsaw NSNSM("NSNSM", "M_{NSNS} = m_{Zh}");
-   INV.AddJigsaw(NSNSM);
+   INVcontra.AddJigsaw(NSNSM);
    
    SetRapidityInvJigsaw NSNSR("NSNSR", "#eta_{NSNS} = #eta_{ZH}");
-   INV.AddJigsaw(NSNSR);
-   NSNSR.AddVisibleFrames(LAB.GetListVisibleFrames());
+   INVcontra.AddJigsaw(NSNSR);
+   NSNSR.AddVisibleFrames(LABcontra.GetListVisibleFrames());
    
    //MinMassesSqInvJigsaw MinMND("MinMND","min M_{D}, M_{ND}= M_{NDbar}",2);
    ContraBoostInvJigsaw MinMND("MinMND","min M_{ND}, M_{ND}= M_{NDbar}");
-   INV.AddJigsaw(MinMND);
+   INVcontra.AddJigsaw(MinMND);
    MinMND.AddVisibleFrame(Z, 0);
    MinMND.AddVisibleFrame(h, 1);
    MinMND.AddInvisibleFrame(NS, 0);
    MinMND.AddInvisibleFrame(NSbar, 1);
 
-   LAB.InitializeAnalysis();
+   LABcontra.InitializeAnalysis();
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -207,11 +185,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       TVector3 met3     = TVector3(ptmiss_px,ptmiss_py,0.0);
       
       //recursive jigsaw
-      LAB.ClearEvent();
-      INV.SetLabFrameThreeVector(met3);
+      LABcontra.ClearEvent();
+      INVcontra.SetLabFrameThreeVector(met3);
       Z.SetLabFrameFourVector(theZ);
       h.SetLabFrameFourVector(theh);
-      LAB.AnalyzeEvent();
+      LABcontra.AnalyzeEvent();
       mEstZp = Zp.GetMass();
       mEstND = ND.GetMass();
       mEstNS = NS.GetMass();

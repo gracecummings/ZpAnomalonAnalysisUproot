@@ -39,6 +39,10 @@ if __name__=='__main__':
                 b'METclean',
     ]
 
+
+    outFile = up3.recreate("upout.root",compression = None)
+    outFile["numphist"] = np.histogram(np.random.normal(0,1,1000))
+    
     #events = up3.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
     events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)#pandas dies with ZCandidates
 

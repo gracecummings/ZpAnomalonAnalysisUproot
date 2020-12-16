@@ -149,9 +149,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool passMET = false;
 
       //A counter, for my sanity
-      //if (jentry%20000 == 0) {
-      //	std::cout<<"skimming event "<<jentry<<std::endl;
-      //}
+      if (jentry%20000 == 0) {
+      	std::cout<<"    analyzing event "<<jentry<<std::endl;
+      }
 
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
@@ -239,9 +239,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
       
       //debug
-      if (jentry == 2000) {
-	break;
-      }
+      //if (jentry == 2000) {
+      //break;
+      //}
 
       //Fill the Tree
       if (Cut(ientry) < 0) continue;
@@ -254,6 +254,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    trimFile->Write();
    trimFile->Close();   
    //std::cout<<"trimmed to "<< passEvents <<" events"<<std::endl;
-   std::cout<<"DONE"<<std::endl;
+   std::cout<<"Completed your topiary garden, hopefully your tastes have not changed."<<std::endl;
 
 }

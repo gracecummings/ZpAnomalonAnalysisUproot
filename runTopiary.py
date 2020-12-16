@@ -26,9 +26,8 @@ if __name__=="__main__":
             origevnts += tf.Get("hnevents").GetBinContent(1)
     else:
         inChain = ROOT.TChain("TreeMaker2/PreSelection")
-        #inChain.Add()
-        #tf = ROOT.TFile.Open()
-        #origevnts = 
+        inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
+        origevnts = inChain.GetEntries()
 
     if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):
         os.makedirs("analysis_output_ZpAnomalon/"+str(date.today())+"/")

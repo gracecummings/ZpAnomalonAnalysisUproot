@@ -26,12 +26,15 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
 
    //k-factor prep
-   //if (sampleType == 2) {//If it is a DYJets sample
-   //  TFile *qcdnnloFile = (TFile*)("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
-       //qcdnnloFile = TFile.Open("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
-   //    hqcdnnlosf  = qcdnnloFile->Get("eej");
-   //}
-
+   TFile qcdnnloFile("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
+   TH1D *hqcdnnlosf  = (TH1D*)qcdnnloFile.Get("eej");
+   hqcdnnlosf->SetDirectory(0);
+   qcdnnloFile.Close();
+   TFile ewknloFile("../DYCorrection/merged_kfactors_zjets.root","READ");
+   TH1F *hewknlosf = (TH1F*)ewknloFile.Get("kfactor_monojet_ewk");
+   hewknlosf->SetDirectory(0);
+   ewknloFile.Close();
+   
    //Initialize Stuff
    TLorentzVector hCandidate;
    TLorentzVector ZCandidate;
@@ -51,6 +54,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double mEstZp;
    double mEstND;
    double mEstNS;
+   float  evntw;
       
       
    //Define the skimmed skim  output file and tree
@@ -76,6 +80,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    TBranch *ZpMest    = trimTree->Branch("ZPrime_mass_est",&mEstZp,"mEstZp/D");
    TBranch *NDMest    = trimTree->Branch("ND_mass_est",&mEstND,"mEstND/D");
    TBranch *NSMest    = trimTree->Branch("NS_mass_est",&mEstNS,"mEstNS/D");
+   TBranch *evntweight = trimTree->Branch("event_weight",&evntw,"evntw/F");
    hnskimed->SetBinContent(1,nentries);
    hnorigevnts->SetBinContent(1,totalOriginalEvents);
 
@@ -164,8 +169,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	while ((pos = trgtit.find(delim)) != std::string::npos && token != ourtrg) {
 	  token = trgtit.substr(0,pos);
 	  trgidx += 1;
-	  //std::cout<< token << std::endl;
-	  //std::cout<< trgidx << std::endl;
 	  trgtit.erase(0,pos+delim.length());
 	}
       }
@@ -197,10 +200,27 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    gZ = GenParticles->at(i);
 	  }
 	}
-      
-	//if (sampleType == 2) {//DY+Jets
-	  //Put kfactor stuff here
-	//}
+
+	float qcdnlosf;
+	double qcdnnlosf;
+	float ewknlosf;
+	if (sampleType == 2) {//DY+Jets
+	  qcdnlosf = 1.423*exp(-0.002257*gZ.Pt())+0.451;
+	  if (qcdnlosf <= 0.0) {
+	    qcdnlosf = 1.;
+	  }
+	  int zptbinqcd  = hqcdnnlosf->FindBin(gZ.Pt());
+	  qcdnnlosf = hqcdnnlosf->GetBinContent(zptbinqcd);
+	  if (qcdnnlosf <= 0.0) {
+	    qcdnnlosf = 1.;
+	  }
+	  int zptbinewk = hewknlosf->FindBin(gZ.Pt());
+	  ewknlosf = hewknlosf->GetBinContent(zptbinewk);
+	  if (ewknlosf <= 0.0) {
+	    ewknlosf = 1.;
+	  }
+	  evntw = ewknlosf*qcdnnlosf*qcdnlosf;
+	}
       }
       
       //Z Candidate Build

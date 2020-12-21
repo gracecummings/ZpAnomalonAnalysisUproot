@@ -20,20 +20,20 @@ if __name__=="__main__":
     #Make code for type of sample
     if "Run" in samp:
         samptype = 0
-    if "ZpAnomalon" in samp:
+    elif "ZpAnomalon" in samp:
         samptype = 1
         #isSig = True
-    if "DYJetsToLL" in samp:
+    elif "DYJetsToLL" in samp:
          samptype = 2
-    if "TTTo" in samp:
+    elif "TTTo" in samp:
         samptype = 3
-    if "WZTo" in samp:
+    elif "WZTo" in samp:
         samptype = 4
-    if "ZZTo" in samp:
+    elif "ZZTo" in samp:
         samptype = 5
     else:
         print "You have a problem, we do not undertand the sample coding"
-    
+
     origevnts = 0
     #if not isSig:
     if samptype != 1:

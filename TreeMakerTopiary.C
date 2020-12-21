@@ -141,7 +141,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  double massZdiff = std::abs(91.1876 - zit->M());
 	  if ((massZdiff < baseZdiff) && (zit->M() >= zmwinlow) && (zit->M() <= zmwinhi)) {
 	    baseZdiff = massZdiff;
-	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Phi(),zit->Eta(),zit->M());
+	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Eta(),zit->Phi(),zit->M());
 	    passZ = true;
 	  }
 	}

@@ -34,11 +34,14 @@ if __name__=='__main__':
     branches = [b'ZCandidate_*',
                 b'hCandidate_*',
                 b'METclean',
+                b'METPhiclean',
+                b'ZPrime_mass_est',
+                b'ND_mass_est',
+                b'NS_mass_est',
     ]
 
     #Example of plots
-    #outFile = up3.recreate("upout.root",compression = None)
-    #outFile["numphist"] = np.histogram(np.random.normal(0,1,1000))
+    outFile = up3.recreate("upout.root",compression = None)
     
     #events = up3.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
     events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)#pandas dies with ZCandidates
@@ -48,8 +51,8 @@ if __name__=='__main__':
     
     for b in events:
         #print(type(b))
-        #print(b.keys())
-        print(b)
+        print(b.keys())
+        #print(b)
 
         #do some cuts
         hetadf = b[np.abs(b['hCandidate_eta']) < 2.4]
@@ -57,4 +60,22 @@ if __name__=='__main__':
         zptdf  = metdf[metdf['ZCandidate_pt'] > zptcut]
         hptdf  = zptdf[zptdf['hCandidate_pt'] > hptcut]
         #hbtgdf = hptdf[hptdf['hCandidate_'+btaggr] > btagwp]
-        print(hptdf)
+        #print(hptdf)
+        #fdf is always the last dataframe
+        fdf = hptdf
+
+    #lets make some histograms.
+    outFile["h_z_pt"]    = np.histogram(fdf['ZCandidate_pt'],bins=80,range=(0,800))
+    outFile["h_z_phi"]   = np.histogram(fdf['ZCandidate_phi'],bins=100,range=(0,3.14159))#needs to fit range
+    outFile["h_z_eta"]   = np.histogram(fdf['ZCandidate_eta'],bins=100,range=(-5,5))
+    outFile["h_z_m"]     = np.histogram(fdf['ZCandidate_m'],bins=40,range=(70,110))
+    outFile["h_h_pt"]    = np.histogram(fdf['hCandidate_pt'],bins=40,range=(200,1200))
+    outFile["h_h_phi"]   = np.histogram(fdf['hCandidate_phi'],bins=100,range=(0,3.14159))#needs to fit range
+    outFile["h_h_eta"]   = np.histogram(fdf['hCandidate_eta'],bins=100,range=(-5,5))
+    outFile["h_h_m"]     = np.histogram(fdf['hCandidate_m'],bins=80,range=(0,400))
+    outFile["h_h_sd"]    = np.histogram(fdf['hCandidate_sd'],bins=80,range=(0,4000))
+    outFile["h_met"]     = np.histogram(fdf['METclean'],bins=78,range=(50,2000))
+    outFile["h_met_phi"] = np.histogram(fdf['METPhiclean'],bins=100,range=(0,3.14159))#needs to fit range
+    outFile["h_zp_jigm"] = np.histogram(fdf['ZPrime_mass_est'],bins=100,range=(500,5000))
+    outFile["h_nd_jigm"] = np.histogram(fdf['ND_mass_est'],bins=130,range=(0,1300))
+    outFile["h_ns_jigm"] = np.histogram(fdf['NS_mass_est'],bins=200,range=(0,500))

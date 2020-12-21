@@ -15,6 +15,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
    fChain->SetBranchStatus("*",0);
+   fChain->SetBranchStatus("TriggerPass",1);
+   fChain->SetBranchStatus("GenParticles",1);
    fChain->SetBranchStatus("JetsAK8Clean*",1);
    fChain->SetBranchStatus("Muons*",1);
    fChain->SetBranchStatus("METclean*",1);
@@ -56,8 +58,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    TBranch *hCand_sd  = trimTree->Branch("hCandidate_sd",&hCandidate_sd,"hCandidate_sd/D");
    TBranch *hCand_dmdhbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagHbbvsQCD",&hCandidate_dmdhbbvqcd,"hCandidate_dmdhbbvqcd/D");
    TBranch *hCand_dmdzbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagZbbvsQCD",&hCandidate_dmdzbbvqcd,"hCandidate_dmdzbbvqcd/D");
-   TBranch *hCand_dmdzhbbvqcd  = trimTree->Branch("hCandidate_DeepMassDecorrelTagZHbbvsQCD",&hCandidate_dmdzhbbvqcd,"hCandidate_dmdzhbbvqcd/D");
-   TBranch *hCand_middb  = trimTree->Branch("hCandidate_pfMassIndependentDeepDoubleBvLJetTagsProbHbb",&hCandidate_middb,"hCandidate_middb/D");
+   TBranch *hCand_dmdzhbbvqcd = trimTree->Branch("hCandidate_DeepMassDecorrelTagZHbbvsQCD",&hCandidate_dmdzhbbvqcd,"hCandidate_dmdzhbbvqcd/D");
+   TBranch *hCand_middb       = trimTree->Branch("hCandidate_pfMassIndependentDeepDoubleBvLJetTagsProbHbb",&hCandidate_middb,"hCandidate_middb/D");
    TBranch *ZCand     = trimTree->Branch("ZCandidate","TLorentzVector",&ZCandidate);
    TBranch *ZCand_pt  = trimTree->Branch("ZCandidate_pt",&ZCandidate_pt,"ZCandidate_pt/D");
    TBranch *ZCand_phi = trimTree->Branch("ZCandidate_phi",&ZCandidate_phi,"ZCandidate_phi/D");
@@ -115,6 +117,16 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    MinMND.AddInvisibleFrame(NSbar, 1);
 
    LABcontra.InitializeAnalysis();
+
+   //Trigger Stuff
+   string trgtit;
+   string delim = ",";
+   string ourtrg = "HLT_Mu50_v";
+   int trgidx = -1;
+   int trgval;
+   TFile * fthen;
+   TFile * fnow;
+
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -123,12 +135,43 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       
 
       //Define some boos to signal events to write
-      bool passZ   = false;
-      bool passh   = false;
-      bool passMET = false;
+      bool passZ    = false;
+      bool passh    = false;
+      bool passMET  = false;
+      bool passTrig = false;
+
+      //Trigger decisions
+      size_t pos = 0;
+      string token;
+      if (jentry == 0) {
+	trgtit = fChain->GetBranch("TriggerPass")->GetTitle();
+	fthen = fChain->GetCurrentFile();
+	while ((pos = trgtit.find(delim)) != std::string::npos && token != ourtrg) {
+	  token = trgtit.substr(0,pos);
+	  trgidx += 1;
+	  //std::cout<< token << std::endl;
+	  //std::cout<< trgidx << std::endl;
+	  trgtit.erase(0,pos+delim.length());
+	}
+      }
+      else {
+	fnow = fChain->GetCurrentFile();
+	if (fnow != fthen) {
+	  std::cout<< "New file in TChain" <<std::endl;
+	  while ((pos = trgtit.find(delim)) != std::string::npos && token != ourtrg) {
+	    token = trgtit.substr(0,pos);
+	    trgidx += 1;
+	    trgtit.erase(0,pos+delim.length());
+	  }
+	}
+      }
+      trgval = TriggerPass->at(trgidx);
+      if (trgval == 1) {
+	passTrig = true;
+      }
 
       //A counter, for my sanity
-      if (jentry%20000 == 0) {
+      if (jentry%25000 == 0) {
       	std::cout<<"    analyzing event "<<jentry<<std::endl;
       }
 
@@ -167,7 +210,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  fsd = JetsAK8Clean_softDropMass->at(i);
 	  fid = JetsAK8Clean_ID->at(i);
 	  double masshdiff = std::abs(125.18 - fsd);
-	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid %% fat.Eta() > 2.4) {
+	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid && fat.Eta() > 2.4) {
 	    basehdiff = masshdiff;
 	    theh = fat;
 	    hsd = fsd;
@@ -220,13 +263,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
       
       //debug
-      //if (jentry == 2000) {
-      //break;
-      //}
+      if (jentry == 20) {
+      break;
+      }
 
       //Fill the Tree
       if (Cut(ientry) < 0) continue;
-      if (passZ && passh) {
+      if (passZ && passh && passTrig) {
 	trimTree->Fill();
 	}
       

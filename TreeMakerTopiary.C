@@ -7,7 +7,7 @@
 RestFrames::RFKey ensure_autoload(1);
 using namespace RestFrames;
 
-void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents)
+void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents, int sampleType)
 {
 
    if (fChain == 0) return;
@@ -16,7 +16,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    Long64_t nbytes = 0, nb = 0;
    fChain->SetBranchStatus("*",0);
    fChain->SetBranchStatus("TriggerPass",1);
-   fChain->SetBranchStatus("GenParticles",1);
+   fChain->SetBranchStatus("GenParticles*",1);
    fChain->SetBranchStatus("JetsAK8Clean*",1);
    fChain->SetBranchStatus("Muons*",1);
    fChain->SetBranchStatus("METclean*",1);
@@ -24,6 +24,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("SelectedMuons*",1);
    fChain->SetBranchStatus("ZCandidates",1);
 
+
+   //k-factor prep
+   //if (sampleType == 2) {//If it is a DYJets sample
+   //  TFile *qcdnnloFile = (TFile*)("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
+       //qcdnnloFile = TFile.Open("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
+   //    hqcdnnlosf  = qcdnnloFile->Get("eej");
+   //}
 
    //Initialize Stuff
    TLorentzVector hCandidate;
@@ -44,7 +51,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double mEstZp;
    double mEstND;
    double mEstNS;
-   
+      
+      
    //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
    TTree* trimTree = fChain->CloneTree(0);
@@ -140,6 +148,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool passMET  = false;
       bool passTrig = false;
 
+      //Initialize Stuff
+          
+      //A counter, for my sanity
+      if (jentry%25000 == 0) {
+      	std::cout<<"    analyzing event "<<jentry<<std::endl;
+      }
+
       //Trigger decisions
       size_t pos = 0;
       string token;
@@ -170,11 +185,24 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	passTrig = true;
       }
 
-      //A counter, for my sanity
-      if (jentry%25000 == 0) {
-      	std::cout<<"    analyzing event "<<jentry<<std::endl;
+      //GenParticle Stuff
+      if (sampleType != 0) {//Not Data
+	TLorentzVector gZ;
+	int gpid;
+	//TLorentzVector gh;
+	unsigned long ngen = GenParticles->size();
+	for (unsigned long i = 0; i < ngen; ++i) {
+	  int gpid = GenParticles_PdgId->at(i);
+	  if (gpid == 23) {
+	    gZ = GenParticles->at(i);
+	  }
+	}
+      
+	//if (sampleType == 2) {//DY+Jets
+	  //Put kfactor stuff here
+	//}
       }
-
+      
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
       TLorentzVector theZ;
@@ -275,9 +303,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       
    }
 
+   
    trimFile->Write();
    trimFile->Close();   
    //std::cout<<"trimmed to "<< passEvents <<" events"<<std::endl;
    std::cout<<"Completed your topiary garden, hopefully your tastes have not changed."<<std::endl;
 
-}
+   }
+

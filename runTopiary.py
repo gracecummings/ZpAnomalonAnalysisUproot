@@ -10,14 +10,33 @@ parser = argparse.ArgumentParser()
 if __name__=="__main__":
     parser.add_argument("-s","--sample",help="sample name")
     parser.add_argument("-y","--year",help="analysis year")
-    parser.add_argument("-A","--anomalon",type=bool,help="is this signal?")
+    #parser.add_argument("-A","--anomalon",type=bool,help="is this signal?")
     args = parser.parse_args()
     samp = args.sample
     year = args.year
-    isSig = args.anomalon
+    #isSig = args.anomalon
+    samptype = -1
 
+    #Make code for type of sample
+    if "Run" in samp:
+        samptype = 0
+    if "ZpAnomalon" in samp:
+        samptype = 1
+        #isSig = True
+    if "DYJetsToLL" in samp:
+         samptype = 2
+    if "TTTo" in samp:
+        samptype = 3
+    if "WZTo" in samp:
+        samptype = 4
+    if "ZZTo" in samp:
+        samptype = 5
+    else:
+        print "You have a problem, we do not undertand the sample coding"
+    
     origevnts = 0
-    if not isSig:
+    #if not isSig:
+    if samptype != 1:
         inChain = ROOT.TChain("PreSelection")
         inputs  = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
         for f in inputs:
@@ -42,5 +61,5 @@ if __name__=="__main__":
 
     
     topiary = ROOT.TreeMakerTopiary(inChain)
-    topiary.Loop(outFile,origevnts)
+    topiary.Loop(outFile,origevnts,samptype)
 

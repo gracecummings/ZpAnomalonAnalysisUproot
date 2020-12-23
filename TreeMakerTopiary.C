@@ -23,6 +23,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("METPhiclean",1);
    fChain->SetBranchStatus("SelectedMuons*",1);
    fChain->SetBranchStatus("ZCandidates",1);
+   fChain->SetBranchStatus("eeBadScFilter",1);
 
 
    //k-factor prep
@@ -152,6 +153,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool passh    = false;
       bool passMET  = false;
       bool passTrig = false;
+      bool passFil  = false;
 
       //Initialize Stuff
           
@@ -176,6 +178,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	fnow = fChain->GetCurrentFile();
 	if (fnow != fthen) {
 	  std::cout<< "New file in TChain" <<std::endl;
+	  fthen = fnow;
 	  while ((pos = trgtit.find(delim)) != std::string::npos && token != ourtrg) {
 	    token = trgtit.substr(0,pos);
 	    trgidx += 1;
@@ -188,6 +191,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	passTrig = true;
       }
 
+
+      //eeBadScFilter
+      if (sampleType == 0) {
+	if (fChain->GetLeaf("eeBadScFilter")->GetValue() == 1.0) {
+	  passFil = true;
+	}
+      }
+	
       //GenParticle Stuff
       if (sampleType != 0) {//Not Data
 	TLorentzVector gZ;
@@ -201,6 +212,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  }
 	}
 
+	float evntw = 1;
 	float qcdnlosf;
 	double qcdnnlosf;
 	float ewknlosf;
@@ -311,13 +323,16 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
       
       //debug
-      if (jentry == 20) {
-      break;
-      }
+      //if (jentry == 20) {
+      //break;
+      //}
 
       //Fill the Tree
       if (Cut(ientry) < 0) continue;
-      if (passZ && passh && passTrig) {
+      if (passZ && passh && passTrig && sampleType !=0) {
+	trimTree->Fill();
+	}
+      if (passZ && passh && passTrig && sampleType == 0 && passFil) {
 	trimTree->Fill();
 	}
       

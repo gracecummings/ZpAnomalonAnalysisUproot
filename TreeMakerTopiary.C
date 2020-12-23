@@ -200,6 +200,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       }
 	
       //GenParticle Stuff
+      float evntw      = 1;
       if (sampleType != 0) {//Not Data
 	TLorentzVector gZ;
 	int gpid;
@@ -211,11 +212,10 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    gZ = GenParticles->at(i);
 	  }
 	}
-
-	float evntw = 1;
-	float qcdnlosf;
-	double qcdnnlosf;
-	float ewknlosf;
+	
+	float qcdnlosf   = 1;
+	double qcdnnlosf = 1;
+	float ewknlosf   = 1;
 	if (sampleType == 2) {//DY+Jets
 	  qcdnlosf = 1.423*exp(-0.002257*gZ.Pt())+0.451;
 	  if (qcdnlosf <= 0.0) {
@@ -232,9 +232,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    ewknlosf = 1.;
 	  }
 	  evntw = ewknlosf*qcdnnlosf*qcdnlosf;
+	  std::cout<<"event weight at calc "<<evntw<<std::endl;
 	}
       }
-      
+
+      std::cout<<"event weight out of if  "<<evntw<<std::endl;
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
       TLorentzVector theZ;
@@ -323,12 +325,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
       
       //debug
-      //if (jentry == 20) {
-      //break;
-      //}
+      if (jentry == 20) {
+	break;
+      }
 
       //Fill the Tree
       if (Cut(ientry) < 0) continue;
+      std::cout<<"event weight at end "<<evntw<<std::endl;      
       if (passZ && passh && passTrig && sampleType !=0) {
 	trimTree->Fill();
 	}

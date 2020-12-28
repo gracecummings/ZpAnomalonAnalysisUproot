@@ -185,8 +185,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  trgidx += 1;
 	  trgtit.erase(0,pos+delim.length());
 	}
-	std::cout<< "the token we landed on is "<<token<<std::endl;
-	std::cout<< "the trigidx is "<<trgidx<<std::endl;
+	//std::cout<< "the token we landed on is "<<token<<std::endl;
+	//std::cout<< "the trigidx is "<<trgidx<<std::endl;
       }
       else {
 	fnow = fChain->GetCurrentFile();
@@ -200,8 +200,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    trgidx += 1;
 	    trgtit.erase(0,pos+delim.length());
 	  }
-	  std::cout<< "the token we landed on is "<<token<<std::endl;
-	  std::cout<< "the trigidx is "<<trgidx<<std::endl;
+	  //std::cout<< "the token we landed on is "<<token<<std::endl;
+	  //std::cout<< "the trigidx is "<<trgidx<<std::endl;
 	}
       }
       trgval = TriggerPass->at(trgidx);
@@ -261,11 +261,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       TLorentzVector theZ;
       double baseZdiff = 99999;
       if (nZs > 0) {
+	//std::cout<<"Greater than 0 Zs"<<std::endl;
 	std::vector<TLorentzVector>::iterator zit;
 	for (zit = ZCandidates->begin(); zit != ZCandidates->end(); ++zit) {
 	  double massZdiff = std::abs(91.1876 - zit->M());
 	  //if ((massZdiff < baseZdiff) && (zit->M() >= zmwinlow) && (zit->M() <= zmwinhi)) {
 	  if ((massZdiff < baseZdiff) && (zit->M() > zmwinlow) && (zit->M() < zmwinhi)) {
+	    //std::cout<<"    massdiff: "<<massZdiff<<std::endl;
+	    //std::cout<<"        mass: "<<zit->M()<<std::endl;
 	    baseZdiff = massZdiff;
 	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Eta(),zit->Phi(),zit->M());
 	    passZ = true;
@@ -323,7 +326,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       mEstND = ND.GetMass();
       mEstNS = NS.GetMass();
       
-      if (passZ) {
+      if (passZ && passTrig) {
 	ZCandidate = theZ;
 	ZCandidate_pt  = theZ.Pt();
 	ZCandidate_phi = theZ.Phi();
@@ -332,7 +335,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	countzpass +=1 ;
       }
 
-      if (passh) {
+      if (passh && passZ && passTrig) {
 	hCandidate = theh;
 	hCandidate_pt  = theh.Pt();
 	hCandidate_phi = theh.Phi();

@@ -10,11 +10,9 @@ parser = argparse.ArgumentParser()
 if __name__=="__main__":
     parser.add_argument("-s","--sample",help="sample name")
     parser.add_argument("-y","--year",help="analysis year")
-    #parser.add_argument("-A","--anomalon",type=bool,help="is this signal?")
     args = parser.parse_args()
     samp = args.sample
     year = args.year
-    #isSig = args.anomalon
     samptype = -1
 
     #Make code for type of sample
@@ -56,7 +54,8 @@ if __name__=="__main__":
     ROOT.gSystem.Load('TreeMakerTopiary_C')
 
     print "Making topiary of ",samp
-    print ("    Original data set had {0} events, trimmed tree is smaller.").format(origevnts)
+    print "     Events in TChain: ",inChain.GetEntries()
+    print ("     Original data set had {0} events.").format(origevnts)
     print "    Saving topiary in ",outFile
 
     

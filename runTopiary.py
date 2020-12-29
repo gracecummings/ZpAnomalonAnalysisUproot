@@ -3,6 +3,7 @@ import glob
 import argparse
 import os
 import sys
+import gecorg as go
 from datetime import date
 
 parser = argparse.ArgumentParser()
@@ -15,21 +16,8 @@ if __name__=="__main__":
     year = args.year
     samptype = -1
 
-    #Make code for type of sample
-    if "Run" in samp:
-        samptype = 0
-    elif "ZpAnomalon" in samp:
-        samptype = 1
-        #isSig = True
-    elif "DYJetsToLL" in samp:
-         samptype = 2
-    elif "TTTo" in samp:
-        samptype = 3
-    elif "WZTo" in samp:
-        samptype = 4
-    elif "ZZTo" in samp:
-        samptype = 5
-    else:
+    samptype = go.sampleType(samp)
+    if samptype < 0:
         print "You have a problem, we do not undertand the sample coding"
 
     origevnts = 0
@@ -46,14 +34,13 @@ if __name__=="__main__":
         inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
         origevnts = inChain.GetEntries()
 
-    if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):
-        os.makedirs("analysis_output_ZpAnomalon/"+str(date.today())+"/")
-    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+samp+"_topiary.root"
-        
+    outFile = go.makeOutFile(samp,'topiary')
+
     ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")
     ROOT.gSystem.Load('TreeMakerTopiary_C')
 
     print "Making topiary of ",samp
+    print "     Sample type ",samptype
     print "     Events in TChain: ",inChain.GetEntries()
     print ("     Original data set had {0} events.").format(origevnts)
     print "    Saving topiary in ",outFile

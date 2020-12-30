@@ -91,5 +91,8 @@ if __name__=='__main__':
 
     #Book Keeping
     f = up3.open('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'_topiary.root')
-    origevnts = str(f['hnorigevnts'].values[0])
-    outFile["hnevents"]  = origevnts
+    outFile["hnevents"]      = str(f['hnorigevnts'].values[0])
+    outFile["hnevents_pMET"] = str(len(metdf))
+    outFile["hnevents_pZ"]   = str(len(zptdf))
+    outFile["hnevents_ph"]   = str(len(hptdf))
+    outFile["hnevents_sb"]   = str(len(sbdf))

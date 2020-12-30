@@ -16,28 +16,18 @@ if __name__=='__main__':
     parser.add_argument("-L","--lumi", type=float,default = 137, help = "integrated luminosity for scale in fb^-1")
     parser.add_argument("-x","--xsec", type=float,help = "desired siganl cross section in fb")
     parser.add_argument("-p","--plot", type=str,help = "desired plot name to make the optimization for")
-    parser.add_argument("-mzp","--masszp",type=int)
-    parser.add_argument("-mnd","--massnd",type=int)
-    parser.add_argument("-mns","--massns",type=int)
     args = parser.parse_args()
 
     #Get command line parameters
     lumi = args.lumi
     sig_xsec = args.xsec
     released_plot = args.plot
-    masszp = args.masszp
-    massnd = args.massnd
-    massns = args.massns
     
     #Gather Samples
     #bkgfiles = gecorg.gatherBkg('histsBkgCommitf27c357')
     bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2020-12-30/')
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    if massns:
-        sigfiles = glob.glob('histsSigCommitf27c357/*NS'+str(massns)+'*')
-    else:
-        #sigfiles = glob.glob('histsSigCommitf27c357/ZpAnomalonHZ_UFO-Zp*')
-        sigfiles = glob.glob('analysis_output_ZpAnomalon/2020-12-30/Zp*')
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/2020-12-30/Zp*')
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
@@ -51,6 +41,17 @@ if __name__=='__main__':
     leg = ROOT.TLegend(0.45,0.55,0.90,0.88)
     hsbkg = ROOT.THStack('hsbkg','')
     gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,10000000,0.1)
+
+
+    #LUT with titles
+    titles = {
+        "h_z_pt":"Z pT",
+        "h_h_pt":"Higgs pT",
+        "h_h_sd":"Higgs Soft Drop Mass",
+        "h_met":"pT miss",
+        "h_zp_jigm":"Jigsaw Mass Estimator Z'",
+        "h_nd_jigm":"Jigsaw Mass Estimator ND",
+        }
 
     #Make a multigraph
     mg = ROOT.TMultiGraph()
@@ -74,7 +75,7 @@ if __name__=='__main__':
 
     #Draw the stack
     hsbkg.Draw("HIST")#add PFC for palette drawing
-    hsbkg.GetXaxis().SetTitle("zhDeepDecorr")
+    hsbkg.GetXaxis().SetTitle(titles[hname])
     hsbkg.GetXaxis().SetTitleSize(0.05)
     hsbkg.GetYaxis().SetTitle("Events")
     hsbkg.GetYaxis().SetTitleSize(0.05)
@@ -126,7 +127,7 @@ if __name__=='__main__':
 
         #Build the graphs
         tg = ROOT.TGraph(hsum.GetNbinsX()-1,cutlist,signiflist)
-        tg.SetTitle("")
+        tg.SetTitle(titles[hname])
         tg.SetLineWidth(2)
         tg.SetLineColor(masspoint["color"])
         #tg.SetLineStyle(masspoint["style"])
@@ -155,7 +156,7 @@ if __name__=='__main__':
         mg.GetYaxis().SetTitleOffset(.7)
         mg.GetYaxis().SetLabelSize(0.05)
         mg.SetMinimum(0)
-        mg.SetMaximum(70)
+        mg.SetMaximum(30)
         
         #Go back to previous pad so next kinematic plots draw
         tc.cd()
@@ -169,5 +170,5 @@ if __name__=='__main__':
     savdir = str(date.today())
     if not os.path.exists("opt_plots/"+savdir):
         os.makedirs("opt_plots/"+savdir)
-    pngname = "opt_plots/"+savdir+"/"+hname+"_deepdoubleb_optimization.png" 
+    pngname = "opt_plots/"+savdir+"/"+hname+"_optimization.png" 
     tc.SaveAs(pngname)

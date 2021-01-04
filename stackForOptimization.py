@@ -16,18 +16,31 @@ if __name__=='__main__':
     parser.add_argument("-L","--lumi", type=float,default = 137, help = "integrated luminosity for scale in fb^-1")
     parser.add_argument("-x","--xsec", type=float,help = "desired siganl cross section in fb")
     parser.add_argument("-p","--plot", type=str,help = "desired plot name to make the optimization for")
+    parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
+    parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
+    parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     args = parser.parse_args()
 
     #Get command line parameters
-    lumi = args.lumi
-    sig_xsec = args.xsec
+    lumi          = args.lumi
+    sig_xsec      = args.xsec
     released_plot = args.plot
-    
-    #Gather Samples
+    zptcut        = args.zptcut
+    hptcut        = args.hptcut
+    metcut        = args.metcut
+
+    #zptcut Samples
     #bkgfiles = gecorg.gatherBkg('histsBkgCommitf27c357')
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2020-12-30/')
+    #bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-04/Fall17*')#_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
+    #bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2020-12-30/')
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-04/',zptcut,hptcut,metcut)
+    #print bkgfiles
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/2020-12-30/Zp*')
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-04/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
+    #sigfiles = glob.glob('analysis_output_ZpAnomalon/2020-12-30/Zp*')
+    #sigfiles = glob.glob('analysis_output_ZpAnomalon/2020-12-31/Zp*')
+    #print sigfiles
+    #print 'analysis_output_ZpAnomalon/2021-01-04/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root'
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)

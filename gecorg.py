@@ -24,10 +24,10 @@ def sampleType(sampstring):
         samptype = -1
     return samptype
 
-def makeOutFile(sampstring,suffix):
+def makeOutFile(sampstring,suffix,zptcut,hptcut,metcut):
     if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):
         os.makedirs("analysis_output_ZpAnomalon/"+str(date.today())+"/")
-    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+suffix+".root"
+    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+suffix+"_Zptcut"+zptcut+"_Hptcut"+hptcut+"_metcut"+metcut+".root"
     return outFile
 
 def orderFall17DY(histFile):
@@ -68,11 +68,11 @@ def colsFromPalette(samplist,palname):
         collist.append(cols.At(0+i*colsnum/len(samplist)))
     return collist
 
-def gatherBkg(bkg_dir):
-    DYJetsToLL = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*')
-    TT         = glob.glob(str(bkg_dir)+'/Fall17.TTT*')                                         
-    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.WZTo2L2Q*')                                    
-    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.ZZTo2L2Q*')                                    
+def gatherBkg(bkg_dir,zptcut,hptcut,metcut):
+    DYJetsToLL = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
+    TT         = glob.glob(str(bkg_dir)+'/Fall17.TTT*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                         
+    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.WZTo2L2Q*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                    
+    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.ZZTo2L2Q*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                    
     bkgfiles   = [DYJetsToLL,TT,WZTo2L2Q,ZZTo2L2Q]
     return bkgfiles
 
@@ -104,6 +104,7 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi):
     config.readfp(fp)
     bkg_info = []
     for b,bkg in enumerate(bkgfiles):
+        #print bkg
         bkg_binsum   = {}
         bkg_binlist  = []
         
@@ -111,6 +112,7 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi):
         bkg_expyield = 0
         # bkg xs from .ini file
         bkgbin_xs_pairs = config.items(bkg_channel)
+        #print bkgbin_xs_pairs
         if bkg_channel == "DYJetsToLL":
             #orders smallest HT to largest
             bkg.sort(key = orderFall17DY)

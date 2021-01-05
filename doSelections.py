@@ -44,7 +44,7 @@ if __name__=='__main__':
     ]
 
     #Example of plots
-    filename = go.makeOutFile(samp,'upout',str(zptcut),str(hptcut),str(metcut))
+    filename = go.makeOutFile(samp,'upout','.root',str(zptcut),str(hptcut),str(metcut))
     outFile  = up3.recreate(filename,compression = None)
     
     #events = up3.iterate(inputfiles[:1],'PreSelection;1',branches=branches)

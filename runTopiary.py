@@ -35,10 +35,6 @@ if __name__=="__main__":
         origevnts = inChain.GetEntries()
 
     outFile = go.makeOutFile(samp,'topiary','.root','0.0','250.0','0.0')#Needs to become dynamic with cuts
-
-    ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")
-    ROOT.gSystem.Load('TreeMakerTopiary_C')
-
     print "Making topiary of ",samp
     print "     Sample type ",samptype
     print "     Events in TChain: ",inChain.GetEntries()
@@ -46,6 +42,18 @@ if __name__=="__main__":
     print "    Saving topiary in ",outFile
 
     
-    topiary = ROOT.TreeMakerTopiary(inChain)
+    if samptype != 0:
+        ROOT.gSystem.CompileMacro("TreeMakerTopiary_MC.C","g0ck")
+        ROOT.gSystem.Load('TreeMakerTopiary_MC_C')
+        topiary = ROOT.TreeMakerTopiary(inChain)
+    if samptype == 0:
+        ROOT.gSystem.CompileMacro("TreeMakerTopiary_Data.C","g0ck")
+        ROOT.gSystem.Load('TreeMakerTopiary_Data_C')
+        topiary = ROOT.TreeMakerTopiary_Data(inChain)
+        
     topiary.Loop(outFile,origevnts,samptype)
+
+
+    
+
 

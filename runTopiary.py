@@ -34,7 +34,7 @@ if __name__=="__main__":
         inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
         origevnts = inChain.GetEntries()
 
-    outFile = go.makeOutFile(samp,'topiary','0.0','250.0','0.0')#Needs to become dynamic with cuts
+    outFile = go.makeOutFile(samp,'topiary','.root','0.0','250.0','0.0')#Needs to become dynamic with cuts
 
     ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")
     ROOT.gSystem.Load('TreeMakerTopiary_C')

@@ -24,10 +24,10 @@ def sampleType(sampstring):
         samptype = -1
     return samptype
 
-def makeOutFile(sampstring,suffix,zptcut,hptcut,metcut):
+def makeOutFile(sampstring,descrip,ftype,zptcut,hptcut,metcut):
     if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):
         os.makedirs("analysis_output_ZpAnomalon/"+str(date.today())+"/")
-    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+suffix+"_Zptcut"+zptcut+"_Hptcut"+hptcut+"_metcut"+metcut+".root"
+    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+descrip+"_Zptcut"+zptcut+"_Hptcut"+hptcut+"_metcut"+metcut+ftype
     return outFile
 
 def orderFall17DY(histFile):

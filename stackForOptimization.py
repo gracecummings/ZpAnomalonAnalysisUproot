@@ -30,17 +30,9 @@ if __name__=='__main__':
     metcut        = args.metcut
 
     #zptcut Samples
-    #bkgfiles = gecorg.gatherBkg('histsBkgCommitf27c357')
-    #bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-04/Fall17*')#_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
-    #bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2020-12-30/')
     bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-04/',zptcut,hptcut,metcut)
-    #print bkgfiles
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     sigfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-04/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
-    #sigfiles = glob.glob('analysis_output_ZpAnomalon/2020-12-30/Zp*')
-    #sigfiles = glob.glob('analysis_output_ZpAnomalon/2020-12-31/Zp*')
-    #print sigfiles
-    #print 'analysis_output_ZpAnomalon/2021-01-04/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root'
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
@@ -53,7 +45,8 @@ if __name__=='__main__':
     hname = released_plot
     leg = ROOT.TLegend(0.45,0.55,0.90,0.88)
     hsbkg = ROOT.THStack('hsbkg','')
-    gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,10000000,0.1)
+    #gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,10000000,0.1)
+    gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,1500,0.0)
 
 
     #LUT with titles
@@ -72,7 +65,7 @@ if __name__=='__main__':
     #Prep the pads
     tc = ROOT.TCanvas("tc",hname,600,800)
     p1 = ROOT.TPad("p1","stack_"+hname,0,0.4,1.0,1.0)
-    p1.SetLogy()
+    #p1.SetLogy()
     #p1.SetBottomMargin(0)
     p1.SetLeftMargin(0.15)
     p1.SetRightMargin(0.05)
@@ -105,8 +98,10 @@ if __name__=='__main__':
         hsig.Scale(masspoint["scale"])
         hsig.SetLineColor(masspoint["color"])
         hsig.SetLineWidth(2)
-        hsig.SetMaximum(10000000)
-        hsig.SetMinimum(0.1)
+        #hsig.SetMaximum(10000000)
+        hsig.SetMaximum(1500)
+        #hsig.SetMinimum(0.1)
+        #hsig.SetMinimum(0.1)
         hsig.Draw("HISTSAME")
         leg.AddEntry(hsig,"Zp"+str(masspoint["mzp"])+" ND"+str(masspoint["mnd"])+" NS"+str(masspoint["mns"])+" "+str(sig_xsec/1000)+" pb","l")
         
@@ -180,8 +175,5 @@ if __name__=='__main__':
     leg.Draw()
 
     #Save the plot
-    savdir = str(date.today())
-    if not os.path.exists("opt_plots/"+savdir):
-        os.makedirs("opt_plots/"+savdir)
-    pngname = "opt_plots/"+savdir+"/"+hname+"_optimization.png" 
+    pngname = gecorg.makeOutFile(hname,'optimization','.png',str(zptcut),str(hptcut),str(metcut))
     tc.SaveAs(pngname)

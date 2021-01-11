@@ -5,7 +5,6 @@ import numpy as np
 import boost_histogram as bh
 import argparse
 import glob
-import matplotlib.pyplot as plt
 import gecorg_py3 as go
 
 parser = argparse.ArgumentParser()
@@ -77,7 +76,7 @@ if __name__=='__main__':
 
     #lets make some histograms.
     rootfilename = go.makeOutFile(samp,'upout','.root',str(zptcut),str(hptcut),str(metcut))
-    npfilename   = go.makeOutFile(samp,'upout_errors','.npz',str(zptcut),str(hptcut),str(metcut))
+    npfilename   = go.makeOutFile(samp,'selected_errors','.npz',str(zptcut),str(hptcut),str(metcut))
     rootOutFile  = up3.recreate(rootfilename,compression = None)
     npOutFile    = open(npfilename,'wb')
 

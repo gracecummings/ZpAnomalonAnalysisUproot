@@ -68,11 +68,11 @@ def colsFromPalette(samplist,palname):
         collist.append(cols.At(0+i*colsnum/len(samplist)))
     return collist
 
-def gatherBkg(bkg_dir,zptcut,hptcut,metcut):
-    DYJetsToLL = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
-    TT         = glob.glob(str(bkg_dir)+'/Fall17.TTT*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                         
-    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.WZTo2L2Q*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                    
-    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.ZZTo2L2Q*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                    
+def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut):
+    DYJetsToLL = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
+    TT         = glob.glob(str(bkg_dir)+'/Fall17.TTT*_'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                         
+    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.WZTo2L2Q_'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                    
+    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.ZZTo2L2Q_'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')                                    
     bkgfiles   = [DYJetsToLL,TT,WZTo2L2Q,ZZTo2L2Q]
     return bkgfiles
 

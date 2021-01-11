@@ -29,8 +29,8 @@ if __name__=='__main__':
     hptcut        = args.hptcut
     metcut        = args.metcut
 
-    #zptcut Samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-04/',zptcut,hptcut,metcut)
+    #Samples
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-04/','upout',zptcut,hptcut,metcut)
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     sigfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-04/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
 

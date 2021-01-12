@@ -75,10 +75,11 @@ if __name__=='__main__':
         print("number of passing events ",len(fdf))
 
     #lets make some histograms.
-    rootfilename = go.makeOutFile(samp,'upout','.root',str(zptcut),str(hptcut),str(metcut))
-    npfilename   = go.makeOutFile(samp,'selected_errors','.npz',str(zptcut),str(hptcut),str(metcut))
-    rootOutFile  = up3.recreate(rootfilename,compression = None)
-    npOutFile    = open(npfilename,'wb')
+    rootfilename  = go.makeOutFile(samp,'upout','.root',str(zptcut),str(hptcut),str(metcut))
+    npfilename    = go.makeOutFile(samp,'totalevents','.npy',str(zptcut),str(hptcut),str(metcut))
+    pklfilename   = go.makeOutFile(samp,'selected_errors','.pkl',str(zptcut),str(hptcut),str(metcut))
+    rootOutFile   = up3.recreate(rootfilename,compression = None)
+    npOutFile     = open(npfilename,'wb')
 
     rootOutFile["h_z_pt"]    = np.histogram(fdf['ZCandidate_pt'],bins=80,range=(0,800),weights=fdf['event_weight'])
     #rootOutFile["h_z_phi"]   = np.histogram(fdf['ZCandidate_phi'],bins=100,range=(0,3.14159),weights=fdf['event_weight'])#needs to fit range
@@ -107,23 +108,40 @@ if __name__=='__main__':
     zpjigerrs = boostUnc(fdf['ZPrime_mass_est'],fdf['event_weight'],100,500,5000)
     ndjigerrs = boostUnc(fdf['ND_mass_est'],fdf['event_weight'],130,0,1300)
     nsjigerrs = boostUnc(fdf['NS_mass_est'],fdf['event_weight'],130,0,1300)
-    
-    np.savez(npOutFile,
-             h_z_pt = zpterrs,
-             h_z_eta = zetaerrs,
-             h_z_m = zmerrs,
-             h_h_pt = hpterrs,
-             h_h_eta = hetaerrs,
-             h_h_m = hmerrs,
-             h_h_sd = hsderrs,
-             h_met = meterrs,
-             h_zp_jigm = zpjigerrs,
-             h_nd_jigm = ndjigerrs,
-             h_ns_jigm = nsjigerrs)
-             
+
+    unc_arrays = [zpterrs,
+                  zetaerrs,
+                  zmerrs,
+                  hpterrs,
+                  hetaerrs,
+                  hmerrs,
+                  hsderrs,
+                  meterrs,
+                  zpjigerrs,
+                  ndjigerrs,
+                  nsjigerrs]
+
+    unc_names = ['h_z_pt',
+                 'h_z_eta',
+                 'h_z_m',
+                 'h_h_pt',
+                 'h_h_eta',
+                 'h_h_m',
+                 'h_h_sd',
+                 'h_met',
+                 'h_zp_jigm',
+                 'h_nd_jigm',
+                 'h_ns_jigm']
+
+    max_length = len(max(unc_arrays,key = lambda ar : len(ar)))
+    pad_arrays = [np.pad(arr,(0,max_length - len(arr)),'constant') for arr in unc_arrays]
+    all_unc    = np.column_stack(pad_arrays)
+    uncdf      = pd.DataFrame(all_unc,columns=unc_names)
+    uncdf.to_pickle("./"+pklfilename)
     
     #Book Keeping
     f = up3.open(inputfiles[0])
+    np.save(npOutFile,np.array([f['hnorigevnts'].values[0]]))
     rootOutFile["hnevents"]      = str(f['hnorigevnts'].values[0])
     rootOutFile["hnevents_pMET"] = str(len(metdf))
     rootOutFile["hnevents_pZ"]   = str(len(zptdf))

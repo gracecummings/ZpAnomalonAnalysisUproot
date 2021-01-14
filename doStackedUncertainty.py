@@ -49,6 +49,25 @@ if __name__=='__main__':
     uncsqdAlldf    = uncsqdDYJetsdf+uncsqdTTdf+uncsqdWZdf+uncsqdZZdf
     uncAlldf       = uncsqdAlldf**(1/2)
 
-    totalUncFile = go.makeOutFile('Fall17.AllZpAnomalonBkgs','unc','.pkl',str(zptcut),str(hptcut),str(metcut))
-    uncAlldf.to_pickle(totalUncFile)
+    #will only work once move stacker to python3
+    #totalUncFile = go.makeOutFile('Fall17.AllZpAnomalonBkgs','unc','.pkl',str(zptcut),str(hptcut),str(metcut))
+    #uncAlldf.to_pickle(totalUncFile)
 
+    #saving as a numpy zip file hard coded right now because no mistake goes unpunished.
+    #stacker just needs to be moved to python three to fix this mess
+    #THIS IS A HACK AND I HATE IT
+    fileName = go.makeOutFile('Fall17.AllZpAnomalonBkgs','unc','.zpz',str(zptcut),str(hptcut),str(metcut))
+    npF = open(fileName,'wb')
+    np.savez(npF,
+             h_z_pt  = uncAlldf['h_z_pt'].values,
+             h_z_eta = uncAlldf['h_z_eta'].values,
+             h_z_m   = uncAlldf['h_z_m'].values,
+             h_h_pt  = uncAlldf['h_h_pt'].values,
+             h_h_eta = uncAlldf['h_h_eta'].values,
+             h_h_m   = uncAlldf['h_h_m'].values,
+             h_h_sd  = uncAlldf['h_h_sd'].values,
+             h_met   = uncAlldf['h_met'].values,
+             h_zp_jigm = uncAlldf['h_zp_jigm'].values,
+             h_nd_jigm = uncAlldf['h_nd_jigm'].values,
+             h_ns_jigm = uncAlldf['h_ns_jigm'].values
+             )

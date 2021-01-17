@@ -71,3 +71,39 @@ if __name__=='__main__':
              h_nd_jigm = uncAlldf['h_nd_jigm'].values,
              h_ns_jigm = uncAlldf['h_ns_jigm'].values
              )
+
+
+    #Now, do the same for data. This can clearly be combined into a function of somekind,
+    #but we need results now!
+
+    #datcountfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*totalevents_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npy')
+    daterrfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*selected_errors_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.pkl')
+    datadfs = []
+    for d  in daterrfs:
+        babyname = d.split('.SingleMuon')[0]
+        name     = babyname.split('/')[-1]
+        df = pd.read_pickle(d)
+        sqrddf = df**2
+        #datadfs[name] = sqrddf
+        datadfs.append(sqrddf)
+
+    datuncsum = sum(datadfs)
+    datuncall = datuncsum**(1/2)
+
+    datFileName = go.makeOutFile('Fall17.AllZpAnomalonData','unc','.zpz',str(zptcut),str(hptcut),str(metcut))
+
+    npdatF = open(datFileName,'wb')
+    np.savez(npdatF,
+             h_z_pt  = datuncall['h_z_pt'].values,
+             h_z_eta = datuncall['h_z_eta'].values,
+             h_z_m   = datuncall['h_z_m'].values,
+             h_h_pt  = datuncall['h_h_pt'].values,
+             h_h_eta = datuncall['h_h_eta'].values,
+             h_h_m   = datuncall['h_h_m'].values,
+             h_h_sd  = datuncall['h_h_sd'].values,
+             h_met   = datuncall['h_met'].values,
+             h_zp_jigm = datuncall['h_zp_jigm'].values,
+             h_nd_jigm = datuncall['h_nd_jigm'].values,
+             h_ns_jigm = datuncall['h_ns_jigm'].values
+             )
+

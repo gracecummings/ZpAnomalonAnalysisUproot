@@ -28,10 +28,12 @@ if __name__=='__main__':
     metcut        = args.metcut
 
     #samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-05/','upout',zptcut,hptcut,metcut)
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-12/','upout',zptcut,hptcut,metcut)#recalculated ones with errrors
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-05/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
-    datfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-05/Run2017*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-05/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
+    datfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-05/Run2017*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
+    bkguncs  = np.load('analysis_output_ZpAnomalon/2021-01-18/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
+    datuncs  = np.load('analysis_output_ZpAnomalon/2021-01-18/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
     
 
     #Prep signals
@@ -69,6 +71,8 @@ if __name__=='__main__':
     for i,key in enumerate(keys):
         hname = key.GetName()
         if 'hnevents' in hname:
+            break
+        if 'h_weights' in hname:
             break
         
         leg = ROOT.TLegend(0.45,0.55,0.90,0.88)
@@ -150,17 +154,22 @@ if __name__=='__main__':
             bincen = hsumb.GetBinCenter(ibin)
             bkgmc  = hsumb.GetBinContent(ibin)
             data   = hsdat.GetBinContent(ibin)
-            datunc = hsdat.GetBinError(ibin)
+            datunc = datuncs[hname][ibin-1]
             binlist[ibin] = bincen
-            if bkgmc != 0:
-                ratiolist[ibin] = data/bkgmc
-                #pulllist[ibin]  = (data-bkgmc)/datunc
-                rerrlist[ibin] = datunc/bkgmc
-            if bkgmc == 0:
+            if ibin != 0:
+                if bkgmc != 0 and data != 0:
+                    ratiolist[ibin] = data/bkgmc
+                    #pulllist[ibin]  = (data-bkgmc)/datunc
+                    #rerrlist[ibin] = datunc/bkgmc
+                    rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
+                if bkgmc == 0:
+                    ratiolist[ibin] = -1
+                    rerrlist[ibin] = 0
+            else:
                 ratiolist[ibin] = -1
                 rerrlist[ibin] = 0
         
-        #remove underflow bin
+        #remove underflow bin#hopefuly can get rid of this
         ratiolist = np.delete(ratiolist,0)
         binlist   = np.delete(binlist,0)
         rerrlist  = np.delete(rerrlist,0)

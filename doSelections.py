@@ -35,7 +35,8 @@ if __name__=='__main__':
     btaggr = args.btagger
     btagwp = args.btagWP
 
-    inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'*_topiary*.root')
+    inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2021-01-05/'+samp+'*_topiary*.root')
+    print(inputfiles)
     stype = go.sampleType(samp)
     
     branches = [b'ZCandidate_*',
@@ -94,7 +95,7 @@ if __name__=='__main__':
     #rootOutFile["h_met_phi"] = np.histogram(fdf['METPhiclean'],bins=100,range=(0,3.14159))#needs to fit range
     rootOutFile["h_zp_jigm"] = np.histogram(fdf['ZPrime_mass_est'],bins=100,range=(500,5000),weights=fdf['event_weight'])
     rootOutFile["h_nd_jigm"] = np.histogram(fdf['ND_mass_est'],bins=130,range=(0,1300),weights=fdf['event_weight'])
-    rootOutFile["h_ns_jigm"] = np.histogram(fdf['NS_mass_est'],bins=200,range=(0,1300),weights=fdf['event_weight'])
+    rootOutFile["h_ns_jigm"] = np.histogram(fdf['NS_mass_est'],bins=130,range=(0,1300),weights=fdf['event_weight'])
     rootOutFile["h_weights"] = np.histogram(fdf['event_weight'],bins=40,range=(-1,7))
 
     zpterrs   = boostUnc(fdf['ZCandidate_pt'],fdf['event_weight'],80,0,800)

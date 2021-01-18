@@ -56,7 +56,7 @@ if __name__=='__main__':
     #saving as a numpy zip file hard coded right now because no mistake goes unpunished.
     #stacker just needs to be moved to python three to fix this mess
     #THIS IS A HACK AND I HATE IT
-    fileName = go.makeOutFile('Fall17.AllZpAnomalonBkgs','unc','.zpz',str(zptcut),str(hptcut),str(metcut))
+    fileName = go.makeOutFile('Fall17.AllZpAnomalonBkgs','unc','.npz',str(zptcut),str(hptcut),str(metcut))
     npF = open(fileName,'wb')
     np.savez(npF,
              h_z_pt  = uncAlldf['h_z_pt'].values,
@@ -90,7 +90,7 @@ if __name__=='__main__':
     datuncsum = sum(datadfs)
     datuncall = datuncsum**(1/2)
 
-    datFileName = go.makeOutFile('Fall17.AllZpAnomalonData','unc','.zpz',str(zptcut),str(hptcut),str(metcut))
+    datFileName = go.makeOutFile('Fall17.AllZpAnomalonData','unc','.npz',str(zptcut),str(hptcut),str(metcut))
 
     npdatF = open(datFileName,'wb')
     np.savez(npdatF,

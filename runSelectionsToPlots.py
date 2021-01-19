@@ -5,13 +5,15 @@ if __name__=='__main__':
 
     #cut list, Zpt, Hpt, met
     cutlist = [['200.0','250.0','0.0'],
-               #[200.0,250.0,300.0],
-               #[200.0,0.0,300.0],
-               #[200,300.0,300.0],
-               #[0.0,300.0,300.0]
+               ['200.0','250.0','300.0'],
+               ['200.0','0.0','300.0'],
+               ['200.0','300.0','300.0'],
+               ['0.0','300.0','300.0']
                ]
 
     lumi = "41.53"
+
+    plots = ['h_h_pt','h_z_pt','h_met']
 
     #topiary sample list: dateforfolder, samplename
     samplelist = [['2020-12-29','Fall17.DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8'],
@@ -49,4 +51,7 @@ if __name__=='__main__':
 
         #stack all
         subprocess.run(["python","stackAll.py","-L",lumi,"-x","100.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])
-        
+
+        #Optimization Plots
+        for plot in plots:
+            subprocess.run(["python","stackForOptimization.py","-L",lumi,"-x","100.0","-p",plot,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])

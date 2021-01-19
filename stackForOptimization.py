@@ -19,6 +19,7 @@ if __name__=='__main__':
     parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
+    parser.add_argument("-date","--date",help="date folder with plots to stack")
     args = parser.parse_args()
 
     #Get command line parameters
@@ -30,9 +31,9 @@ if __name__=='__main__':
     metcut        = args.metcut
 
     #Samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-04/','upout',zptcut,hptcut,metcut)
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut)
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-04/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)

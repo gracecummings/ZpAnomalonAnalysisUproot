@@ -22,7 +22,7 @@ if __name__=='__main__':
     
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     bkgcounts = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'totalevents',zptcut,hptcut,metcut)
-    bkgerrfs  = go.gatherBkg('analysis_output_ZpAnomalon/2021-01-18','selected_errors',zptcut,hptcut,metcut)
+    bkgerrfs  = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'selected_errors',zptcut,hptcut,metcut)
 
     print("Calculating statistical uncertainties for stacked, weighted background and stacked data")
     
@@ -88,7 +88,7 @@ if __name__=='__main__':
     #but we need results now!
 
     #datcountfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*totalevents_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npy')
-    daterrfs = glob.glob('analysis_output_ZpAnomalon/2021-01-18/Run2017*selected_errors_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.pkl')
+    daterrfs = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*selected_errors_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.pkl')
     datadfs = []
     for d  in daterrfs:
         babyname = d.split('.SingleMuon')[0]

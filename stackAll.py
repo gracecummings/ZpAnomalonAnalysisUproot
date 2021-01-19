@@ -13,11 +13,12 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
 
     #Define parser imputs
-    parser.add_argument("-L","--lumi", type=float,default = 137, help = "integrated luminosity for scale in fb^-1")
+    parser.add_argument("-L","--lumi", type=float,default = 41.53, help = "integrated luminosity for scale in fb^-1")
     parser.add_argument("-x","--xsec", type=float,help = "desired siganl cross section in fb")
     parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
+    parser.add_argument("-date","--date", type=str,help = "date folder with output")
     args = parser.parse_args()
 
     #Get command line parameters
@@ -28,12 +29,12 @@ if __name__=='__main__':
     metcut        = args.metcut
 
     #samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/2021-01-12/','upout',zptcut,hptcut,metcut)#recalculated ones with errrors
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut)#recalculated ones with errrors
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-05/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
-    datfiles = glob.glob('analysis_output_ZpAnomalon/2021-01-05/Run2017*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
-    bkguncs  = np.load('analysis_output_ZpAnomalon/2021-01-18/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
-    datuncs  = np.load('analysis_output_ZpAnomalon/2021-01-18/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
+    datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
+    bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
+    datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
     
 
     #Prep signals
@@ -94,7 +95,7 @@ if __name__=='__main__':
             hdat.SetMaximum(max_plot)
             hdat.SetMinimum(min_plot)
             hsdat.Add(hdat)
-        hsdat.SetBinErrorOption(1)
+        #hsdat.SetBinErrorOption(1)
 
         
         #Make a multigraph

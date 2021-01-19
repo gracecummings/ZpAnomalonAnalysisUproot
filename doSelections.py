@@ -38,6 +38,7 @@ if __name__=='__main__':
 
     #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'*_topiary*.root')
     inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
+    print("Doing selections on:")
     print(inputfiles)
     stype = go.sampleType(samp)
     

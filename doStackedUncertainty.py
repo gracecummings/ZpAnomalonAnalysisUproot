@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import pandas as pd
 import gecorg_py3 as go
@@ -6,15 +7,25 @@ import glob
 
 
 if __name__=='__main__':
-    #will need to add the stuff for scale factor calc and so on, that will need to be propagated
-    zptcut = 200.0
-    hptcut = 250.0
-    metcut = 250.0
-    lumi   = 41.52
-    bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    bkgcounts = go.gatherBkg('analysis_output_ZpAnomalon/2021-01-12','totalevents',zptcut,hptcut,metcut)
-    bkgerrfs  = go.gatherBkg('analysis_output_ZpAnomalon/2021-01-12','selected_errors',zptcut,hptcut,metcut)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-L","--lumi", type=float,default = 41.53, help = "integrated luminosity for scale in fb^-1")
+    parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
+    parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
+    parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
+    parser.add_argument("-date","--date", type=str,help = "date folder with files to use")
+    args = parser.parse_args()
 
+    zptcut = args.zptcut
+    hptcut = args.hptcut
+    metcut = args.metcut
+    lumi   = args.lumi
+    
+    bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
+    bkgcounts = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'totalevents',zptcut,hptcut,metcut)
+    bkgerrfs  = go.gatherBkg('analysis_output_ZpAnomalon/2021-01-18','selected_errors',zptcut,hptcut,metcut)
+
+    print("Calculating statistical uncertainties for stacked, weighted background and stacked data")
+    
     #find luminosity scaling for each background
     config = configparser.RawConfigParser()
     config.optionxform = str
@@ -77,7 +88,7 @@ if __name__=='__main__':
     #but we need results now!
 
     #datcountfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*totalevents_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npy')
-    daterrfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*selected_errors_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.pkl')
+    daterrfs = glob.glob('analysis_output_ZpAnomalon/2021-01-18/Run2017*selected_errors_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.pkl')
     datadfs = []
     for d  in daterrfs:
         babyname = d.split('.SingleMuon')[0]

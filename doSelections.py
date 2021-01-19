@@ -25,6 +25,7 @@ if __name__=='__main__':
     parser.add_argument("-hpt","--hPtCut",type=float,default = 250.0,help = "pT cut on h")
     parser.add_argument("-met","--metPtCut",type=float,default = 50.0,help = "pT cut on met")
     parser.add_argument("-sdm","--sdmCut",type=float,default = 10.0,help = "lowest soft drop mass cut")
+    parser.add_argument("-date","--date",type=str,help = "where are your topiary plots?")
     args = parser.parse_args()
 
     samp   = args.sample
@@ -35,7 +36,8 @@ if __name__=='__main__':
     btaggr = args.btagger
     btagwp = args.btagWP
 
-    inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2021-01-05/'+samp+'*_topiary*.root')
+    #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'*_topiary*.root')
+    inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
     print(inputfiles)
     stype = go.sampleType(samp)
     

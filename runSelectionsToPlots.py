@@ -3,6 +3,11 @@ from datetime import date
 
 if __name__=='__main__':
 
+    #steps to run
+    #assumes you have run the whole thing at the start of the day
+    #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
+    steps = {"selections":False,"uncs":False,"ratios":False,"opts":True}
+    
     #cut list, Zpt, Hpt, met
     cutlist = [['200.0','250.0','0.0'],
                ['200.0','250.0','300.0'],
@@ -13,7 +18,7 @@ if __name__=='__main__':
 
     lumi = "41.53"
 
-    plots = ['h_h_pt','h_z_pt','h_met']
+    plots = ['h_h_pt','h_z_pt','h_met','h_nd_jigm','h_zp_jigm']
 
     #topiary sample list: dateforfolder, samplename
     samplelist = [['2020-12-29','Fall17.DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8'],
@@ -43,15 +48,19 @@ if __name__=='__main__':
     for cut in cutlist:
 
         #do selections
-        for samp in samplelist:
-            subprocess.run(["python3","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-date",samp[0]])
+        if steps["selections"]:
+            for samp in samplelist:
+                subprocess.run(["python3","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-date",samp[0]])
 
         #do uncertainites
-        subprocess.run(["python3","doStackedUncertainty.py","-L",lumi,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])
+        if steps["uncs"]:
+            subprocess.run(["python3","doStackedUncertainty.py","-L",lumi,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])
 
         #stack all
-        subprocess.run(["python","stackAll.py","-L",lumi,"-x","100.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])
+        if steps["ratios"]:
+            subprocess.run(["python","stackAll.py","-L",lumi,"-x","100.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])
 
         #Optimization Plots
-        for plot in plots:
-            subprocess.run(["python","stackForOptimization.py","-L",lumi,"-x","100.0","-p",plot,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])
+        if steps["opts"]:
+            for plot in plots:
+                subprocess.run(["python","stackForOptimization.py","-L",lumi,"-x","100.0","-p",plot,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-date",str(date.today())])

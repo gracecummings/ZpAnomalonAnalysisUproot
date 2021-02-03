@@ -20,6 +20,7 @@ if __name__=='__main__':
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
+    parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     args = parser.parse_args()
 
     #Get command line parameters
@@ -29,11 +30,12 @@ if __name__=='__main__':
     zptcut        = args.zptcut
     hptcut        = args.hptcut
     metcut        = args.metcut
-
+    btagwp        = args.btagwp
+    plotmax       = 1000.0
     #Samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut)
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp)
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
@@ -47,7 +49,7 @@ if __name__=='__main__':
     leg = ROOT.TLegend(0.45,0.55,0.90,0.88)
     hsbkg = ROOT.THStack('hsbkg','')
     #gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,10000000,0.1)
-    gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,1500,0.0)
+    gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,plotmax,0.0)
 
 
     #LUT with titles
@@ -100,7 +102,7 @@ if __name__=='__main__':
         hsig.SetLineColor(masspoint["color"])
         hsig.SetLineWidth(2)
         #hsig.SetMaximum(10000000)
-        hsig.SetMaximum(1500)
+        hsig.SetMaximum(plotmax)
         #hsig.SetMinimum(0.1)
         #hsig.SetMinimum(0.1)
         hsig.Draw("HISTSAME")
@@ -176,5 +178,5 @@ if __name__=='__main__':
     leg.Draw()
 
     #Save the plot
-    pngname = gecorg.makeOutFile(hname,'optimization','.png',str(zptcut),str(hptcut),str(metcut))
+    pngname = gecorg.makeOutFile(hname,'optimization','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(pngname)

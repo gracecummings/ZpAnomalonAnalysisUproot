@@ -18,6 +18,7 @@ if __name__=='__main__':
     parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
+    parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date", type=str,help = "date folder with output")
     args = parser.parse_args()
 
@@ -27,15 +28,15 @@ if __name__=='__main__':
     zptcut        = args.zptcut
     hptcut        = args.hptcut
     metcut        = args.metcut
+    btagwp        = args.btagwp
 
     #samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut)#recalculated ones with errrors
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp)#recalculated ones with errrors
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
-    datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
-    bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
-    datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
-    
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
+    datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
+    bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
+    datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
@@ -49,14 +50,14 @@ if __name__=='__main__':
     dat_info = [ROOT.TFile(dat) for dat in datfiles]
 
     #some beauty stuff
-    max_plot = 1000.
-    min_plot = 0.
+    max_plot = 100000.
+    min_plot = 0.1
     titles = {
         "h_z_pt":"Z p_{T}",
-        "h_z_eta":"Z \eta",
+        "h_z_eta":"\eta_{Z}",
         "h_z_m":"m_{Z}",
         "h_h_pt":"Higgs p_{T}",
-        "h_h_eta":"Higgs \eta",
+        "h_h_eta":"\eta_{Higss}",
         "h_h_m":"m_{h}",
         "h_h_sd":"Higgs Soft Drop Mass",
         "h_met":"p_{T}^{miss}",
@@ -64,6 +65,7 @@ if __name__=='__main__':
         "h_nd_jigm":"Jigsaw Mass Estimator ND",
         "h_ns_jigm":"Jigsaw Mass Estimator NS",
         "h_weights":"event weights",
+        "h_btag":"btag operating point"
     }
 
 
@@ -104,7 +106,7 @@ if __name__=='__main__':
         #Prep the pads
         tc = ROOT.TCanvas("tc",hname,600,800)
         p1 = ROOT.TPad("p1","stack_"+hname,0,0.4,1.0,1.0)
-        #p1.SetLogy()
+        p1.SetLogy()
         #p1.SetBottomMargin(0)
         p1.SetLeftMargin(0.15)
         p1.SetRightMargin(0.05)
@@ -113,6 +115,9 @@ if __name__=='__main__':
         p2.SetRightMargin(.05)
         p2.SetLeftMargin(0.15)
         p2.SetBottomMargin(0.2)
+
+        #make some lines
+        l0 = ROOT.TLine(70.0,min_plot,70,max_plot)
         
         #Prepare first pad for stack
         p1.Draw()
@@ -125,6 +130,9 @@ if __name__=='__main__':
         hsbkg.GetYaxis().SetTitle("Events")
         hsbkg.GetYaxis().SetTitleSize(0.05)
         hsdat.Draw("HISTSAMEPE")
+
+        #if 'h_h_sd' in hname:
+        #    l0.Draw()
         tc.Modified()
         
         #Add the signal plots
@@ -158,6 +166,7 @@ if __name__=='__main__':
             datunc = datuncs[hname][ibin-1]
             binlist[ibin] = bincen
             if ibin != 0:
+                hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
                 if bkgmc != 0 and data != 0:
                     ratiolist[ibin] = data/bkgmc
                     #pulllist[ibin]  = (data-bkgmc)/datunc
@@ -180,6 +189,8 @@ if __name__=='__main__':
         tg.SetTitle("")
         tg.SetMarkerStyle(8)
         mg.Add(tg)
+
+
 
         #Make the second pad with the ratio plot
         tc.cd()
@@ -210,11 +221,11 @@ if __name__=='__main__':
         mg.GetYaxis().SetTitleSize(0.07)
         mg.GetYaxis().SetTitleOffset(.7)
         mg.GetYaxis().SetLabelSize(0.05)
-        mg.SetMinimum(0.0)
+        mg.SetMinimum(0.5)
         #mg.SetMaximum(ratio_max)
         mg.SetMaximum(1.5)
-        l.Draw()
         mg.Draw("AP")
+        l.Draw()
         
         #Go back to previous pad so next kinematic plots draw
         tc.cd()
@@ -230,5 +241,5 @@ if __name__=='__main__':
         leg.Draw()
 
         #Save the plot
-        pngname = gecorg.makeOutFile(hname,'ratio','.png',str(zptcut),str(hptcut),str(metcut))
+        pngname = gecorg.makeOutFile(hname,'ratio','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
         tc.SaveAs(pngname)

@@ -68,27 +68,38 @@ if __name__=='__main__':
         metdf  = sddf[sddf['METclean'] > metcut]
         zptdf  = metdf[metdf['ZCandidate_pt'] > zptcut]
         hptdf  = zptdf[zptdf['hCandidate_pt'] > hptcut]
-        lowsb  = hptdf[hptdf['hCandidate_sd'] <= 70.]
-        highsb = hptdf[hptdf['hCandidate_sd'] >= 150.]
+        btdf   = hptdf[hptdf['hCandidate_'+btaggr] > float(btagwp)]
+        srup   = btdf[btdf['hCandidate_sd'] > 70.]
+        srdf   = srup[srup['hCandidate_sd'] < 150.]
+        lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
+        highsb = btdf[btdf['hCandidate_sd'] >= 150.]
         sbdf   = pd.concat([lowsb,highsb])
+
+        #btagging
+        btdf = srdf[srdf['hCandidate_'+btaggr] > float(btagwp)]
 
         #print(hptdf)
         #fdf is always the last dataframe
         #fdf = sbdf
-        fdf = sbdf
+        if stype != 0:
+            fdf = sbdf
+        else:
+            fdf = sbdf
+
         print("number of passing events ",len(fdf))
+        #print("number of btag passing events ",len(btdf))
 
     #lets make some histograms.
-    rootfilename  = go.makeOutFile(samp,'upout','.root',str(zptcut),str(hptcut),str(metcut))
-    npfilename    = go.makeOutFile(samp,'totalevents','.npy',str(zptcut),str(hptcut),str(metcut))
-    pklfilename   = go.makeOutFile(samp,'selected_errors','.pkl',str(zptcut),str(hptcut),str(metcut))
+    rootfilename  = go.makeOutFile(samp,'upout_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
+    npfilename    = go.makeOutFile(samp,'totalevents_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    pklfilename   = go.makeOutFile(samp,'selected_errors_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     rootOutFile   = up3.recreate(rootfilename,compression = None)
     npOutFile     = open(npfilename,'wb')
 
     rootOutFile["h_z_pt"]    = np.histogram(fdf['ZCandidate_pt'],bins=80,range=(0,800),weights=fdf['event_weight'])
     #rootOutFile["h_z_phi"]   = np.histogram(fdf['ZCandidate_phi'],bins=100,range=(0,3.14159),weights=fdf['event_weight'])#needs to fit range
     rootOutFile["h_z_eta"]   = np.histogram(fdf['ZCandidate_eta'],bins=100,range=(-5,5),weights=fdf['event_weight'])
-    rootOutFile["h_z_m"]     = np.histogram(fdf['ZCandidate_m'],bins=40,range=(70,110),weights=fdf['event_weight'])
+    rootOutFile["h_z_m"]     = np.histogram(fdf['ZCandidate_m'],bins=100,range=(40,140),weights=fdf['event_weight'])
     rootOutFile["h_h_pt"]    = np.histogram(fdf['hCandidate_pt'],bins=40,range=(200,1200),weights=fdf['event_weight'])
     #rootOutFile["h_h_phi"]   = np.histogram(fdf['hCandidate_phi'],bins=100,range=(0,3.14159))#needs to fit range
     rootOutFile["h_h_eta"]   = np.histogram(fdf['hCandidate_eta'],bins=100,range=(-5,5),weights=fdf['event_weight'])
@@ -97,21 +108,23 @@ if __name__=='__main__':
     rootOutFile["h_met"]     = np.histogram(fdf['METclean'],bins=78,range=(50,2000),weights=fdf['event_weight'])
     #rootOutFile["h_met_phi"] = np.histogram(fdf['METPhiclean'],bins=100,range=(0,3.14159))#needs to fit range
     rootOutFile["h_zp_jigm"] = np.histogram(fdf['ZPrime_mass_est'],bins=100,range=(500,5000),weights=fdf['event_weight'])
-    rootOutFile["h_nd_jigm"] = np.histogram(fdf['ND_mass_est'],bins=130,range=(0,1300),weights=fdf['event_weight'])
-    rootOutFile["h_ns_jigm"] = np.histogram(fdf['NS_mass_est'],bins=130,range=(0,1300),weights=fdf['event_weight'])
+    rootOutFile["h_nd_jigm"] = np.histogram(fdf['ND_mass_est'],bins=70,range=(100,800),weights=fdf['event_weight'])
+    rootOutFile["h_ns_jigm"] = np.histogram(fdf['NS_mass_est'],bins=50,range=(0,500),weights=fdf['event_weight'])
+    rootOutFile["h_btag"]    = np.histogram(fdf['hCandidate_'+btaggr],bins=110,range=(0,1.1),weights=fdf['event_weight'])
     rootOutFile["h_weights"] = np.histogram(fdf['event_weight'],bins=40,range=(-1,7))
 
     zpterrs   = boostUnc(fdf['ZCandidate_pt'],fdf['event_weight'],80,0,800)
     zetaerrs  = boostUnc(fdf['ZCandidate_eta'],fdf['event_weight'],100,-5,5)
-    zmerrs    = boostUnc(fdf['ZCandidate_m'],fdf['event_weight'],40,70,110)
+    zmerrs    = boostUnc(fdf['ZCandidate_m'],fdf['event_weight'],100,40,140)
     hpterrs   = boostUnc(fdf['hCandidate_pt'],fdf['event_weight'],40,200,1200)
     hetaerrs  = boostUnc(fdf['hCandidate_eta'],fdf['event_weight'],100,-5,5)
     hmerrs    = boostUnc(fdf['hCandidate_m'],fdf['event_weight'],80,0,400)
     hsderrs   = boostUnc(fdf['hCandidate_sd'],fdf['event_weight'],80,0,400)
     meterrs   = boostUnc(fdf['METclean'],fdf['event_weight'],28,50,2000)
     zpjigerrs = boostUnc(fdf['ZPrime_mass_est'],fdf['event_weight'],100,500,5000)
-    ndjigerrs = boostUnc(fdf['ND_mass_est'],fdf['event_weight'],130,0,1300)
-    nsjigerrs = boostUnc(fdf['NS_mass_est'],fdf['event_weight'],130,0,1300)
+    ndjigerrs = boostUnc(fdf['ND_mass_est'],fdf['event_weight'],70,100,800)
+    nsjigerrs = boostUnc(fdf['NS_mass_est'],fdf['event_weight'],50,0,500)
+    btagerrs  = boostUnc(fdf['hCandidate_'+btaggr],fdf['event_weight'],110,0,1.1)
 
     unc_arrays = [zpterrs,
                   zetaerrs,
@@ -123,7 +136,9 @@ if __name__=='__main__':
                   meterrs,
                   zpjigerrs,
                   ndjigerrs,
-                  nsjigerrs]
+                  nsjigerrs,
+                  btagerrs
+    ]
 
     unc_names = ['h_z_pt',
                  'h_z_eta',
@@ -135,7 +150,9 @@ if __name__=='__main__':
                  'h_met',
                  'h_zp_jigm',
                  'h_nd_jigm',
-                 'h_ns_jigm']
+                 'h_ns_jigm',
+                 'h_btag'
+    ]
 
     max_length = len(max(unc_arrays,key = lambda ar : len(ar)))
     pad_arrays = [np.pad(arr,(0,max_length - len(arr)),'constant') for arr in unc_arrays]
@@ -151,3 +168,4 @@ if __name__=='__main__':
     rootOutFile["hnevents_pZ"]   = str(len(zptdf))
     rootOutFile["hnevents_ph"]   = str(len(hptdf))
     rootOutFile["hnevents_sb"]   = str(len(sbdf))
+    rootOutFile["hnevents_btag"] = str(len(btdf))

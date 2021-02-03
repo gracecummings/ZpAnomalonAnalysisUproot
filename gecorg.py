@@ -24,10 +24,10 @@ def sampleType(sampstring):
         samptype = -1
     return samptype
 
-def makeOutFile(sampstring,descrip,ftype,zptcut,hptcut,metcut):
+def makeOutFile(sampstring,descrip,ftype,zptcut,hptcut,metcut,btagwp):
     if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):
         os.makedirs("analysis_output_ZpAnomalon/"+str(date.today())+"/")
-    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+descrip+"_Zptcut"+zptcut+"_Hptcut"+hptcut+"_metcut"+metcut+ftype
+    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+descrip+"_Zptcut"+zptcut+"_Hptcut"+hptcut+"_metcut"+metcut+"_btagwp"+btagwp+ftype
     return outFile
 
 def orderFall17DY(histFile):
@@ -68,11 +68,11 @@ def colsFromPalette(samplist,palname):
         collist.append(cols.At(0+i*colsnum/len(samplist)))
     return collist
 
-def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut):
-    DYJetsToLL = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'*')
-    TT         = glob.glob(str(bkg_dir)+'/Fall17.TTT*_'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'*')                                         
-    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.WZTo2L2Q*'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'*')                                    
-    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.ZZTo2L2Q*'+descrip+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'*')                                    
+def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp):
+    DYJetsToLL = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    TT         = glob.glob(str(bkg_dir)+'/Fall17.TTT*_'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                         
+    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.WZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
+    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.ZZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
     bkgfiles   = [DYJetsToLL,TT,WZTo2L2Q,ZZTo2L2Q]
     return bkgfiles
 

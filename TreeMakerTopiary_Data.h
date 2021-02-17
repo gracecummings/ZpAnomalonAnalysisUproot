@@ -12,6 +12,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TLorentzVector.h>
+#include <iostream>
 
 // Header file for the classes stored in the TTree if any.
 #include "vector"
@@ -467,12 +468,139 @@ public :
    TBranch        *b_TriggerVersion;   //!
    TBranch        *b_ZCandidates;   //!
 
-   TreeMakerTopiary_Data(TTree *tree=0);
+   //MC Only Variables
+   vector<TLorentzVector> *GenElectrons;
+   Double_t        GenHT;
+   vector<TLorentzVector> *GenJets;
+   vector<TLorentzVector> *GenJetsAK8;
+   vector<int>     *GenJetsAK8_multiplicity;
+   vector<double>  *GenJetsAK8_softDropMass;
+   Double_t        GenMET;
+   Double_t        GenMETPhi;
+   vector<TLorentzVector> *GenMuons;
+   vector<TLorentzVector> *GenParticles;
+   vector<int>     *GenParticles_ParentId;
+   vector<int>     *GenParticles_ParentIdx;
+   vector<int>     *GenParticles_PdgId;
+   vector<int>     *GenParticles_Status;
+   vector<TLorentzVector> *GenTaus;
+   vector<bool>    *GenTaus_had;
+   Double_t        HT5JECdown;
+   Double_t        HT5JECup;
+   Double_t        HT5JERdown;
+   Double_t        HT5JERup;
+   Double_t        HTJECdown;
+   Double_t        HTJECup;
+   Double_t        HTJERdown;
+   Double_t        HTJERup;
+   Bool_t          JetIDAK8JECdown;
+   Bool_t          JetIDAK8JECup;
+   Bool_t          JetIDAK8JERdown;
+   Bool_t          JetIDAK8JERup;
+   Bool_t          JetIDJECdown;
+   Bool_t          JetIDJECup;
+   Bool_t          JetIDJERdown;
+   Bool_t          JetIDJERup;
+   vector<double>  *Jets_jerFactor;
+   vector<double>  *Jets_jerFactorDown;
+   vector<double>  *Jets_jerFactorUp;
+   vector<int>     *Jets_origIndex;
+   vector<double>  *JetsAK8_jerFactor;
+   vector<double>  *JetsAK8_jerFactorDown;
+   vector<double>  *JetsAK8_jerFactorUp;
+   vector<int>     *JetsAK8Clean_origIndex;
+   vector<double>  *JetsAK8JECup_jerFactor;
+   vector<int>     *JetsAK8JECup_origIndex;
+   vector<int>     *JetsAK8JERdown_origIndex;
+   vector<int>     *JetsAK8JERup_origIndex;
+   vector<double>  *JetsJECdown_jerFactor;
+   vector<int>     *JetsJECdown_origIndex;
+   vector<double>  *JetsJECup_jerFactor;
+   vector<int>     *JetsJECup_origIndex;
+   vector<int>     *JetsJERdown_origIndex;
+   vector<int>     *JetsJERup_origIndex;
+   vector<double>  *METDown;
+   vector<double>  *METOrigDown;
+   vector<double>  *METOrigUp;
+   vector<double>  *METPhiDown;
+   vector<double>  *METPhiOrigDown;
+   vector<double>  *METPhiOrigUp;
+   vector<double>  *METPhiUp;
+   vector<double>  *METUp;
+   vector<float>   *PDFweights;
+   vector<float>   *PSweights;
+   vector<float>   *ScaleWeights;
+
+   //Definte the Branches
+   TBranch        *b_GenElectrons;   //!
+   TBranch        *b_GenHT;   //!
+   TBranch        *b_GenJets;   //!
+   TBranch        *b_GenJetsAK8;   //!
+   TBranch        *b_GenJetsAK8_multiplicity;   //!
+   TBranch        *b_GenJetsAK8_softDropMass;   
+   TBranch        *b_GenMET;  
+   TBranch        *b_GenMETPhi;   
+   TBranch        *b_GenMuons;   //!
+   TBranch        *b_GenParticles;   //!
+   TBranch        *b_GenParticles_ParentId;   //!
+   TBranch        *b_GenParticles_ParentIdx;   //!
+   TBranch        *b_GenParticles_PdgId;   //!
+   TBranch        *b_GenParticles_Status;   //!
+   TBranch        *b_GenTaus;   //!
+   TBranch        *b_GenTaus_had;   //!
+   TBranch        *b_HT5JECdown;   //!
+   TBranch        *b_HT5JECup;   //!
+   TBranch        *b_HT5JERdown;   //!
+   TBranch        *b_HT5JERup;   //!
+   TBranch        *b_HTJECdown;   //!
+   TBranch        *b_HTJECup;   //!
+   TBranch        *b_HTJERdown;   //!
+   TBranch        *b_HTJERup;   //!
+   TBranch        *b_JetIDAK8JECdown;   //!
+   TBranch        *b_JetIDAK8JECup;   //!
+   TBranch        *b_JetIDAK8JERdown;   //!
+   TBranch        *b_JetIDAK8JERup;   //!
+   TBranch        *b_JetIDJECdown;   //!
+   TBranch        *b_JetIDJECup;   //!
+   TBranch        *b_JetIDJERdown;   //!
+   TBranch        *b_JetIDJERup;   //!
+   TBranch        *b_Jets_jerFactor;   //!
+   TBranch        *b_Jets_jerFactorDown;   //!
+   TBranch        *b_Jets_jerFactorUp;   //!
+   TBranch        *b_Jets_origIndex;
+   TBranch        *b_JetsAK8_jerFactor;
+   TBranch        *b_JetsAK8_jerFactorDown;
+   TBranch        *b_JetsAK8_jerFactorUp;
+   TBranch        *b_JetsAK8Clean_origIndex;
+   TBranch        *b_JetsAK8JECup_jerFactor;
+   TBranch        *b_JetsAK8JECup_origIndex;
+   TBranch        *b_JetsAK8JERdown_origIndex;
+   TBranch        *b_JetsAK8JERup_origIndex;
+   TBranch        *b_JetsJECdown_jerFactor;
+   TBranch        *b_JetsJECdown_origIndex;
+   TBranch        *b_JetsJECup_jerFactor;
+   TBranch        *b_JetsJECup_origIndex;
+   TBranch        *b_JetsJERdown_origIndex;
+   TBranch        *b_JetsJERup_origIndex;
+   TBranch        *b_METDown;
+   TBranch        *b_METOrigDown;
+   TBranch        *b_METOrigUp;
+   TBranch        *b_METPhiDown;
+   TBranch        *b_METPhiOrigDown;
+   TBranch        *b_METPhiOrigUp;
+   TBranch        *b_METPhiUp;
+   TBranch        *b_METUp;
+   TBranch        *b_PDFweights;
+   TBranch        *b_PSweights;
+   TBranch        *b_ScaleWeights;
+
+
+   TreeMakerTopiary_Data(TTree *tree=0,int sampt=0);
    virtual ~TreeMakerTopiary_Data();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
-   virtual void     Init(TTree *tree);
+   virtual void     Init(TTree *tree, int sampt);
    virtual void     Loop(std::string entry,float entry1,int entry2);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
@@ -481,7 +609,7 @@ public :
 #endif
 
 #ifdef TreeMakerTopiary_Data_cxx
-TreeMakerTopiary_Data::TreeMakerTopiary_Data(TTree *tree) : fChain(0) 
+TreeMakerTopiary_Data::TreeMakerTopiary_Data(TTree *tree,int sampt) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -493,7 +621,7 @@ TreeMakerTopiary_Data::TreeMakerTopiary_Data(TTree *tree) : fChain(0)
       f->GetObject("PreSelection",tree);
 
    }
-   Init(tree);
+   Init(tree,sampt);
 }
 
 TreeMakerTopiary_Data::~TreeMakerTopiary_Data()
@@ -521,8 +649,9 @@ Long64_t TreeMakerTopiary_Data::LoadTree(Long64_t entry)
    return centry;
 }
 
-void TreeMakerTopiary_Data::Init(TTree *tree)
+void TreeMakerTopiary_Data::Init(TTree *tree, int sampt)
 {
+   //std::cout<<"The sample type is "<<sampt<<std::endl;//this works
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
    // pointers of the tree will be set.
@@ -722,12 +851,10 @@ void TreeMakerTopiary_Data::Init(TTree *tree)
    fChain->SetBranchAddress("hasGenPromptPhoton", &hasGenPromptPhoton, &b_hasGenPromptPhoton);
    fChain->SetBranchAddress("HBHEIsoNoiseFilter", &HBHEIsoNoiseFilter, &b_HBHEIsoNoiseFilter);
    fChain->SetBranchAddress("HBHENoiseFilter", &HBHENoiseFilter, &b_HBHENoiseFilter);
-   fChain->SetBranchAddress("HLTMuonObjects", &HLTMuonObjects, &b_HLTMuonObjects);
    fChain->SetBranchAddress("HT", &HT, &b_HT);
    fChain->SetBranchAddress("HT5", &HT5, &b_HT5);
    fChain->SetBranchAddress("HT5clean", &HT5clean, &b_HT5clean);
    fChain->SetBranchAddress("HTclean", &HTclean, &b_HTclean);
-   fChain->SetBranchAddress("HTOnline", &HTOnline, &b_HTOnline);
    fChain->SetBranchAddress("isoElectronTracks", &isoElectronTracks, &b_isoElectronTracks);
    fChain->SetBranchAddress("isoElectronTracksclean", &isoElectronTracksclean, &b_isoElectronTracksclean);
    fChain->SetBranchAddress("isoMuonTracks", &isoMuonTracks, &b_isoMuonTracks);
@@ -843,7 +970,6 @@ void TreeMakerTopiary_Data::Init(TTree *tree)
    fChain->SetBranchAddress("METSignificanceclean", &METSignificanceclean, &b_METSignificanceclean);
    fChain->SetBranchAddress("MHT", &MHT, &b_MHT);
    fChain->SetBranchAddress("MHTclean", &MHTclean, &b_MHTclean);
-   fChain->SetBranchAddress("MHTOnline", &MHTOnline, &b_MHTOnline);
    fChain->SetBranchAddress("MHTPhi", &MHTPhi, &b_MHTPhi);
    fChain->SetBranchAddress("MHTPhiclean", &MHTPhiclean, &b_MHTPhiclean);
    fChain->SetBranchAddress("Muons", &Muons, &b_Muons);
@@ -878,7 +1004,6 @@ void TreeMakerTopiary_Data::Init(TTree *tree)
    fChain->SetBranchAddress("Photons_pfNeutralIso", &Photons_pfNeutralIso, &b_Photons_pfNeutralIso);
    fChain->SetBranchAddress("Photons_pfNeutralIsoRhoCorr", &Photons_pfNeutralIsoRhoCorr, &b_Photons_pfNeutralIsoRhoCorr);
    fChain->SetBranchAddress("Photons_sigmaIetaIeta", &Photons_sigmaIetaIeta, &b_Photons_sigmaIetaIeta);
-   fChain->SetBranchAddress("PrescaleWeightHT", &PrescaleWeightHT, &b_PrescaleWeightHT);
    fChain->SetBranchAddress("PrimaryVertexFilter", &PrimaryVertexFilter, &b_PrimaryVertexFilter);
    fChain->SetBranchAddress("SelectedElectrons", &SelectedElectrons, &b_SelectedElectrons);
    fChain->SetBranchAddress("SelectedMuons", &SelectedMuons, &b_SelectedMuons);
@@ -904,6 +1029,146 @@ void TreeMakerTopiary_Data::Init(TTree *tree)
    fChain->SetBranchAddress("TriggerPrescales", &TriggerPrescales, &b_TriggerPrescales);
    fChain->SetBranchAddress("TriggerVersion", &TriggerVersion, &b_TriggerVersion);
    fChain->SetBranchAddress("ZCandidates", &ZCandidates, &b_ZCandidates);
+
+   if (sampt == 0) {
+     fChain->SetBranchAddress("HLTMuonObjects", &HLTMuonObjects, &b_HLTMuonObjects);
+     fChain->SetBranchAddress("HTOnline", &HTOnline, &b_HTOnline);
+     fChain->SetBranchAddress("MHTOnline", &MHTOnline, &b_MHTOnline);
+     fChain->SetBranchAddress("PrescaleWeightHT", &PrescaleWeightHT, &b_PrescaleWeightHT);
+   }
+
+   if (sampt != 0) {
+     
+     //Initialize the MC only branches
+     GenElectrons = 0;
+     GenHT = 0;
+     GenJets = 0;
+     GenJetsAK8 = 0;
+     GenJetsAK8_multiplicity = 0;
+     GenJetsAK8_softDropMass = 0;
+     GenMET = 0;
+     GenMETPhi = 0;
+     GenMuons = 0;
+     GenParticles = 0;
+     GenParticles_ParentId = 0;
+     GenParticles_ParentIdx = 0;
+     GenParticles_PdgId = 0;
+     GenParticles_Status = 0;
+     GenTaus = 0;
+     GenTaus_had = 0;
+     HT5JECdown = 0;
+     HT5JECup = 0;
+     HT5JERdown = 0;
+     HT5JERup = 0;
+     HTJECdown = 0;
+     HTJECup = 0;
+     HTJERdown = 0;
+     HTJERup = 0;
+     JetIDAK8JECdown = 0;
+     JetIDAK8JECup = 0;
+     JetIDAK8JERdown = 0;
+     JetIDAK8JERup = 0;
+     JetIDJECdown = 0;
+     JetIDJECup = 0;
+     JetIDJERdown = 0;
+     JetIDJERup = 0;
+     Jets_jerFactor = 0;
+     Jets_jerFactorDown = 0;
+     Jets_jerFactorUp = 0;
+     Jets_origIndex = 0;
+     JetsAK8_jerFactor = 0;
+     JetsAK8_jerFactorDown = 0;
+     JetsAK8_jerFactorUp = 0;
+     JetsAK8Clean_origIndex = 0;
+     JetsAK8JECup_jerFactor = 0;
+     JetsAK8JECup_origIndex = 0;
+     JetsAK8JERdown_origIndex = 0;
+     JetsAK8JERup_origIndex = 0;
+     JetsJECdown_jerFactor = 0;
+     JetsJECdown_origIndex = 0;
+     JetsJECup_jerFactor = 0;
+     JetsJECup_origIndex = 0;
+     JetsJERdown_origIndex = 0;
+     JetsJERup_origIndex = 0;
+     METDown = 0;
+     METOrigDown = 0;
+     METOrigUp = 0;
+     METPhiDown = 0;
+     METPhiOrigDown = 0;
+     METPhiOrigUp = 0;
+     METPhiUp = 0;
+     METUp = 0;
+     PDFweights = 0;
+     PSweights = 0;
+     ScaleWeights = 0;
+
+     //Branches
+     //Too many branches confuse root, so only maintaining ones we will
+     // a) need
+     // b) are big enough to need to turn off
+     fChain->SetBranchAddress("GenElectrons", &GenElectrons, &b_GenElectrons);
+     fChain->SetBranchAddress("GenHT", &GenHT, &b_GenHT);
+     fChain->SetBranchAddress("GenJets", &GenJets, &b_GenJets);
+     fChain->SetBranchAddress("GenJetsAK8", &GenJetsAK8, &b_GenJetsAK8);
+     fChain->SetBranchAddress("GenJetsAK8_multiplicity", &GenJetsAK8_multiplicity, &b_GenJetsAK8_multiplicity);
+     fChain->SetBranchAddress("GenJetsAK8_softDropMass", &GenJetsAK8_softDropMass, &b_GenJetsAK8_softDropMass);
+     fChain->SetBranchAddress("GenMET", &GenMET, &b_GenMET);
+     fChain->SetBranchAddress("GenMETPhi", &GenMETPhi, &b_GenMETPhi);
+     fChain->SetBranchAddress("GenMuons", &GenMuons, &b_GenMuons);
+     fChain->SetBranchAddress("GenParticles", &GenParticles, &b_GenParticles);
+     fChain->SetBranchAddress("GenParticles_ParentId", &GenParticles_ParentId, &b_GenParticles_ParentId);
+     fChain->SetBranchAddress("GenParticles_ParentIdx", &GenParticles_ParentIdx, &b_GenParticles_ParentIdx);
+     fChain->SetBranchAddress("GenParticles_PdgId", &GenParticles_PdgId, &b_GenParticles_PdgId);
+     fChain->SetBranchAddress("GenParticles_Status", &GenParticles_Status, &b_GenParticles_Status);
+     fChain->SetBranchAddress("GenTaus", &GenTaus, &b_GenTaus);
+     fChain->SetBranchAddress("GenTaus_had", &GenTaus_had, &b_GenTaus_had);
+     fChain->SetBranchAddress("HT5JECdown", &HT5JECdown, &b_HT5JECdown);
+     fChain->SetBranchAddress("HT5JECup", &HT5JECup, &b_HT5JECup);
+     fChain->SetBranchAddress("HT5JERdown", &HT5JERdown, &b_HT5JERdown);
+     fChain->SetBranchAddress("HT5JERup", &HT5JERup, &b_HT5JERup);
+     fChain->SetBranchAddress("HTJECdown", &HTJECdown, &b_HTJECdown);
+     fChain->SetBranchAddress("HTJECup", &HTJECup, &b_HTJECup);
+     fChain->SetBranchAddress("HTJERdown", &HTJERdown, &b_HTJERdown);
+     fChain->SetBranchAddress("HTJERup", &HTJERup, &b_HTJERup);
+     fChain->SetBranchAddress("JetIDAK8JECdown", &JetIDAK8JECdown, &b_JetIDAK8JECdown);
+     fChain->SetBranchAddress("JetIDAK8JECup", &JetIDAK8JECup, &b_JetIDAK8JECup);
+     fChain->SetBranchAddress("JetIDAK8JERdown", &JetIDAK8JERdown, &b_JetIDAK8JERdown);
+     fChain->SetBranchAddress("JetIDAK8JERup", &JetIDAK8JERup, &b_JetIDAK8JERup);
+     fChain->SetBranchAddress("JetIDJECdown", &JetIDJECdown, &b_JetIDJECdown);
+     fChain->SetBranchAddress("JetIDJECup", &JetIDJECup, &b_JetIDJECup);
+     fChain->SetBranchAddress("JetIDJERdown", &JetIDJERdown, &b_JetIDJERdown);
+     fChain->SetBranchAddress("JetIDJERup", &JetIDJERup, &b_JetIDJERup);
+     fChain->SetBranchAddress("Jets_jerFactor", &Jets_jerFactor, &b_Jets_jerFactor);
+     fChain->SetBranchAddress("Jets_jerFactorDown", &Jets_jerFactorDown, &b_Jets_jerFactorDown);
+     fChain->SetBranchAddress("Jets_jerFactorUp", &Jets_jerFactorUp, &b_Jets_jerFactorUp);
+     fChain->SetBranchAddress("Jets_origIndex", &Jets_origIndex, &b_Jets_origIndex);
+     fChain->SetBranchAddress("JetsAK8_jerFactor", &JetsAK8_jerFactor, &b_JetsAK8_jerFactor);
+     fChain->SetBranchAddress("JetsAK8_jerFactorDown", &JetsAK8_jerFactorDown, &b_JetsAK8_jerFactorDown);
+     fChain->SetBranchAddress("JetsAK8_jerFactorUp", &JetsAK8_jerFactorUp, &b_JetsAK8_jerFactorUp);
+     fChain->SetBranchAddress("JetsAK8Clean_origIndex", &JetsAK8Clean_origIndex, &b_JetsAK8Clean_origIndex);
+     fChain->SetBranchAddress("JetsAK8JECup_jerFactor", &JetsAK8JECup_jerFactor, &b_JetsAK8JECup_jerFactor);
+     fChain->SetBranchAddress("JetsAK8JECup_origIndex", &JetsAK8JECup_origIndex, &b_JetsAK8JECup_origIndex);
+     fChain->SetBranchAddress("JetsAK8JERdown_origIndex", &JetsAK8JERdown_origIndex, &b_JetsAK8JERdown_origIndex);
+     fChain->SetBranchAddress("JetsAK8JERup_origIndex", &JetsAK8JERup_origIndex, &b_JetsAK8JERup_origIndex);
+     fChain->SetBranchAddress("JetsJECdown_jerFactor", &JetsJECdown_jerFactor, &b_JetsJECdown_jerFactor);
+     fChain->SetBranchAddress("JetsJECdown_origIndex", &JetsJECdown_origIndex, &b_JetsJECdown_origIndex);
+     fChain->SetBranchAddress("JetsJECup_jerFactor", &JetsJECup_jerFactor, &b_JetsJECup_jerFactor);
+     fChain->SetBranchAddress("JetsJECup_origIndex", &JetsJECup_origIndex, &b_JetsJECup_origIndex);
+     fChain->SetBranchAddress("JetsJERdown_origIndex", &JetsJERdown_origIndex, &b_JetsJERdown_origIndex);
+     fChain->SetBranchAddress("JetsJERup_origIndex", &JetsJERup_origIndex, &b_JetsJERup_origIndex);
+     fChain->SetBranchAddress("METDown", &METDown, &b_METDown);
+     fChain->SetBranchAddress("METOrigDown", &METOrigDown, &b_METOrigDown);
+     fChain->SetBranchAddress("METOrigUp", &METOrigUp, &b_METOrigUp);
+     fChain->SetBranchAddress("METPhiDown", &METPhiDown, &b_METPhiDown);
+     fChain->SetBranchAddress("METPhiOrigDown", &METPhiOrigDown, &b_METPhiOrigDown);
+     fChain->SetBranchAddress("METPhiOrigUp", &METPhiOrigUp, &b_METPhiOrigUp);
+     fChain->SetBranchAddress("METPhiUp", &METPhiUp, &b_METPhiUp);
+     fChain->SetBranchAddress("METUp", &METUp, &b_METUp);
+     fChain->SetBranchAddress("PDFweights", &PDFweights, &b_PDFweights);
+     fChain->SetBranchAddress("PSweights", &PSweights, &b_PSweights);
+     fChain->SetBranchAddress("ScaleWeights", &ScaleWeights, &b_ScaleWeights);
+   }
+   
    Notify();
 }
 

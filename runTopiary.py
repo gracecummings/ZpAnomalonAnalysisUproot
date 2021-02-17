@@ -21,7 +21,7 @@ if __name__=="__main__":
         print "You have a problem, we do not undertand the sample coding"
 
     origevnts = 0
-    #if not isSig:
+    
     if samptype != 1:
         inChain = ROOT.TChain("PreSelection")
         inputs  = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
@@ -34,7 +34,7 @@ if __name__=="__main__":
         inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
         origevnts = inChain.GetEntries()
 
-    outFile = go.makeOutFile(samp,'topiary','.root','0.0','250.0','0.0')#Needs to become dynamic with cuts
+    outFile = go.makeOutFile(samp,'topiary','.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
     print "Making topiary of ",samp
     print "     Sample type ",samptype
     print "     Events in TChain: ",inChain.GetEntries()
@@ -42,15 +42,16 @@ if __name__=="__main__":
     print "    Saving topiary in ",outFile
 
     
-    if samptype != 0:
-        ROOT.gSystem.CompileMacro("TreeMakerTopiary_MC.C","g0ck")
-        ROOT.gSystem.Load('TreeMakerTopiary_MC_C')
-        topiary = ROOT.TreeMakerTopiary(inChain)
-    if samptype == 0:
-        ROOT.gSystem.CompileMacro("TreeMakerTopiary_Data.C","g0ck")
-        ROOT.gSystem.Load('TreeMakerTopiary_Data_C')
-        topiary = ROOT.TreeMakerTopiary_Data(inChain)
-        
+    #if samptype != 0:
+    #    ROOT.gSystem.CompileMacro("TreeMakerTopiary_MC.C","g0ck")
+    #    ROOT.gSystem.Load('TreeMakerTopiary_MC_C')
+    #    topiary = ROOT.TreeMakerTopiary(inChain)
+    #if samptype == 0:
+    ROOT.gSystem.CompileMacro("TreeMakerTopiary_Data.C","g0ck")
+    ROOT.gSystem.Load('TreeMakerTopiary_Data_C')
+    topiary = ROOT.TreeMakerTopiary_Data(inChain,samptype)
+
+    
     topiary.Loop(outFile,origevnts,samptype)
 
 

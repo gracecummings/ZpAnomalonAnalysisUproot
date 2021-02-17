@@ -47,9 +47,9 @@ if __name__=="__main__":
     #    ROOT.gSystem.Load('TreeMakerTopiary_MC_C')
     #    topiary = ROOT.TreeMakerTopiary(inChain)
     #if samptype == 0:
-    ROOT.gSystem.CompileMacro("TreeMakerTopiary_Data.C","g0ck")
-    ROOT.gSystem.Load('TreeMakerTopiary_Data_C')
-    topiary = ROOT.TreeMakerTopiary_Data(inChain,samptype)
+    ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")
+    ROOT.gSystem.Load('TreeMakerTopiary_C')
+    topiary = ROOT.TreeMakerTopiary(inChain,samptype)
 
     
     topiary.Loop(outFile,origevnts,samptype)

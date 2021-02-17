@@ -1,6 +1,5 @@
-
 #define TreeMakerTopiary_cxx
-#include "TreeMakerTopiary_MC.h"
+#include "TreeMakerTopiary.h"
 #include "RestFrames/RestFrames.hh"
 #include <TLeaf.h>
 #include <iostream>
@@ -10,14 +9,12 @@ using namespace RestFrames;
 
 void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents, int sampleType)
 {
-
    if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
    fChain->SetBranchStatus("*",0);
    fChain->SetBranchStatus("TriggerPass",1);
-   fChain->SetBranchStatus("GenParticles*",1);
    fChain->SetBranchStatus("JetsAK8Clean*",1);
    fChain->SetBranchStatus("Muons*",1);
    fChain->SetBranchStatus("METclean*",1);
@@ -26,17 +23,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("ZCandidates",1);
    fChain->SetBranchStatus("eeBadScFilter",1);
 
-
-   //k-factor prep
-   TFile qcdnnloFile("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
-   TH1D *hqcdnnlosf  = (TH1D*)qcdnnloFile.Get("eej");
-   hqcdnnlosf->SetDirectory(0);
-   qcdnnloFile.Close();
-   TFile ewknloFile("../DYCorrection/merged_kfactors_zjets.root","READ");
-   TH1F *hewknlosf = (TH1F*)ewknloFile.Get("kfactor_monojet_ewk");
-   hewknlosf->SetDirectory(0);
-   ewknloFile.Close();
-   
    //Initialize Stuff
    TLorentzVector hCandidate;
    TLorentzVector ZCandidate;
@@ -57,9 +43,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double mEstND;
    double mEstNS;
    float  evntw = 1;
-      
-      
-   //Define the skimmed skim  output file and tree
+
+      //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
    TTree* trimTree = fChain->CloneTree(0);
    TH1F*  hnskimed = new TH1F("hnskimed","number of events at skim level",1,0,1);
@@ -153,12 +138,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    int counthpass    = 0;
    int countmetpass  = 0;
    int countpass     = 0;
+
+
+
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
-      
 
       //Define some boos to signal events to write
       bool passZ    = false;
@@ -166,8 +153,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool passMET  = false;
       bool passTrig = false;
       bool passFil  = false;
-
-      //Initialize Stuff
           
       //A counter, for my sanity
       if (jentry%25000 == 0) {
@@ -185,8 +170,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  trgidx += 1;
 	  trgtit.erase(0,pos+delim.length());
 	}
-	//std::cout<< "the token we landed on is "<<token<<std::endl;
-	//std::cout<< "the trigidx is "<<trgidx<<std::endl;
       }
       else {
 	fnow = fChain->GetCurrentFile();
@@ -200,8 +183,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    trgidx += 1;
 	    trgtit.erase(0,pos+delim.length());
 	  }
-	  //std::cout<< "the token we landed on is "<<token<<std::endl;
-	  //std::cout<< "the trigidx is "<<trgidx<<std::endl;
 	}
       }
       trgval = TriggerPass->at(trgidx);
@@ -218,43 +199,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	}
       }
 	
-      //GenParticle Stuff
-      float evntw_hold = 1;
-      TLorentzVector gZ;
-      if (sampleType != 0) {//Not Data
-	int gpid;
-	//TLorentzVector gh;
-	unsigned long ngen = GenParticles->size();
-	for (unsigned long i = 0; i < ngen; ++i) {
-	  int gpid = GenParticles_PdgId->at(i);
-	  if (gpid == 23) {
-	    gZ = GenParticles->at(i);
-	  }
-	}
-	
-	float qcdnlosf   = 1;
-	double qcdnnlosf = 1;
-	float ewknlosf   = 1;
-	if (sampleType == 2) {//DY+Jets
-	  qcdnlosf = 1.423*exp(-0.002257*gZ.Pt())+0.451;
-	  if (qcdnlosf <= 0.0) {
-	    qcdnlosf = 1.;
-	  }
-	  int zptbinqcd  = hqcdnnlosf->FindBin(gZ.Pt());
-	  qcdnnlosf = hqcdnnlosf->GetBinContent(zptbinqcd);
-	  if (qcdnnlosf <= 0.0) {
-	    qcdnnlosf = 1.;
-	  }
-	  int zptbinewk = hewknlosf->FindBin(gZ.Pt());
-	  ewknlosf = hewknlosf->GetBinContent(zptbinewk);
-	  if (ewknlosf <= 0.0) {
-	    ewknlosf = 1.;
-	  }
-	  evntw_hold = ewknlosf*qcdnnlosf*qcdnlosf;
-	}
-      }
-
-      //std::cout<<"event_weight hold "<<evntw_hold<<std::endl;
 
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
@@ -291,31 +235,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       double hmiddb = 0;
       bool   fid = 0;
 
-
-      //std::cout<<"Analyzing event "<<jentry<<std::endl;
-
       if (nfat > 0) {
-	//passh = true;
 	for (unsigned long i =0; i < nfat; ++i) {
 	  fat = JetsAK8Clean->at(i);
 	  fsd = JetsAK8Clean_softDropMass->at(i);
 	  fid = JetsAK8Clean_ID->at(i);
-	  //double masshdiff = std::abs(125.18 - fsd);
 	  double masshdiff = std::abs(125.18 - fsd);
-	  //if (nfat > 1) {
-	  //  std::cout<<" f mass dif: "<<masshdiff<<std::endl;
-	  //  std::cout<<"     f mass: "<<fsd<<std::endl;
-	  //  std::cout<<"      f fid: "<<fid<<std::endl;
-	  //  std::cout<<"       f pt: "<<fat.Pt()<<std::endl;
-	  //}
-	  //if (fid && (fsd > 10) && (std::abs(fat.Eta()) < 2.4) && (fat.Pt() > hptcut)) {
 	  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid && std::abs(fat.Eta()) < 2.4 && (fsd > 10)) {
-	    //if (nfat > 1) {
-	    //  std::cout<<" h camd mass dif: "<<masshdiff<<std::endl;
-	    //  std::cout<<"     h cand mass: "<<fsd<<std::endl;
-	    //  std::cout<<"      h cand fid: "<<fid<<std::endl;
-	    //  std::cout<<"       h cand pt: "<<fat.Pt()<<std::endl;
-	    //}
 	    basehdiff = masshdiff;
 	    theh = fat;
 	    hsd = fsd;
@@ -327,11 +253,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  }
 	}
       }
-      //if (passh) {
-      //std::cout<<"The selected h: "<<std::endl;
-      //std::cout<<"        h mass: "<<hsd<<std::endl;
-      //std::cout<<"          h pt: "<<theh.Pt()<<std::endl;
-      //}
 
       //MET
       double ptmiss     = fChain->GetLeaf("METclean")->GetValue(0);
@@ -339,7 +260,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       double ptmiss_px  = ptmiss*std::cos(ptmiss_phi);
       double ptmiss_py  = ptmiss*std::sin(ptmiss_phi);
       TVector3 met3     = TVector3(ptmiss_px,ptmiss_py,0.0);
-      
+
       //recursive jigsaw
       LABcontra.ClearEvent();
       INVcontra.SetLabFrameThreeVector(met3);
@@ -349,7 +270,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       mEstZp = Zp.GetMass();
       mEstND = ND.GetMass();
       mEstNS = NS.GetMass();
-      
+
       if (passZ && passTrig) {
 	countzpass +=1 ;
       }
@@ -372,17 +293,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	ZCandidate_m   = theZ.M();
 	counthpass += 1;
       }
-
       
-      
-      //debug
-      //if (jentry == 2000) {
-      //break;
-      //}
-
       //Fill the Tree
-      evntw = evntw_hold;
-      //std::cout<<"The event weight "<<evntw<<std::endl;
+      evntw = 1.;
       if (Cut(ientry) < 0) continue;
       if (passZ && passh && passTrig && sampleType !=0) {
 	trimTree->Fill();
@@ -391,8 +304,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       if (passZ && passh && passTrig && sampleType == 0 && passFil) {
 	trimTree->Fill();
 	countpass += 1;
-	}
-      
+      }
+
    }
 
    std::cout<<"Passing Trigger req: "<<counttrigpass<<std::endl;
@@ -411,5 +324,5 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    //std::cout<<"trimmed to "<< passEvents <<" events"<<std::endl;
    std::cout<<"Completed your topiary garden, hopefully your tastes have not changed."<<std::endl;
 
-   }
-
+   
+}

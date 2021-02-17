@@ -5,8 +5,8 @@
 // found on file: ../dataHandling/2017/Run2017F-31Mar2018-v1.SingleMuon_0_chunk0_oct08_skim_2640267MiniAODEvents.root
 //////////////////////////////////////////////////////////
 
-#ifndef TreeMakerTopiary_Data_h
-#define TreeMakerTopiary_Data_h
+#ifndef TreeMakerTopiary_h
+#define TreeMakerTopiary_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -17,7 +17,7 @@
 // Header file for the classes stored in the TTree if any.
 #include "vector"
 
-class TreeMakerTopiary_Data {
+class TreeMakerTopiary {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -595,8 +595,8 @@ public :
    TBranch        *b_ScaleWeights;
 
 
-   TreeMakerTopiary_Data(TTree *tree=0,int sampt=0);
-   virtual ~TreeMakerTopiary_Data();
+   TreeMakerTopiary(TTree *tree=0,int sampt=0);
+   virtual ~TreeMakerTopiary();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -608,8 +608,8 @@ public :
 
 #endif
 
-#ifdef TreeMakerTopiary_Data_cxx
-TreeMakerTopiary_Data::TreeMakerTopiary_Data(TTree *tree,int sampt) : fChain(0) 
+#ifdef TreeMakerTopiary_cxx
+TreeMakerTopiary::TreeMakerTopiary(TTree *tree,int sampt) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -624,19 +624,19 @@ TreeMakerTopiary_Data::TreeMakerTopiary_Data(TTree *tree,int sampt) : fChain(0)
    Init(tree,sampt);
 }
 
-TreeMakerTopiary_Data::~TreeMakerTopiary_Data()
+TreeMakerTopiary::~TreeMakerTopiary()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t TreeMakerTopiary_Data::GetEntry(Long64_t entry)
+Int_t TreeMakerTopiary::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t TreeMakerTopiary_Data::LoadTree(Long64_t entry)
+Long64_t TreeMakerTopiary::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -649,7 +649,7 @@ Long64_t TreeMakerTopiary_Data::LoadTree(Long64_t entry)
    return centry;
 }
 
-void TreeMakerTopiary_Data::Init(TTree *tree, int sampt)
+void TreeMakerTopiary::Init(TTree *tree, int sampt)
 {
    //std::cout<<"The sample type is "<<sampt<<std::endl;//this works
    // The Init() function is called when the selector needs to initialize
@@ -1172,7 +1172,7 @@ void TreeMakerTopiary_Data::Init(TTree *tree, int sampt)
    Notify();
 }
 
-Bool_t TreeMakerTopiary_Data::Notify()
+Bool_t TreeMakerTopiary::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -1183,18 +1183,18 @@ Bool_t TreeMakerTopiary_Data::Notify()
    return kTRUE;
 }
 
-void TreeMakerTopiary_Data::Show(Long64_t entry)
+void TreeMakerTopiary::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t TreeMakerTopiary_Data::Cut(Long64_t entry)
+Int_t TreeMakerTopiary::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef TreeMakerTopiary_Data_cxx
+#endif // #ifdef TreeMakerTopiary_cxx

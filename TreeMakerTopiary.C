@@ -7,10 +7,9 @@
 RestFrames::RFKey ensure_autoload(1);
 using namespace RestFrames;
 
-void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents, int sampleType)
+void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents, int sampleType,int year)
 {
    if (fChain == 0) return;
-
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
    fChain->SetBranchStatus("*",0);
@@ -125,7 +124,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    //Trigger Stuff
    string trgtit;
    string delim  = ",";
-   string ourtrg = "HLT_Mu50_v";
+   string ourtrg;
    int trgidx    = -1;
    int trgval;
    TFile * fthen;
@@ -162,6 +161,17 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //Trigger decisions
       size_t pos = 0;
       string token;
+      if (year == 18) {
+	std::cout<<"Find you 2018 triggers, moron"<<std::endl;
+	break;
+      }
+      if (year == 17) {
+	ourtrg = "HLT_Mu50_v";
+      }
+      if (year == 16) {
+	std::cout<<"Find you 2016 triggers, moron"<<std::endl;
+	break;
+      }
       if (jentry == 0) {
 	trgtit = fChain->GetBranch("TriggerPass")->GetTitle();
 	fthen = fChain->GetCurrentFile();

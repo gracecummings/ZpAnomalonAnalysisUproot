@@ -11,9 +11,9 @@ def sampleType(sampstring):
         samptype = 0
     elif "ZpAnomalon" in sampstring:
         samptype = 1
-        #isSig = True
     elif "DYJetsToLL" in sampstring:
          samptype = 2
+         
     elif "TTTo" in sampstring:
         samptype = 3
     elif "WZTo" in sampstring:
@@ -22,7 +22,15 @@ def sampleType(sampstring):
         samptype = 5
     else:
         samptype = -1
-    return samptype
+        
+    if "2018" in sampstring:
+        year = 18
+    if "2017" in sampstring:
+        year = 17
+    if "2016" in sampstring:
+        year = 16
+
+    return samptype,year
 
 def makeOutFile(sampstring,descrip,ftype,zptcut,hptcut,metcut,btagwp):
     if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):

@@ -595,13 +595,13 @@ public :
    TBranch        *b_ScaleWeights;
 
 
-   TreeMakerTopiary(TTree *tree=0,int sampt=0);
+   TreeMakerTopiary(TTree *tree=0,int sampt=0,int year=0);
    virtual ~TreeMakerTopiary();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
-   virtual void     Init(TTree *tree, int sampt);
-   virtual void     Loop(std::string entry,float entry1,int entry2);
+   virtual void     Init(TTree *tree, int sampt,int year);
+   virtual void     Loop(std::string entry,float entry1,int entry2,int year);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -609,7 +609,7 @@ public :
 #endif
 
 #ifdef TreeMakerTopiary_cxx
-TreeMakerTopiary::TreeMakerTopiary(TTree *tree,int sampt) : fChain(0) 
+TreeMakerTopiary::TreeMakerTopiary(TTree *tree,int sampt,int year) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -621,7 +621,7 @@ TreeMakerTopiary::TreeMakerTopiary(TTree *tree,int sampt) : fChain(0)
       f->GetObject("PreSelection",tree);
 
    }
-   Init(tree,sampt);
+   Init(tree,sampt,year);
 }
 
 TreeMakerTopiary::~TreeMakerTopiary()
@@ -649,7 +649,7 @@ Long64_t TreeMakerTopiary::LoadTree(Long64_t entry)
    return centry;
 }
 
-void TreeMakerTopiary::Init(TTree *tree, int sampt)
+void TreeMakerTopiary::Init(TTree *tree, int sampt, int year)
 {
    //std::cout<<"The sample type is "<<sampt<<std::endl;//this works
    // The Init() function is called when the selector needs to initialize

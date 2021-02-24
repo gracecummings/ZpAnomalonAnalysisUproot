@@ -19,7 +19,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("METclean*",1);
    fChain->SetBranchStatus("METPhiclean",1);
    fChain->SetBranchStatus("SelectedMuons*",1);
-   fChain->SetBranchStatus("ZCandidates",1);
+   fChain->SetBranchStatus("ZCandidates*",1);
+   fChain->SetBranchStatus("SelectedElectrons*",1);
    fChain->SetBranchStatus("eeBadScFilter",1);
 
    //Initialize Stuff
@@ -152,18 +153,24 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool passMET  = false;
       bool passTrig = false;
       bool passFil  = false;
+      bool mumuchan = false;
           
       //A counter, for my sanity
       if (jentry%25000 == 0) {
       	std::cout<<"    analyzing event "<<jentry<<std::endl;
       }
 
+      //debug
+      //if (jentry == 200) {
+      //break;
+      //}
+
       //Trigger decisions
       size_t pos = 0;
       string token;
       if (year == 18) {
-	std::cout<<"Find you 2018 triggers, moron"<<std::endl;
-	break;
+	ourtrg = "HLT_Mu55_v";
+	  //break;
       }
       if (year == 17) {
 	ourtrg = "HLT_Mu50_v";
@@ -208,7 +215,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  passFil = true;
 	}
       }
-	
+
+      //Z exploration
+      unsigned int nselmu = SelectedMuons->size();
+      unsigned int nselel = SelectedElectrons->size();
+      if (nselmu > 0  && nselel == 0) {
+	mumuchan = true;
+      }
 
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
@@ -281,11 +294,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       mEstND = ND.GetMass();
       mEstNS = NS.GetMass();
 
-      if (passZ && passTrig) {
+      if (passZ && passTrig && mumuchan) {
 	countzpass +=1 ;
       }
 
-      if (passh && passZ && passTrig) {
+      if (passh && passZ && passTrig && mumuchan) {
 	hCandidate = theh;
 	hCandidate_pt  = theh.Pt();
 	hCandidate_phi = theh.Phi();
@@ -307,11 +320,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //Fill the Tree
       evntw = 1.;
       if (Cut(ientry) < 0) continue;
-      if (passZ && passh && passTrig && sampleType !=0) {
+      if (passZ && passh && passTrig && sampleType !=0 && mumuchan) {
 	trimTree->Fill();
 	countpass += 1;
 	}
-      if (passZ && passh && passTrig && sampleType == 0 && passFil) {
+      if (passZ && passh && passTrig && sampleType == 0 && passFil && mumuchan) {
 	trimTree->Fill();
 	countpass += 1;
       }

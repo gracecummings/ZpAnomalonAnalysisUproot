@@ -16,6 +16,7 @@ if __name__=="__main__":
     year = args.year
     samptype = -1
 
+    print samp
     samptype,checkedyear = go.sampleType(samp)
     if samptype < 0:
         print "You have a problem, we do not undertand the sample coding"

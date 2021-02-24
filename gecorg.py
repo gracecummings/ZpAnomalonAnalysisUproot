@@ -25,7 +25,11 @@ def sampleType(sampstring):
         
     if "2018" in sampstring:
         year = 18
+    if "Autumn18" in sampstring:
+        year = 18
     if "2017" in sampstring:
+        year = 17
+    if "Fall17" in sampstring:
         year = 17
     if "2016" in sampstring:
         year = 16

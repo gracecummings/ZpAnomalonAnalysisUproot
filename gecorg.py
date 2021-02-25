@@ -13,7 +13,6 @@ def sampleType(sampstring):
         samptype = 1
     elif "DYJetsToLL" in sampstring:
          samptype = 2
-         
     elif "TTTo" in sampstring:
         samptype = 3
     elif "WZTo" in sampstring:
@@ -80,11 +79,16 @@ def colsFromPalette(samplist,palname):
         collist.append(cols.At(0+i*colsnum/len(samplist)))
     return collist
 
-def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp):
-    DYJetsToLL = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    TT         = glob.glob(str(bkg_dir)+'/Fall17.TTT*_'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                         
-    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.WZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
-    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/Fall17.ZZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
+def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp,year):
+        if year == 18:
+        mcprefix = 'Autumn18'
+    if year == 17:
+        mcprefix = 'Fall17'
+
+    DYJetsToLL = glob.glob(str(bkg_dir)+'/'+mcprefix+'.DYJetsToLL_M-50_HT*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    TT         = glob.glob(str(bkg_dir)+'/'+mcprefix+'.TTT*_'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                         
+    WZTo2L2Q   = glob.glob(str(bkg_dir)+'/'+mcprefix+'.WZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
+    ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/'+mcprefix+'.ZZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
     bkgfiles   = [DYJetsToLL,TT,WZTo2L2Q,ZZTo2L2Q]
     return bkgfiles
 

@@ -20,6 +20,7 @@ if __name__=='__main__':
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date", type=str,help = "date folder with output")
+    parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
     args = parser.parse_args()
 
     #Get command line parameters
@@ -29,14 +30,15 @@ if __name__=='__main__':
     hptcut        = args.hptcut
     metcut        = args.metcut
     btagwp        = args.btagwp
+    year          = args.year
 
     #samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp)#recalculated ones with errrors
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp,year)#recalculated ones with errrors
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
     datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
-    bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
-    datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
+    #bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
+    #datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
@@ -44,13 +46,13 @@ if __name__=='__main__':
 
     #Prep backgrounds
     bkg_colors = gecorg.colsFromPalette(bkgnames,ROOT.kLake)
-    bkg_info   = gecorg.prepBkg(bkgfiles,bkgnames,bkg_colors,'xsects_2017.ini',lumi)
+    bkg_info   = gecorg.prepBkg(bkgfiles,bkgnames,bkg_colors,'xsects_2017.ini',lumi,"yes")
 
     #Prep Data
     dat_info = [ROOT.TFile(dat) for dat in datfiles]
 
     #some beauty stuff
-    max_plot = 100000.
+    max_plot = 100.
     min_plot = 0.1
     titles = {
         "h_z_pt":"Z p_{T}",
@@ -70,7 +72,7 @@ if __name__=='__main__':
 
 
     #Make the stacks
-    keys = dat_info[0].GetListOfKeys()
+    keys = bkg_info[0]['binlist'][0]['tfile'].GetListOfKeys()
     for i,key in enumerate(keys):
         hname = key.GetName()
         if 'hnevents' in hname:
@@ -78,7 +80,7 @@ if __name__=='__main__':
         if 'h_weights' in hname:
             break
         
-        leg = ROOT.TLegend(0.45,0.55,0.90,0.88)
+        leg = ROOT.TLegend(0.55,0.55,0.88,0.88)
 
         #bkg stack
         hsbkg = ROOT.THStack('hsbkg','')
@@ -97,7 +99,7 @@ if __name__=='__main__':
             hdat.SetMaximum(max_plot)
             hdat.SetMinimum(min_plot)
             hsdat.Add(hdat)
-        #hsdat.SetBinErrorOption(1)
+        hsdat.SetBinErrorOption(1)
 
         
         #Make a multigraph
@@ -163,31 +165,31 @@ if __name__=='__main__':
             bincen = hsumb.GetBinCenter(ibin)
             bkgmc  = hsumb.GetBinContent(ibin)
             data   = hsdat.GetBinContent(ibin)
-            datunc = datuncs[hname][ibin-1]
+            #datunc = datuncs[hname][ibin-1]
             binlist[ibin] = bincen
             if ibin != 0:
-                hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
+                #hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
                 if bkgmc != 0 and data != 0:
                     ratiolist[ibin] = data/bkgmc
                     #pulllist[ibin]  = (data-bkgmc)/datunc
                     #rerrlist[ibin] = datunc/bkgmc
-                    rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
+                    #rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
                 if bkgmc == 0:
                     ratiolist[ibin] = -1
-                    rerrlist[ibin] = 0
+                    #rerrlist[ibin] = 0
             else:
                 ratiolist[ibin] = -1
-                rerrlist[ibin] = 0
+                #rerrlist[ibin] = 0
         
         #remove underflow bin#hopefuly can get rid of this
         ratiolist = np.delete(ratiolist,0)
         binlist   = np.delete(binlist,0)
-        rerrlist  = np.delete(rerrlist,0)
+        #rerrlist  = np.delete(rerrlist,0)
 
         #Build the graphs
         tg = ROOT.TGraphErrors((hsumb.GetNbinsX()-1),binlist,ratiolist,fill,rerrlist)
         tg.SetTitle("")
-        tg.SetMarkerStyle(8)
+        tg.SetMarkerStyle(8)#
         mg.Add(tg)
 
 
@@ -210,7 +212,7 @@ if __name__=='__main__':
         else:
             ratio_max = max_max
         
-        mg.SetTitle("")
+        #mg.SetTitle("")
         #x axis
         mg.GetXaxis().SetTitle("bin center")
         mg.GetXaxis().SetTitleSize(0.07)
@@ -222,7 +224,7 @@ if __name__=='__main__':
         mg.GetYaxis().SetTitleOffset(.7)
         mg.GetYaxis().SetLabelSize(0.05)
         mg.SetMinimum(0.5)
-        #mg.SetMaximum(ratio_max)
+        mg.SetMaximum(ratio_max)
         mg.SetMaximum(1.5)
         mg.Draw("AP")
         l.Draw()

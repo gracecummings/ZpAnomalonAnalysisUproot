@@ -11,6 +11,7 @@ def sampleType(sampstring):
         samptype = 0
     elif "ZpAnomalon" in sampstring:
         samptype = 1
+        year = 17
     elif "DYJetsToLL" in sampstring:
          samptype = 2
     elif "TTTo" in sampstring:
@@ -80,7 +81,7 @@ def colsFromPalette(samplist,palname):
     return collist
 
 def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp,year):
-        if year == 18:
+    if year == 18:
         mcprefix = 'Autumn18'
     if year == 17:
         mcprefix = 'Fall17'
@@ -113,7 +114,7 @@ def prepSig(sigfiles,sig_colors,sig_xsec,lumi):
 
     return sig_info
 
-def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi):
+def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
     config = ConfigParser.RawConfigParser()
     config.optionxform = str
     fp = open(ini_file)
@@ -132,6 +133,9 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi):
         if bkg_channel == "DYJetsToLL":
             #orders smallest HT to largest
             bkg.sort(key = orderFall17DY)
+        else:
+            if flag == "no":
+                break
         #elif bkg_channel == "TT":
             #orders smallest # events (xs) to largest
         #    bkg.sort(key = orderFall17TT)                                                     

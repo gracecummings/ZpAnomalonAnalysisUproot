@@ -38,9 +38,10 @@ if __name__=='__main__':
 
     #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'*_topiary*.root')
     inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
-    print("Doing selections on:")
+    print("    Doing selections on:")
     print(inputfiles)
-    stype = go.sampleType(samp)
+    stype,year = go.sampleType(samp)
+    print(stype)
     
     branches = [b'ZCandidate_*',
                 b'hCandidate_*',
@@ -76,17 +77,16 @@ if __name__=='__main__':
         sbdf   = pd.concat([lowsb,highsb])
 
         #btagging
-        btdf = srdf[srdf['hCandidate_'+btaggr] > float(btagwp)]
+        #btdf = srdf[srdf['hCandidate_'+btaggr] > float(btagwp)]
 
-        #print(hptdf)
         #fdf is always the last dataframe
-        #fdf = sbdf
+        #fdf = btdf
         if stype != 0:
-            fdf = sbdf
+            fdf = btdf#all regio for soft drop mass plot
         else:
             fdf = sbdf
 
-        print("number of passing events ",len(fdf))
+        print("    number of passing events ",len(fdf))
         #print("number of btag passing events ",len(btdf))
 
     #lets make some histograms.

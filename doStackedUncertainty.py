@@ -83,27 +83,30 @@ if __name__=='__main__':
     uncsqdDYJetsdf = sum(bkgdfs["DYJetsToLL"])
     uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
     saveDYJetsunc  = go.makeOutFile(mcprefix+'.DYJetsToLL','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    print(uncDYJetsdf)
+    saveDYJetsuncCsv  = go.makeOutFile(mcprefix+'.DYJetsToLL','unc','.csv',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     saveUncertainties(uncDYJetsdf,saveDYJetsunc)
+    uncDYJetsdf.to_csv()
     
-    #uncsqdTTdf     = sum(bkgdfs["TT"])
-    #uncTTdf        = uncsqdTTdf**(1/2)
-    #saveTTunc      = go.makeOutFile(mcprefix+'.TT','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    #saveUncertainties(uncTTdf,saveTTunc)
+    uncsqdTTdf     = sum(bkgdfs["TT"])
+    uncTTdf        = uncsqdTTdf**(1/2)
+    saveTTunc      = go.makeOutFile(mcprefix+'.TT','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    saveUncertainties(uncTTdf,saveTTunc)
     
-    #uncsqdWZdf     = sum(bkgdfs["WZTo2L2Q"])
-    #uncWZdf        = uncsqdWZdf**(1/2)
-    #saveWZ2L2Qunc  = go.makeOutFile(mcprefix+'.WZ2L2Q','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    #saveUncertainties(uncWZdf,saveWZ2L2Qunc)
+    uncsqdWZdf     = sum(bkgdfs["WZTo2L2Q"])
+    uncWZdf        = uncsqdWZdf**(1/2)
+    saveWZ2L2Qunc  = go.makeOutFile(mcprefix+'.WZ2L2Q','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    saveUncertainties(uncWZdf,saveWZ2L2Qunc)
     
-    #uncsqdZZdf     = sum(bkgdfs["ZZTo2L2Q"])
-    #uncZZdf        = uncsqdZZdf**(1/2)
-    #saveZZ2L2Qunc  = go.makeOutFile(mcprefix+'.ZZ2L2Q','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    #saveUncertainties(uncZZdf,saveWZ2L2Qunc)
+    uncsqdZZdf     = sum(bkgdfs["ZZTo2L2Q"])
+    uncZZdf        = uncsqdZZdf**(1/2)
+    saveZZ2L2Qunc  = go.makeOutFile(mcprefix+'.ZZ2L2Q','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    saveUncertainties(uncZZdf,saveWZ2L2Qunc)
     
     #Combine all for stacks
-    #uncsqdAlldf    = uncsqdDYJetsdf+uncsqdTTdf+uncsqdWZdf+uncsqdZZdf
-    #uncAlldf       = uncsqdAlldf**(1/2)
+    uncsqdAlldf    = uncsqdDYJetsdf+uncsqdTTdf+uncsqdWZdf+uncsqdZZdf
+    uncAlldf       = uncsqdAlldf**(1/2)
+    saveAllBkgunc  = go.makeOutFile(mcprefix+'.AllZpAnomalonBkgs','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    saveUncertainties(uncAlldf,saveAllBkgunc)
 
     
     
@@ -136,7 +139,7 @@ if __name__=='__main__':
     #Now, do the same for data. This can clearly be combined into a function of somekind,
     #but we need results now!
 
-    #datcountfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*totalevents_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npy')
+    datcountfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*totalevents_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npy')
     daterrfs = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+datprefix+'*selected_errors*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
 
     datadfs = []

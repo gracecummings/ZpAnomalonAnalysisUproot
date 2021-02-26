@@ -21,6 +21,7 @@ if __name__=='__main__':
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
+    parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
     args = parser.parse_args()
 
     #Get command line parameters
@@ -31,9 +32,10 @@ if __name__=='__main__':
     hptcut        = args.hptcut
     metcut        = args.metcut
     btagwp        = args.btagwp
-    plotmax       = 1000.0
+    year          = args.year
+    plotmax       = 100.0
     #Samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp)
+    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp,year)
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
 
@@ -60,6 +62,7 @@ if __name__=='__main__':
         "h_met":"pT miss",
         "h_zp_jigm":"Jigsaw Mass Estimator Z'",
         "h_nd_jigm":"Jigsaw Mass Estimator ND",
+        "h_btag":"btag point"
         }
 
     #Make a multigraph

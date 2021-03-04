@@ -138,7 +138,7 @@ if __name__=='__main__':
         hsbkg.GetXaxis().SetTitleSize(0.05)
         hsbkg.GetYaxis().SetTitle("Events")
         hsbkg.GetYaxis().SetTitleSize(0.05)
-        #hsdat.Draw("HISTSAMEPE")
+        hsdat.Draw("HISTSAMEPE")
 
         #if 'h_h_sd' in hname:
         #    l0.Draw()
@@ -172,26 +172,27 @@ if __name__=='__main__':
             bincen = hsumb.GetBinCenter(ibin)
             bkgmc  = hsumb.GetBinContent(ibin)
             data   = hsdat.GetBinContent(ibin)
-            #datunc = datuncs[hname][ibin-1]
+            #
             binlist[ibin] = bincen
             if ibin != 0:
-                #hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
+                hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
+                datunc = datuncs[hname][ibin-1]
                 if bkgmc != 0 and data != 0:
                     ratiolist[ibin] = data/bkgmc
                     #pulllist[ibin]  = (data-bkgmc)/datunc
                     #rerrlist[ibin] = datunc/bkgmc
-                    #rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
+                    rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
                 if bkgmc == 0:
                     ratiolist[ibin] = -1
-                    #rerrlist[ibin] = 0
+                    rerrlist[ibin] = 0
             else:
                 ratiolist[ibin] = -1
-                #rerrlist[ibin] = 0
+                rerrlist[ibin] = 0
         
         #remove underflow bin#hopefuly can get rid of this
         ratiolist = np.delete(ratiolist,0)
         binlist   = np.delete(binlist,0)
-        #rerrlist  = np.delete(rerrlist,0)
+        rerrlist  = np.delete(rerrlist,0)
 
         #Build the graphs
         tg = ROOT.TGraphErrors((hsumb.GetNbinsX()-1),binlist,ratiolist,fill,rerrlist)
@@ -219,7 +220,7 @@ if __name__=='__main__':
         else:
             ratio_max = max_max
         
-        #mg.SetTitle("")
+        mg.SetTitle("")
         #x axis
         mg.GetXaxis().SetTitle("bin center")
         mg.GetXaxis().SetTitleSize(0.07)
@@ -233,8 +234,8 @@ if __name__=='__main__':
         mg.SetMinimum(0.5)
         mg.SetMaximum(ratio_max)
         mg.SetMaximum(1.5)
-        #mg.Draw("AP")
-        #l.Draw()
+        mg.Draw("AP")
+        l.Draw()
         
         #Go back to previous pad so next kinematic plots draw
         tc.cd()

@@ -1,8 +1,8 @@
 import os
 import sys
 import glob
-#import ROOT
-#import ConfigParser
+import ROOT
+import configparser
 from datetime import date
 
 def sampleType(sampstring):
@@ -11,7 +11,7 @@ def sampleType(sampstring):
         samptype = 0
     elif "ZpAnomalon" in sampstring:
         samptype = 1
-        #isSig = True
+        year = 17
     elif "DYJetsToLL" in sampstring:
          samptype = 2
     elif "TTTo" in sampstring:
@@ -72,15 +72,15 @@ def findScale(prodnum,lumi,xsec):
     scalefac = expecnum/prodnum
     return  scalefac
 
-#def colsFromPalette(samplist,palname):
-#    collist = []
-#    ROOT.gStyle.SetPalette(palname)
-#    cols = ROOT.TColor.GetPalette()
-#    colsnum = cols.GetSize()
-#    for i in range(len(samplist)):
-#        collist.append(cols.At(0+i*colsnum/len(samplist)))
-#    return collist
-#
+def colsFromPalette(samplist,palname):
+    collist = []
+    ROOT.gStyle.SetPalette(palname)
+    cols = ROOT.TColor.GetPalette()
+    colsnum = cols.GetSize()
+    for i in range(len(samplist)):
+        collist.append(cols.At(0+i*int(colsnum/len(samplist))))
+    return collist
+
 def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp,year):
     if year == 18:
         mcprefix = 'Autumn18'
@@ -91,87 +91,89 @@ def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp,year):
     TT         = glob.glob(str(bkg_dir)+'/'+mcprefix+'.TTT*_'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                         
     WZTo2L2Q   = glob.glob(str(bkg_dir)+'/'+mcprefix+'.WZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
     ZZTo2L2Q   = glob.glob(str(bkg_dir)+'/'+mcprefix+'.ZZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
-    bkgfiles   = {'DYJetsToLL':DYJetsToLL,'TT':TT,'WZTo2L2Q':WZTo2L2Q,'ZZTo2L2Q':ZZTo2L2Q}
+    bkgfiles   = [DYJetsToLL,TT,WZTo2L2Q,ZZTo2L2Q]
     return bkgfiles
 
-#def prepSig(sigfiles,sig_colors,sig_xsec,lumi):
-#    sig_info = []
-#    for s,sig in enumerate(sigfiles):
-#        sig_dict = {}                                                                                   
-#        sig_dict["tfile"] = ROOT.TFile(sig)                                                             
-#        sig_samplesize    = str(sig_dict["tfile"].Get('hnevents').GetString())
-#        sig_dict["scale"] = findScale(float(sig_samplesize),sig_xsec,lumi)
-#        sig_dict["name"]  = nameSignal(sig)
-#        mzp,mnd,mns       = massPoints(sig_dict["name"])
-#        sig_dict["mzp"]   = mzp
-#        sig_dict["mnd"]   = mnd
-#        sig_dict["mns"]   = mns
-#        sig_info.append(sig_dict)                                                                       
-#                                                                                                        
-#    #Sort Signals by ND mass, then by Zp mass                                                           
-#    sig_info = sorted(sig_info,key = lambda sig: (sig["mnd"],sig["mzp"],sig["mns"]))                    
-#    for s,sig in enumerate(sig_info):                                                                   
-#        sig["color"] = sig_colors[s]
-#
-#    return sig_info
+def prepSig(sigfiles,sig_colors,sig_xsec,lumi):
+    sig_info = []
+    for s,sig in enumerate(sigfiles):
+        sig_dict = {}                                                                                   
+        sig_dict["tfile"] = ROOT.TFile(sig)                                                             
+        sig_samplesize    = str(sig_dict["tfile"].Get('hnevents').GetString())
+        sig_dict["scale"] = findScale(float(sig_samplesize),sig_xsec,lumi)
+        sig_dict["name"]  = nameSignal(sig)
+        mzp,mnd,mns       = massPoints(sig_dict["name"])
+        sig_dict["mzp"]   = mzp#
+        sig_dict["mnd"]   = mnd
+        sig_dict["mns"]   = mns
+        sig_info.append(sig_dict)                                                                    
+    #Sort Signals by ND mass, then by Zp mass                                                           
+    sig_info = sorted(sig_info,key = lambda sig: (sig["mnd"],sig["mzp"],sig["mns"]))                    
+    for s,sig in enumerate(sig_info):                                                                   
+        sig["color"] = sig_colors[s]
 
-#def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi):
-#    config = ConfigParser.RawConfigParser()
-#    config.optionxform = str
-#    fp = open(ini_file)
-#    config.readfp(fp)
-#    bkg_info = []
-#    for b,bkg in enumerate(bkgfiles):
-#        bkg_binsum   = {}
-#        bkg_binlist  = []
-#        
-#        bkg_channel  = bkgnames[b]
-#        bkg_expyield = 0
-#        # bkg xs from .ini file
-#        bkgbin_xs_pairs = config.items(bkg_channel)
-#        if bkg_channel == "DYJetsToLL":
-#            #orders smallest HT to largest
-#            bkg.sort(key = orderFall17DY)
-#        #elif bkg_channel == "TT":
-#            #orders smallest # events (xs) to largest
-#        #    bkg.sort(key = orderFall17TT)                                                     
-#        #loop through each process bin or categrory
-#        for s,bkgbin in enumerate(bkg):
-#            bkgbin_dict = {}
-#            bkgbin_dict["binname"] = bkgbin_xs_pairs[s][0]
-#            bkgbin_dict["tfile"]   = ROOT.TFile(bkgbin)
-#            bkgbin_sampsize        = str(bkgbin_dict["tfile"].Get('hnevents').GetString())
-#            bkgbin_xs              = float(bkgbin_xs_pairs[s][1].split()[0])*1000#Into Femtobarn
-#            bkgbin_dict["scale"]   = findScale(float(bkgbin_sampsize),bkgbin_xs,lumi)
-#            bkgbin_dict["color"]   = bkg_colors[b]
-#            #get the number of passing events
-#            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_ph').GetString()))#last cut hist
-#            bkg_expyield          += bkgbin_yield*bkgbin_dict["scale"]
-#            bkg_binlist.append(bkgbin_dict)
-#            bkg_binsum["expyield"] = bkg_expyield
+    return sig_info
+
+def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
+    config = configparser.RawConfigParser()
+    config.optionxform = str
+    fp = open(ini_file)
+    config.read_file(fp)
+    bkg_info = []
+    for b,bkg in enumerate(bkgfiles):
+        bkg_binsum   = {}
+        bkg_binlist  = []
+        
+        bkg_channel  = bkgnames[b]
+        bkg_expyield = 0
+        # bkg xs from .ini file
+        bkgbin_xs_pairs = config.items(bkg_channel)
+        if bkg_channel == "DYJetsToLL":
+            #orders smallest HT to largest
+            bkg.sort(key = orderDY)
+        else:
+            if flag == "no":
+                break
+        #elif bkg_channel == "TT":
+            #orders smallest # events (xs) to largest
+        #    bkg.sort(key = orderFall17TT)                                                     
+        #loop through each process bin or categrory
+        for s,bkgbin in enumerate(bkg):
+            bkgbin_dict = {}
+            bkgbin_dict["binname"] = bkgbin_xs_pairs[s][0]
+            bkgbin_dict["tfile"]   = ROOT.TFile(bkgbin)
+            bkgbin_sampsize        = str(bkgbin_dict["tfile"].Get('hnevents').GetString())
+            bkgbin_xs              = float(bkgbin_xs_pairs[s][1].split()[0])*1000#Into Femtobarn
+            bkgbin_dict["scale"]   = findScale(float(bkgbin_sampsize),bkgbin_xs,lumi)
+            bkgbin_dict["color"]   = bkg_colors[b]
+            #get the number of passing events
+            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_ph').GetString()))#last cut hist
+            bkg_expyield          += bkgbin_yield*bkgbin_dict["scale"]
+            bkg_binlist.append(bkgbin_dict)
+            bkg_binsum["expyield"] = bkg_expyield
+
+        bkg_binsum["binlist"] = bkg_binlist
+        bkg_binsum["name"]    = bkg_channel
+        bkg_info.append(bkg_binsum)
+
+    #Sort the backgrounds from the smallest yields to largest        
+    bkg_info = sorted(bkg_info, key = lambda bkg:bkg["expyield"])
+    return bkg_info
 #
-#        bkg_binsum["binlist"] = bkg_binlist
-#        bkg_binsum["name"]    = bkg_channel
-#        bkg_info.append(bkg_binsum)
-#
-#    #Sort the backgrounds from the smallest yields to largest        
-#    bkg_info = sorted(bkg_info, key = lambda bkg:bkg["expyield"])
-#    return bkg_info
-#
-#def stackBkg(bkg_info,hist_to_stack,hsbkg,legend,stack_max,stack_min):
-#    for bkg in bkg_info:
-#        for b,bkgbin in enumerate(bkg["binlist"]):
-#            hbkg = bkgbin["tfile"].Get(hist_to_stack)
-#            hbkg.SetStats(0)
-#            hbkg.Scale(bkgbin["scale"])
-#            hbkg.SetFillColor(bkgbin["color"])                                                          
-#            hbkg.SetLineColor(bkgbin["color"])                                                          
-#            hbkg.SetMaximum(stack_max)
-#            hbkg.SetMinimum(stack_min)
-#            hsbkg.Add(hbkg)                                                                             
-#            hsbkg.Draw("HIST")                                                                          
-#            hsbkg.SetMaximum(stack_max)
-#            hsbkg.SetMinimum(stack_min)
-#            if b == len(bkg["binlist"])-1:                                                              
-#                legend.AddEntry(hbkg,bkg["name"],"f")
-#
+def stackBkg(bkg_info,hist_to_stack,hsbkg,legend,stack_max,stack_min):
+    for bkg in bkg_info:
+        for b,bkgbin in enumerate(bkg["binlist"]):
+            hbkg = bkgbin["tfile"].Get(hist_to_stack)
+            hbkg.SetStats(0)
+            hbkg.Scale(bkgbin["scale"])
+            hbkg.SetFillColor(bkgbin["color"])                                                          
+            hbkg.SetLineColor(bkgbin["color"])                                                         
+            hbkg.SetMaximum(stack_max)
+            hbkg.SetMinimum(stack_min)
+            hsbkg.Add(hbkg)                                                                             
+            hsbkg.Draw("HIST")                                                                          
+            hsbkg.SetMaximum(stack_max)
+            hsbkg.SetMinimum(stack_min)
+            if b == len(bkg["binlist"])-1:                                                              
+                legend.AddEntry(hbkg,bkg["name"],"f")
+

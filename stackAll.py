@@ -2,7 +2,9 @@ import argparse
 import ROOT
 import glob
 import os
-import gecorg
+#import gecorg_composite as gecorg
+import gecorg_py3 as gecorg
+import pandas as pd
 import numpy as np
 from datetime import date
 from ROOT import kOrange, kViolet, kCyan, kGreen, kPink, kAzure, kMagenta, kBlue, kBird
@@ -34,11 +36,15 @@ if __name__=='__main__':
 
     #samples
     bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp,year)#recalculated ones with errrors
+    mcprefix = 'Autumn18'
+    descrip = 'upout'
+    
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
     datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
-    #bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
-    #datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
+    
+    bkguncs  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    datuncs  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
@@ -50,6 +56,7 @@ if __name__=='__main__':
 
     #Prep Data
     dat_info = [ROOT.TFile(dat) for dat in datfiles]
+    print(dat_info)
 
     #some beauty stuff
     max_plot = 100.
@@ -131,7 +138,7 @@ if __name__=='__main__':
         hsbkg.GetXaxis().SetTitleSize(0.05)
         hsbkg.GetYaxis().SetTitle("Events")
         hsbkg.GetYaxis().SetTitleSize(0.05)
-        hsdat.Draw("HISTSAMEPE")
+        #hsdat.Draw("HISTSAMEPE")
 
         #if 'h_h_sd' in hname:
         #    l0.Draw()
@@ -226,8 +233,8 @@ if __name__=='__main__':
         mg.SetMinimum(0.5)
         mg.SetMaximum(ratio_max)
         mg.SetMaximum(1.5)
-        mg.Draw("AP")
-        l.Draw()
+        #mg.Draw("AP")
+        #l.Draw()
         
         #Go back to previous pad so next kinematic plots draw
         tc.cd()
@@ -243,5 +250,5 @@ if __name__=='__main__':
         leg.Draw()
 
         #Save the plot
-        pngname = gecorg.makeOutFile(hname,'ratio','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+        pngname = gecorg.makeOutFile(hname,'ratio_2018','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
         tc.SaveAs(pngname)

@@ -8,12 +8,12 @@ This environment was designed to run locally, on an Ubuntu 18.04 machine. There 
 
 The following python packages are required:
 
-+pyroot
-+uproot3
-+pandas
-+numpy
-+boost-histogram
-+configparser
++ pyroot
++ uproot3
++ pandas
++ numpy
++ boost-histogram
++ configparser
 
 if you already have Python 3 working with ROOT, with the above dependences, skip to "Download Repository and Setup Restframes." If you do not, you can follow the conda environment instructions below.
 

@@ -36,7 +36,6 @@ def sampleType(sampstring):
 
     return samptype,year
 
-
 def makeOutFile(sampstring,descrip,ftype,zptcut,hptcut,metcut,btagwp):
     if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):
         os.makedirs("analysis_output_ZpAnomalon/"+str(date.today())+"/")
@@ -166,14 +165,14 @@ def stackBkg(bkg_info,hist_to_stack,hsbkg,legend,stack_max,stack_min):
             hbkg = bkgbin["tfile"].Get(hist_to_stack)
             hbkg.SetStats(0)
             hbkg.Scale(bkgbin["scale"])
-            hbkg.SetFillColor(bkgbin["color"])                                                          
-            hbkg.SetLineColor(bkgbin["color"])                                                         
+            hbkg.SetFillColor(bkgbin["color"])
+            hbkg.SetLineColor(bkgbin["color"])
             hbkg.SetMaximum(stack_max)
             hbkg.SetMinimum(stack_min)
-            hsbkg.Add(hbkg)                                                                             
-            hsbkg.Draw("HIST")                                                                          
+            hsbkg.Add(hbkg)
+            hsbkg.Draw("HIST")
             hsbkg.SetMaximum(stack_max)
             hsbkg.SetMinimum(stack_min)
-            if b == len(bkg["binlist"])-1:                                                              
+            if b == len(bkg["binlist"])-1:
                 legend.AddEntry(hbkg,bkg["name"],"f")
 

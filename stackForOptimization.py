@@ -2,7 +2,7 @@ import argparse
 import ROOT
 import glob
 import os
-import gecorg
+import gecorg_py3 as gecorg
 import numpy as np
 from datetime import date
 from ROOT import kOrange, kViolet, kCyan, kGreen, kPink, kAzure, kMagenta, kBlue, kBird
@@ -45,7 +45,7 @@ if __name__=='__main__':
 
     #Prep backgrounds
     bkg_colors = gecorg.colsFromPalette(bkgnames,ROOT.kLake)
-    bkg_info   = gecorg.prepBkg(bkgfiles,bkgnames,bkg_colors,'xsects_2017.ini',lumi)
+    bkg_info   = gecorg.prepBkg(bkgfiles,bkgnames,bkg_colors,'xsects_2017.ini',lumi,"yes")
     #Make the stacked plot
     hname = released_plot
     leg = ROOT.TLegend(0.45,0.55,0.90,0.88)

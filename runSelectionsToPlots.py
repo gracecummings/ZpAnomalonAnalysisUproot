@@ -83,5 +83,5 @@ if __name__=='__main__':
 
             if steps["cutflow"]:
                 print("Creating cutflow table")
-                subprocess.run(["python2","doCutFlow.py","-L",era[1],"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0]])
+                subprocess.run(["python","doCutFlow.py","-L",era[1],"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0]])
             

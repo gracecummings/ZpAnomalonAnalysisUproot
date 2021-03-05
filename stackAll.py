@@ -3,7 +3,7 @@ import ROOT
 import glob
 import os
 #import gecorg_composite as gecorg
-import gecorg_py3 as gecorg
+import gecorg as gecorg
 import pandas as pd
 import numpy as np
 from datetime import date

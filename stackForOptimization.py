@@ -2,7 +2,7 @@ import argparse
 import ROOT
 import glob
 import os
-import gecorg_py3 as gecorg
+import gecorg
 import numpy as np
 from datetime import date
 from ROOT import kOrange, kViolet, kCyan, kGreen, kPink, kAzure, kMagenta, kBlue, kBird

@@ -2,7 +2,7 @@ import os
 import sys
 import glob
 import ROOT
-import ConfigParser
+import configparser
 from datetime import date
 
 def sampleType(sampstring):
@@ -22,7 +22,7 @@ def sampleType(sampstring):
         samptype = 5
     else:
         samptype = -1
-        
+
     if "2018" in sampstring:
         year = 18
     if "Autumn18" in sampstring:
@@ -42,7 +42,7 @@ def makeOutFile(sampstring,descrip,ftype,zptcut,hptcut,metcut,btagwp):
     outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+descrip+"_Zptcut"+zptcut+"_Hptcut"+hptcut+"_metcut"+metcut+"_btagwp"+btagwp+ftype
     return outFile
 
-def orderFall17DY(histFile):
+def orderDY(histFile):
     s1 = histFile.split("to")[0]
     s2 = s1.split("HT-")[1]
     return int(s2)       
@@ -77,7 +77,7 @@ def colsFromPalette(samplist,palname):
     cols = ROOT.TColor.GetPalette()
     colsnum = cols.GetSize()
     for i in range(len(samplist)):
-        collist.append(cols.At(0+i*colsnum/len(samplist)))
+        collist.append(cols.At(0+i*int(colsnum/len(samplist))))
     return collist
 
 def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp,year):
@@ -85,7 +85,7 @@ def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp,year):
         mcprefix = 'Autumn18'
     if year == 17:
         mcprefix = 'Fall17'
-
+        
     DYJetsToLL = glob.glob(str(bkg_dir)+'/'+mcprefix+'.DYJetsToLL_M-50_HT*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
     TT         = glob.glob(str(bkg_dir)+'/'+mcprefix+'.TTT*_'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                         
     WZTo2L2Q   = glob.glob(str(bkg_dir)+'/'+mcprefix+'.WZTo2L2Q*'+descrip+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')                                    
@@ -102,11 +102,10 @@ def prepSig(sigfiles,sig_colors,sig_xsec,lumi):
         sig_dict["scale"] = findScale(float(sig_samplesize),sig_xsec,lumi)
         sig_dict["name"]  = nameSignal(sig)
         mzp,mnd,mns       = massPoints(sig_dict["name"])
-        sig_dict["mzp"]   = mzp
+        sig_dict["mzp"]   = mzp#
         sig_dict["mnd"]   = mnd
         sig_dict["mns"]   = mns
-        sig_info.append(sig_dict)                                                                       
-                                                                                                        
+        sig_info.append(sig_dict)                                                                    
     #Sort Signals by ND mass, then by Zp mass                                                           
     sig_info = sorted(sig_info,key = lambda sig: (sig["mnd"],sig["mzp"],sig["mns"]))                    
     for s,sig in enumerate(sig_info):                                                                   
@@ -115,13 +114,12 @@ def prepSig(sigfiles,sig_colors,sig_xsec,lumi):
     return sig_info
 
 def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
-    config = ConfigParser.RawConfigParser()
+    config = configparser.RawConfigParser()
     config.optionxform = str
     fp = open(ini_file)
-    config.readfp(fp)
+    config.read_file(fp)
     bkg_info = []
     for b,bkg in enumerate(bkgfiles):
-        #print bkg
         bkg_binsum   = {}
         bkg_binlist  = []
         
@@ -129,10 +127,9 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
         bkg_expyield = 0
         # bkg xs from .ini file
         bkgbin_xs_pairs = config.items(bkg_channel)
-        #print bkgbin_xs_pairs
         if bkg_channel == "DYJetsToLL":
             #orders smallest HT to largest
-            bkg.sort(key = orderFall17DY)
+            bkg.sort(key = orderDY)
         else:
             if flag == "no":
                 break
@@ -161,21 +158,38 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
     #Sort the backgrounds from the smallest yields to largest        
     bkg_info = sorted(bkg_info, key = lambda bkg:bkg["expyield"])
     return bkg_info
-
+#
 def stackBkg(bkg_info,hist_to_stack,hsbkg,legend,stack_max,stack_min):
     for bkg in bkg_info:
         for b,bkgbin in enumerate(bkg["binlist"]):
             hbkg = bkgbin["tfile"].Get(hist_to_stack)
             hbkg.SetStats(0)
             hbkg.Scale(bkgbin["scale"])
-            hbkg.SetFillColor(bkgbin["color"])                                                          
-            hbkg.SetLineColor(bkgbin["color"])                                                          
+            hbkg.SetFillColor(bkgbin["color"])
+            hbkg.SetLineColor(bkgbin["color"])
             hbkg.SetMaximum(stack_max)
             hbkg.SetMinimum(stack_min)
-            hsbkg.Add(hbkg)                                                                             
-            hsbkg.Draw("HIST")                                                                          
+            hsbkg.Add(hbkg)
+            hsbkg.Draw("HIST")
             hsbkg.SetMaximum(stack_max)
             hsbkg.SetMinimum(stack_min)
-            if b == len(bkg["binlist"])-1:                                                              
+            if b == len(bkg["binlist"])-1:
                 legend.AddEntry(hbkg,bkg["name"],"f")
+
+def saveNpUncertainties(uncdf,filename):
+    npF = open(filename,'wb')
+    np.savez(npF,
+             h_z_pt  = uncdf['h_z_pt'].values,
+             h_z_eta = uncdf['h_z_eta'].values,
+             h_z_m   = uncdf['h_z_m'].values,
+             h_h_pt  = uncdf['h_h_pt'].values,
+             h_h_eta = uncdf['h_h_eta'].values,
+             h_h_m   = uncdf['h_h_m'].values,
+             h_h_sd  = uncdf['h_h_sd'].values,
+             h_met   = uncdf['h_met'].values,
+             h_zp_jigm = uncdf['h_zp_jigm'].values,
+             h_nd_jigm = uncdf['h_nd_jigm'].values,
+             h_ns_jigm = uncdf['h_ns_jigm'].values,
+             h_btag    = uncdf['h_btag'].values
+             )
 

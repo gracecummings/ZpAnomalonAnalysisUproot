@@ -1,5 +1,5 @@
 import subprocess
-import gecorg_py3 as go
+import gecorg as go
 import argparse
 import ROOT
 import numpy as np

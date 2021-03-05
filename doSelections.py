@@ -1,11 +1,11 @@
-import uproot4 as up4
-import uproot as up3
+import uproot as up4
+import uproot3 as up3
 import pandas as pd
 import numpy as np
 import boost_histogram as bh
 import argparse
 import glob
-import gecorg_py3 as go
+import gecorg as go
 
 parser = argparse.ArgumentParser()
 
@@ -75,14 +75,13 @@ if __name__=='__main__':
         lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
         highsb = btdf[btdf['hCandidate_sd'] >= 150.]
         sbdf   = pd.concat([lowsb,highsb])
-
         #btagging
         #btdf = srdf[srdf['hCandidate_'+btaggr] > float(btagwp)]
 
         #fdf is always the last dataframe
         #fdf = btdf
         if stype != 0:
-            fdf = btdf#all regio for soft drop mass plot
+            fdf = sbdf
         else:
             fdf = sbdf
 

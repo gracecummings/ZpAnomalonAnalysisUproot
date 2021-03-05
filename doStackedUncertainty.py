@@ -1,27 +1,9 @@
 import argparse
 import numpy as np
 import pandas as pd
-import gecorg_py3 as go
+import gecorg as go
 import configparser
 import glob
-
-def saveNpUncertainties(uncdf,filename):
-    npF = open(filename,'wb')
-    np.savez(npF,
-             h_z_pt  = uncdf['h_z_pt'].values,
-             h_z_eta = uncdf['h_z_eta'].values,
-             h_z_m   = uncdf['h_z_m'].values,
-             h_h_pt  = uncdf['h_h_pt'].values,
-             h_h_eta = uncdf['h_h_eta'].values,
-             h_h_m   = uncdf['h_h_m'].values,
-             h_h_sd  = uncdf['h_h_sd'].values,
-             h_met   = uncdf['h_met'].values,
-             h_zp_jigm = uncdf['h_zp_jigm'].values,
-             h_nd_jigm = uncdf['h_nd_jigm'].values,
-             h_ns_jigm = uncdf['h_ns_jigm'].values,
-             h_btag    = uncdf['h_btag'].values
-             )
-
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
@@ -59,17 +41,17 @@ if __name__=='__main__':
         datprefix = 'Run2018'
     config.read_file(fp)
     bkgdfs = {}
-    for name in bkgnames:
+    for n,name in enumerate(bkgnames):
         if name == "DYJetsToLL":
-            bkgcounts[name].sort(key=go.orderDY)
-            bkgerrfs[name].sort(key=go.orderDY)
+            bkgcounts[n].sort(key=go.orderDY)
+            bkgerrfs[n].sort(key=go.orderDY)
         bkgxspairs = config.items(name)
         bkgdfs[name] = []
-        for b,bkgbin in enumerate(bkgerrfs[name]):
+        for b,bkgbin in enumerate(bkgerrfs[n]):
             binname = bkgxspairs[b][0]
             xs = bkgxspairs[b][1]
             df = pd.read_pickle(bkgbin)
-            origevnts = np.load(bkgcounts[name][b])[0]
+            origevnts = np.load(bkgcounts[n][b])[0]
             scale = go.findScale(origevnts,float(xs),lumi)
             sdf = df*scale
             sqrddf = sdf**2
@@ -82,68 +64,30 @@ if __name__=='__main__':
     
     uncsqdDYJetsdf = sum(bkgdfs["DYJetsToLL"])
     uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
-    saveDYJetsNpunc  = go.makeOutFile(mcprefix+'.DYJetsToLL','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    saveNpUncertainties(uncDYJetsdf,saveDYJetsNpunc)
     saveDYJetsunc  = go.makeOutFile(mcprefix+'.DYJetsToLL','unc','.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     uncDYJetsdf.to_pickle(saveDYJetsunc)
-    #saveDYJetsuncCsv  = go.makeOutFile(mcprefix+'.DYJetsToLL','unc','.csv',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-
-    #uncDYJetsdf.to_csv(saveDYJetsuncCsv)
     
     uncsqdTTdf     = sum(bkgdfs["TT"])
     uncTTdf        = uncsqdTTdf**(1/2)
-    saveTTNpunc      = go.makeOutFile(mcprefix+'.TT','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     saveTTunc      = go.makeOutFile(mcprefix+'.TT','unc','.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    saveNpUncertainties(uncTTdf,saveTTNpunc)
     uncTTdf.to_pickle(saveTTunc)
     
     uncsqdWZdf     = sum(bkgdfs["WZTo2L2Q"])
     uncWZdf        = uncsqdWZdf**(1/2)
-    saveWZ2L2QNpunc  = go.makeOutFile(mcprefix+'.WZ2L2Q','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     saveWZ2L2Qunc  = go.makeOutFile(mcprefix+'.WZ2L2Q','unc','.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    saveNpUncertainties(uncWZdf,saveWZ2L2QNpunc)
     uncWZdf.to_pickle(saveWZ2L2Qunc)
     
     uncsqdZZdf     = sum(bkgdfs["ZZTo2L2Q"])
     uncZZdf        = uncsqdZZdf**(1/2)
-    saveZZ2L2QNpunc  = go.makeOutFile(mcprefix+'.ZZ2L2Q','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     saveZZ2L2Qunc  = go.makeOutFile(mcprefix+'.ZZ2L2Q','unc','.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    saveNpUncertainties(uncZZdf,saveWZ2L2QNpunc)
     uncZZdf.to_pickle(saveZZ2L2Qunc)
     
     #Combine all for stacks
     uncsqdAlldf    = uncsqdDYJetsdf+uncsqdTTdf+uncsqdWZdf+uncsqdZZdf
     uncAlldf       = uncsqdAlldf**(1/2)
-    saveAllBkgNpunc  = go.makeOutFile(mcprefix+'.AllZpAnomalonBkgs','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    saveNpUncertainties(uncAlldf,saveAllBkgNpunc)
-
-    #will only work once move stacker to python3
     totalUncFile = go.makeOutFile('Fall17.AllZpAnomalonBkgs','unc','.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     uncAlldf.to_pickle(totalUncFile)
 
-    #saving as a numpy zip file hard coded right now because no mistake goes unpunished.
-    #stacker just needs to be moved to python three to fix this mess
-    #THIS IS A HACK AND I HATE IT
-    #fileName = go.makeOutFile(mcprefix+'.AllZpAnomalonBkgs','unc','.npz',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    #npF = open(fileName,'wb')
-    #np.savez(npF,
-    #         h_z_pt  = uncAlldf['h_z_pt'].values,
-    #         h_z_eta = uncAlldf['h_z_eta'].values,
-    #         h_z_m   = uncAlldf['h_z_m'].values,
-    #         h_h_pt  = uncAlldf['h_h_pt'].values,
-    #         h_h_eta = uncAlldf['h_h_eta'].values,
-    #         h_h_m   = uncAlldf['h_h_m'].values,
-    #         h_h_sd  = uncAlldf['h_h_sd'].values,
-    #         h_met   = uncAlldf['h_met'].values,
-    #         h_zp_jigm = uncAlldf['h_zp_jigm'].values,
-    #         h_nd_jigm = uncAlldf['h_nd_jigm'].values,
-    #         h_ns_jigm = uncAlldf['h_ns_jigm'].values,
-    #         h_btag    = uncAlldf['h_btag'].values
-    #         )
-
-
-    #Now, do the same for data. This can clearly be combined into a function of somekind,
-    #but we need results now!
 
     datcountfs = glob.glob('analysis_output_ZpAnomalon/2021-01-14/Run2017*totalevents_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npy')
     daterrfs = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+datprefix+'*selected_errors*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
@@ -163,19 +107,4 @@ if __name__=='__main__':
     datFileName = go.makeOutFile(datprefix+'.AllZpAnomalonData','unc','.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     datuncall.to_pickle(datFileName)
 
-    #npdatF = open(datFileName,'wb')
-    #np.savez(npdatF,
-    #         h_z_pt  = datuncall['h_z_pt'].values,
-    #         h_z_eta = datuncall['h_z_eta'].values,
-    #         h_z_m   = datuncall['h_z_m'].values,
-    #         h_h_pt  = datuncall['h_h_pt'].values,
-    #         h_h_eta = datuncall['h_h_eta'].values,
-    #         h_h_m   = datuncall['h_h_m'].values,
-    #         h_h_sd  = datuncall['h_h_sd'].values,
-    #         h_met   = datuncall['h_met'].values,
-    #         h_zp_jigm = datuncall['h_zp_jigm'].values,
-    #         h_nd_jigm = datuncall['h_nd_jigm'].values,
-    #         h_ns_jigm = datuncall['h_ns_jigm'].values,
-    #         h_btag    = datuncall['h_btag'].values
-    #         )
 

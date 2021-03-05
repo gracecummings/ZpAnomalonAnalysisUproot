@@ -6,7 +6,7 @@ if __name__=='__main__':
     #steps to run
     #assumes you have run the whole thing at the start of the day
     #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
-    steps = {"selections":False,"uncs":False,"ratios":True,"opts":False,"cutflow":False}
+    steps = {"selections":True,"uncs":True,"ratios":True,"opts":True,"cutflow":True}
     
     #cut list, Zpt, Hpt, met,btagger,btagwp
     cutlist = [['200.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
@@ -78,7 +78,7 @@ if __name__=='__main__':
             #Optimization Plots
             if steps["opts"]:
                 for plot in plots:
-                    subprocess.run(["python2","stackForOptimization.py","-L",era[1],"-x","10`0.0","-p",plot,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0]])
+                    subprocess.run(["python","stackForOptimization.py","-L",era[1],"-x","10.0","-p",plot,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0]])
                 #subprocess.run(["python","stackForOptimization.py","-L",lumi,"-x","100.0","-p",plot,"-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",'2021-02-03'])
 
             if steps["cutflow"]:

@@ -2,7 +2,7 @@ import argparse
 import ROOT
 import glob
 import os
-import gecorg
+import gecorg_py2 as gecorg
 import numpy as np
 #from datetime import date
 from ROOT import kOrange, kViolet, kCyan, kGreen, kPink, kAzure, kMagenta, kBlue, kBird
@@ -19,6 +19,8 @@ if __name__=='__main__':
     parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
+    parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
+    parser.add_argument("-y","--year", type=int,help = "2 digit indicator of year")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
     args = parser.parse_args()
 
@@ -29,18 +31,21 @@ if __name__=='__main__':
     zptcut        = args.zptcut
     hptcut        = args.hptcut
     metcut        = args.metcut
-    plotmax       = 160.0
+    btagwp        = args.btagwp
+    year          = args.year
+    plotmax       = 15.0
     
     #Samples
     #this is a hack right now, need to decide how to do sideband and signal better
-    bkgfilessb = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/','upout',zptcut,hptcut,metcut)
-    bkgfilessr = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/signalregion_only','upout',zptcut,hptcut,metcut)
-    datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/Run2017*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')#not changed for new naming yet
+    bkgfilessb = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/','upout',zptcut,hptcut,metcut,btagwp,year)
+    bkgfilessr = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/signalregion_only','upout',zptcut,hptcut,metcut,btagwp,year)
+    datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/Run2017*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
 
     #These are the uncertainties
-    bkguncssb  = np.load('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
-    bkguncssr  = np.load('analysis_output_ZpAnomalon/'+args.date+'/signalregion_only/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
-    datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.npz')
+    bkguncssb  = np.load('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
+    bkguncssr  = np.load('analysis_output_ZpAnomalon/'+args.date+'/signalregion_only/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
+
+    datuncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/sideband_only/Fall17.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
 
     
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
@@ -76,7 +81,7 @@ if __name__=='__main__':
 
     #And the data stack
     hsdat = dat_info[0].Get(hname)
-    hsdat.SetStats(0)
+    hsdat.SetStats(hsdat)
     hsdat.SetMaximum(plotmax)
     hsdat.SetMinimum(0.0)
     hsdat.SetMarkerStyle(8)
@@ -158,18 +163,27 @@ if __name__=='__main__':
             datunc = datuncs[hname][ibin-1]
             sbunc  = bkguncssb[hname][ibin-1]
             srunc  = bkguncssr[hname][ibin-1]
-            if data != 0:
-                bkgest = alpha*data
+            #if data != 0:
+            bkgest = alpha*data
+            if bkgsb != 0 and bkgsr != 0:
                 alphaunc = alpha*sqrt((sbunc/bkgsb)**2+(srunc/bkgsr)**2)
-                estunc   = bkgest*sqrt((alphaunc/alpha)**2+(datunc/data)**2)
+                if alpha != 0:
+                    estunc   = bkgest*sqrt((alphaunc/alpha)**2+(datunc/data)**2)
+                else:
+                    estunc = 0.0
                 ratio    = bkgest/bkgsr
-                ratiounc = ratio*sqrt((estunc/bkgest)**2+(srunc/bkgsr)**2)
+                if bkgest != 0:
+                    ratiounc = ratio*sqrt((estunc/bkgest)**2+(srunc/bkgsr)**2)
+                else:
+                    ratiounc = 0
             else:
-                bkgest = alpha*data
-                alphaunc = alpha*sqrt((sbunc/bkgsb)**2+(srunc/bkgsr)**2)
-                estunc   = bkgest*sqrt((alphaunc/alpha)**2)
-                ratio    = bkgest/bkgsr
-                ratiounc = ratio*sqrt((srunc/bkgsr)**2)
+                alphaunc = 0#alpha*sqrt((sbunc/bkgsb)**2+(srunc/bkgsr)**2)
+                if alpha != 0:
+                    estunc   = bkgest*sqrt((alphaunc/alpha)**2)
+                else:
+                    estunc = 0
+                ratio    = -1
+                ratiounc = 0
         else:
             alphaunc = -1
             ratio = -1
@@ -267,5 +281,5 @@ if __name__=='__main__':
     tc.Update()
 
     #save the canvas
-    pngname = gecorg.makeOutFile(hname,'alpha','.png',str(zptcut),str(hptcut),str(metcut))
+    pngname = gecorg.makeOutFile(hname,'alpha','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(pngname)

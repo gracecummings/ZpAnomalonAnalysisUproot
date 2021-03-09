@@ -37,7 +37,8 @@ if __name__=='__main__':
     btagwp = args.btagWP
 
     #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'*_topiary*.root')
-    inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
+    #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
+    inputfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
     print("    Doing selections on:")
     print(inputfiles)
     stype,year = go.sampleType(samp)
@@ -58,6 +59,8 @@ if __name__=='__main__':
     events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
 
 
+    #print(events['event_weight'])
+    
     #print(jets.ls))
     
     for b in events:

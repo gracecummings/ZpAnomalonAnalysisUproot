@@ -143,9 +143,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    string ourtrg;
    int trgidx    = -1;
    int trgval;
-   TFile * fthen;
-   TFile * fnow;
-
+   TFile * fthen = 0;
+   TFile * fnow = 0;
 
    //counters
    int counttrigpass = 0;
@@ -173,9 +172,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       }
 
       //debug
-      if (jentry == 200) {
-      break;
-      }
+      //if (jentry == 200) {
+      //break;
+      //}
 
       //Trigger decisions
       size_t pos = 0;

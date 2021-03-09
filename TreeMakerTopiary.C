@@ -23,6 +23,21 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("SelectedElectrons*",1);
    fChain->SetBranchStatus("eeBadScFilter",1);
 
+   if (sampleType != 0){
+     fChain->SetBranchStatus("GenParticles*",1);
+   }
+
+
+   TFile qcdnnloFile("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
+   TH1D *hqcdnnlosf  = (TH1D*)qcdnnloFile.Get("eej");
+   hqcdnnlosf->SetDirectory(0);
+   qcdnnloFile.Close();
+   TFile ewknloFile("../DYCorrection/merged_kfactors_zjets.root","READ");
+   TH1F *hewknlosf = (TH1F*)ewknloFile.Get("kfactor_monojet_ewk");
+   hewknlosf->SetDirectory(0);
+   ewknloFile.Close();
+
+
    //Initialize Stuff
    TLorentzVector hCandidate;
    TLorentzVector ZCandidate;
@@ -42,7 +57,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double mEstZp;
    double mEstND;
    double mEstNS;
-   float  evntw = 1;
+   double  evntw;
 
       //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
@@ -71,7 +86,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    TBranch *ZpMest    = trimTree->Branch("ZPrime_mass_est",&mEstZp,"mEstZp/D");
    TBranch *NDMest    = trimTree->Branch("ND_mass_est",&mEstND,"mEstND/D");
    TBranch *NSMest    = trimTree->Branch("NS_mass_est",&mEstNS,"mEstNS/D");
-   TBranch *evntweight = trimTree->Branch("event_weight",&evntw,"evntw/F");
+   TBranch *evntweight = trimTree->Branch("event_weight",&evntw,"evntw/D");
    hnskimed->SetBinContent(1,nentries);
    hnorigevnts->SetBinContent(1,totalOriginalEvents);
 
@@ -138,9 +153,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    int counthpass    = 0;
    int countmetpass  = 0;
    int countpass     = 0;
-
-
-
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -161,9 +173,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       }
 
       //debug
-      //if (jentry == 200) {
-      //break;
-      //}
+      if (jentry == 200) {
+      break;
+      }
 
       //Trigger decisions
       size_t pos = 0;
@@ -216,6 +228,44 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	}
       }
 
+      //DY+Jets k-factors
+      float evntw_hold = 1.;
+      TLorentzVector gZ;
+      if (sampleType != 0) {//Not Data
+	int gpid;
+	//TLorentzVector gh;
+	unsigned long ngen = GenParticles->size();
+	//std::cout<<"Number of Gen Particles: "<<ngen<<std::endl;
+	for (unsigned long i = 0; i < ngen; ++i) {
+	  int gpid = GenParticles_PdgId->at(i);
+	  //std::cout<<"PID "<<gpid<<std::endl;
+	  if (gpid == 23) {
+	    gZ = GenParticles->at(i);
+	  }
+	}
+
+	float qcdnlosf   = 1;
+	double qcdnnlosf = 1;
+	float ewknlosf   = 1;
+	if (sampleType == 2) {//DY+Jets
+	  qcdnlosf = 1.423*exp(-0.002257*gZ.Pt())+0.451;
+	  if (qcdnlosf <= 0.0) {
+	    qcdnlosf = 1.;
+	  }
+	  int zptbinqcd  = hqcdnnlosf->FindBin(gZ.Pt());
+	  qcdnnlosf = hqcdnnlosf->GetBinContent(zptbinqcd);
+	  if (qcdnnlosf <= 0.0) {
+	    qcdnnlosf = 1.;
+	  }
+	  int zptbinewk = hewknlosf->FindBin(gZ.Pt());
+	  ewknlosf = hewknlosf->GetBinContent(zptbinewk);
+	  if (ewknlosf <= 0.0) {
+	    ewknlosf = 1.;
+	  }
+	  evntw_hold = ewknlosf*qcdnnlosf*qcdnlosf;
+	}
+      }
+      
       //Z exploration
       unsigned int nselmu = SelectedMuons->size();
       unsigned int nselel = SelectedElectrons->size();
@@ -314,11 +364,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	ZCandidate_phi = theZ.Phi();
 	ZCandidate_eta = theZ.Eta();
 	ZCandidate_m   = theZ.M();
+	evntw          = evntw_hold;
 	counthpass += 1;
       }
       
       //Fill the Tree
-      evntw = 1.;
       if (Cut(ientry) < 0) continue;
       if (passZ && passh && passTrig && sampleType !=0 && mumuchan) {
 	trimTree->Fill();

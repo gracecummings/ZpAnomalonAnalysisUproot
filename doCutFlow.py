@@ -13,6 +13,7 @@ if __name__=='__main__':
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
+    parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
     args = parser.parse_args()
 
     #Get command line parameters
@@ -22,12 +23,13 @@ if __name__=='__main__':
     hptcut        = args.hptcut
     metcut        = args.metcut
     btagwp        = args.btagwp
+    year          = args.year
 
-    bkgfiles = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout',zptcut,hptcut,metcut,btagwp)
+    bkgfiles = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout',zptcut,hptcut,metcut,btagwp,year)
     #bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
-    bkginfo  = go.prepBkg(bkgfiles,bkgnames,bkgcols,'xsects_2017.ini',lumi)#gathers xs scales
+    bkginfo  = go.prepBkg(bkgfiles,bkgnames,bkgcols,'xsects_2017.ini',lumi,"yes")#gathers xs scales
 
     metstr = "Percent Passing \(MET > "+str(metcut)+"\)"
     zptstr = "Percent Passing \(Z p_{T} > "+str(zptcut)+"\)"

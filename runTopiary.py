@@ -16,10 +16,11 @@ if __name__=="__main__":
     year = args.year
     samptype = -1
 
-    print samp
     samptype,checkedyear = go.sampleType(samp)
+    #samptype = 1
+    #checkedyear = 17
     if samptype < 0:
-        print "You have a problem, we do not undertand the sample coding"
+        print("You have a problem, we do not undertand the sample coding")
 
     origevnts = 0
     
@@ -36,12 +37,12 @@ if __name__=="__main__":
         origevnts = inChain.GetEntries()
 
     outFile = go.makeOutFile(samp,'topiary','.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
-    print "Making topiary of ",samp
-    print "     Sample type ",samptype
-    print "     Sample Year ",year,checkedyear
-    print "     Events in TChain: ",inChain.GetEntries()
-    print ("     Original data set had {0} events in type.").format(origevnts)
-    print "    Saving topiary in ",outFile
+    print( "Making topiary of ",samp)
+    print("     Sample type ",samptype)
+    print("     Sample Year ",checkedyear)
+    print("     Events in TChain: ",inChain.GetEntries())
+    print(("     Original data set had {0} events in type.").format(origevnts))
+    print("    Saving topiary in ",outFile)
 
 
     ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")

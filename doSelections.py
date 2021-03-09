@@ -1,11 +1,11 @@
-import uproot4 as up4
-import uproot as up3
+import uproot as up4
+import uproot3 as up3
 import pandas as pd
 import numpy as np
 import boost_histogram as bh
 import argparse
 import glob
-import gecorg_py3 as go
+import gecorg as go
 
 parser = argparse.ArgumentParser()
 
@@ -37,10 +37,12 @@ if __name__=='__main__':
     btagwp = args.btagWP
 
     #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'*_topiary*.root')
-    inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
-    print("Doing selections on:")
+    #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
+    inputfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
+    print("    Doing selections on:")
     print(inputfiles)
-    stype = go.sampleType(samp)
+    stype,year = go.sampleType(samp)
+    print(stype)
     
     branches = [b'ZCandidate_*',
                 b'hCandidate_*',
@@ -57,6 +59,8 @@ if __name__=='__main__':
     events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
 
 
+    #print(events['event_weight'])
+    
     #print(jets.ls))
     
     for b in events:
@@ -74,19 +78,17 @@ if __name__=='__main__':
         lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
         highsb = btdf[btdf['hCandidate_sd'] >= 150.]
         sbdf   = pd.concat([lowsb,highsb])
-
         #btagging
-        btdf = srdf[srdf['hCandidate_'+btaggr] > float(btagwp)]
+        #btdf = srdf[srdf['hCandidate_'+btaggr] > float(btagwp)]
 
-        #print(hptdf)
         #fdf is always the last dataframe
-        #fdf = sbdf
+        #fdf = btdf
         if stype != 0:
             fdf = sbdf
         else:
             fdf = sbdf
 
-        print("number of passing events ",len(fdf))
+        print("    number of passing events ",len(fdf))
         #print("number of btag passing events ",len(btdf))
 
     #lets make some histograms.

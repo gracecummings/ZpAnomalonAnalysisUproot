@@ -1,12 +1,8 @@
 import argparse
 import ROOT
 import glob
-#import os
 import gecorg
 import numpy as np
-#from datetime import date
-#from ROOT import kOrange, kViolet, kCyan, kGreen, kPink, kAzure, kMagenta, kBlue, kBird
-#from math import sqrt
 
 if __name__=='__main__':
     #build module objects
@@ -47,7 +43,17 @@ if __name__=='__main__':
     
     for i,btag in enumerate(btaggers):
         #Samples
-        bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout_'+btag,zptcut,hptcut,metcut)
+        #bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout_'+btag,zptcut,hptcut,metcut)
+        if year == 18:
+            mcprefix = 'Autumn18'
+        if year == 17:
+            mcprefix = 'Fall17'
+        
+        DYJetsToLL = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+mcprefix+'.DYJetsToLL_M-50_HT*upout_'+btag+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp*')
+        TT         = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+mcprefix+'.TTT*upout_'+btag+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp*')                                         
+        WZTo2L2Q   = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+mcprefix+'.WZTo2L2Q*upout_'+btag+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp*')                                    
+        ZZTo2L2Q   = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+mcprefix+'.ZZTo2L2Q*upout_'+btag+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp*')                                    
+        bkgfiles   = [DYJetsToLL,TT,WZTo2L2Q,ZZTo2L2Q]
         bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
         sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/ZpAnomalonHZ_UFO-'+sigsamp+'_upout_'+btag+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'.root')
 

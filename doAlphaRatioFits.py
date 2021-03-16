@@ -20,7 +20,7 @@ def makeAddedHist(s17,s18,xspairs,hsb):
         xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
         scale = go.findScale(numevents,xs,41.53)
         h = tf.Get('h_zp_jigm')
-        #h.Scale(scale)
+        h.Scale(scale)
         hsb.Add(h)
 
     for i,f in enumerate(s18):
@@ -31,7 +31,7 @@ def makeAddedHist(s17,s18,xspairs,hsb):
         xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
         scale = go.findScale(numevents,xs,59.74)
         h = tf.Get('h_zp_jigm')
-        #h.Scale(scale)
+        h.Scale(scale)
         hsb.Add(h)
 
     return hsb
@@ -61,51 +61,23 @@ if __name__=='__main__':
     fp = open('xsects_2017.ini')#2017 and 2018dy+jets xs same
     config.read_file(fp)
     xspairs = config.items("DYJetsToLL")
-    f17dyjetsb.sort(key = go.orderDY)
-    a18dyjetsb.sort(key = go.orderDY)
 
     tf1 = ROOT.TFile(f17dyjetsb[0])
     hsb = tf1.Get('h_zp_jigm')
     hsb.Reset("ICESM")
-    #hsb2 = hsb.Clone()
-    tf3 = ROOT.TFile(f17dyjetsb[1])
-    hsb2 = tf3.Get('h_zp_jigm')
-    hsb2.Reset("ICESM")
-
-    for i,f in enumerate(f17dyjetsb):
-        tf = ROOT.TFile(f)
-        numevents = float(str(tf.Get('hnevents').GetString()))
-        print(f)
-        print(numevents)
-        xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
-        scale = go.findScale(numevents,xs,41.53)
-        h = tf.Get('h_zp_jigm')
-        #h.Scale(scale)
-        hsb.Add(h)
-
-    for i,f in enumerate(a18dyjetsb):
-        tf = ROOT.TFile(f)
-        numevents = float(str(tf.Get('hnevents').GetString()))
-        print(f)
-        print(numevents)
-        xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
-        scale = go.findScale(numevents,xs,59.74)
-        h = tf.Get('h_zp_jigm')
-        #h.Scale(scale)
-        hsb.Add(h)
-
-    hsb2 = makeAddedHist(f17dyjetsb,a18dyjetsb,xspairs,hsb2)
+    hsb = makeAddedHist(f17dyjetsb,a18dyjetsb,xspairs,hsb)
         
     tf2 = ROOT.TFile(f17dyjetsr[0])
     hsr = tf2.Get('h_zp_jigm')
     hsr.Reset("ICESM")
-
+    hsr = makeAddedHist(f17dyjetsr,a18dyjetsr,xspairs,hsr)
+    
     #Draw
     tc.cd(1)
     hsb.Draw()
     tc.cd(2)
-    hsb2.Draw()
-    tc.cd(3)
     hsr.Draw()        
+    tc.cd(3)
+
     figname = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figname)

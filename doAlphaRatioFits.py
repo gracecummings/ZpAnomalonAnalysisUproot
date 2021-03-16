@@ -7,33 +7,31 @@ import numpy as np
 import pandas as pd
 import configparser
 
-def makeAddedHist(s17,s18,xspairs):
+def makeAddedHist(s17,s18,xspairs,hsb):
     s17.sort(key = go.orderDY)
     s18.sort(key = go.orderDY)
-
-    tf1 = ROOT.TFile(s17[0])
-    numevents = float(str(tf1.Get('hnevents').GetString()))
-    xs = float(xspairs[0][1].split()[0])*1000#Into Femtobarn
-    scale = go.findScale(numevents,xs,41.53)
-    hsb = tf1.Get('h_zp_jigm')
-    hsb.Scale(scale)
-
-    for i,f in enumerate(s17[1:]):
+    
+    print("infunction")
+    for i,f in enumerate(s17):
         tf = ROOT.TFile(f)
         numevents = float(str(tf.Get('hnevents').GetString()))
-        xs = float(xspairs[i+1][1].split()[0])*1000#Into Femtobarn
-        scale = go.findScale(numevents,xs,41.53)
-        h = tf.Get('h_zp_jigm')
-        h.Scale(scale)
-        hsb.Add(h)
-
-    for i,f in enumerate(s18):
-        tf = ROOT.TFile(f)
-        numevents = float(str(tf.Get('hnevents').GetString()))
+        print(f)
+        print(numevents)
         xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
         scale = go.findScale(numevents,xs,41.53)
         h = tf.Get('h_zp_jigm')
-        h.Scale(scale)
+        #h.Scale(scale)
+        hsb.Add(h)
+
+    for i,f in enumerate(s18):
+        print(f)
+        tf = ROOT.TFile(f)
+        numevents = float(str(tf.Get('hnevents').GetString()))
+        print(numevents)
+        xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
+        scale = go.findScale(numevents,xs,59.74)
+        h = tf.Get('h_zp_jigm')
+        #h.Scale(scale)
         hsb.Add(h)
 
     return hsb
@@ -42,7 +40,7 @@ if __name__=='__main__':
 
     #make the output
     tc = ROOT.TCanvas("tc","alphafits",1350,400)
-    tc.Divide(1,3)
+    tc.Divide(3,1)
     
     #will replace with command line options
     bkg_dir = 'analysis_output_ZpAnomalon/2021-03-16/'
@@ -67,36 +65,47 @@ if __name__=='__main__':
     a18dyjetsb.sort(key = go.orderDY)
 
     tf1 = ROOT.TFile(f17dyjetsb[0])
-    numevents = float(str(tf1.Get('hnevents').GetString()))
-    xs = float(xspairs[0][1].split()[0])*1000#Into Femtobarn
-    scale = go.findScale(numevents,xs,41.53)
     hsb = tf1.Get('h_zp_jigm')
-    hsb.Scale(scale)
+    hsb.Reset("ICESM")
+    #hsb2 = hsb.Clone()
+    tf3 = ROOT.TFile(f17dyjetsb[1])
+    hsb2 = tf3.Get('h_zp_jigm')
+    hsb2.Reset("ICESM")
 
-    for i,f in enumerate(f17dyjetsb[1:]):
+    for i,f in enumerate(f17dyjetsb):
         tf = ROOT.TFile(f)
         numevents = float(str(tf.Get('hnevents').GetString()))
-        xs = float(xspairs[i+1][1].split()[0])*1000#Into Femtobarn
+        print(f)
+        print(numevents)
+        xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
         scale = go.findScale(numevents,xs,41.53)
         h = tf.Get('h_zp_jigm')
-        h.Scale(scale)
+        #h.Scale(scale)
         hsb.Add(h)
 
     for i,f in enumerate(a18dyjetsb):
         tf = ROOT.TFile(f)
         numevents = float(str(tf.Get('hnevents').GetString()))
+        print(f)
+        print(numevents)
         xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
-        scale = go.findScale(numevents,xs,41.53)
+        scale = go.findScale(numevents,xs,59.74)
         h = tf.Get('h_zp_jigm')
-        h.Scale(scale)
+        #h.Scale(scale)
         hsb.Add(h)
 
-    hsr = makeAddedHist(f17dyjetsr,a18dyjetsr,xspairs)
+    hsb2 = makeAddedHist(f17dyjetsb,a18dyjetsb,xspairs,hsb2)
+        
+    tf2 = ROOT.TFile(f17dyjetsr[0])
+    hsr = tf2.Get('h_zp_jigm')
+    hsr.Reset("ICESM")
 
     #Draw
     tc.cd(1)
     hsb.Draw()
     tc.cd(2)
-    hsr.Draw()
-    
-        
+    hsb2.Draw()
+    tc.cd(3)
+    hsr.Draw()        
+    figname = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    tc.SaveAs(figname)

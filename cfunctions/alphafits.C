@@ -18,11 +18,12 @@ Double_t landauCustom(Double_t *x, Double_t *par) {
 }
 
 TF1 * landauFit(TH1D *hist) {
-  TF1 *lfit = new TF1("testlfit","TMath::Landau(x,[0],[1])",900,5000);
+  TF1 *lfit = new TF1("testlfit","[0]*TMath::Landau(x,[1],[2])",500,5000);
   //lfit->SetParameter(0,hist->GetMean());
-  lfit->SetParameter(0,1592);
+  lfit->SetParameter(0,30);
   //lfit->SetParameter(1,hist->GetRMS());
-  lfit->SetParameter(1,180);
+  lfit->SetParameter(1,1592);
+  lfit->SetParameter(1,250);
   hist->Fit("testlfit","R");
   TF1 * testfit = hist->GetFunction("testlfit");
   std::cout<<lfit->GetParameters()<<std::endl;

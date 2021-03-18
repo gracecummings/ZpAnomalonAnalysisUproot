@@ -10,8 +10,7 @@ import configparser
 def makeAddedHist(s17,s18,xspairs,hsb):
     s17.sort(key = go.orderDY)
     s18.sort(key = go.orderDY)
-    
-    print("infunction")
+
     for i,f in enumerate(s17):
         tf = ROOT.TFile(f)
         numevents = float(str(tf.Get('hnevents').GetString()))
@@ -67,7 +66,7 @@ if __name__=='__main__':
     hsr = tf2.Get('h_zp_jigm')
     hsr.Reset("ICESM")
     hsr = makeAddedHist(f17dyjetsr,a18dyjetsr,xspairs,hsr)
-    
+    hsrt = hsr.Clone()
     #crysb = ROOT.TF1("crysb",ROOT.Math.CrystalBall())
     
     
@@ -80,21 +79,12 @@ if __name__=='__main__':
     hsr.Fit("landau","WLR+","",900,5000)
     lsr = hsr.GetFunction("landau")
 
-    fsb = lsb.Clone("fsb")
-    fsr = lsr.Clone("fsr")
-    alpha = ROOT.TF1("alpha","fsr/fsb",900,500)
-
-    #ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
-    #ROOT.gSystem.Load("cfunctions/alphafits_C")
-    #alpha = ROOT.TF1("alpha",ROOT.function_divide,900,5000,0)
-    #print(type(alpha))
-    
-    #tc.cd(3)
-    #alpha.Draw()
-    #fsr.Draw("SAME")
-    #alpha.Draw("SAME")
-
-
+    ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
+    ROOT.gSystem.Load("cfunctions/alphafits_C")
+    tc.cd(3)
+    #doubled = ROOT.histDoubler(hclone)
+    testfit = ROOT.landauFit(hsrt)
+    #testfit.Draw()
     
     figname = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figname)

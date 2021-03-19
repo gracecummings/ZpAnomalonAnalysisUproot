@@ -43,9 +43,14 @@ TF1 * landauFit(TH1D *hist, char *name) {
   lfit->SetParameter(0,amp);
   lfit->SetParameter(1,max);
   lfit->SetParameter(2,rms);
+  double samp = lfit->GetParameter(0);
   hist->Fit(name,"LR0+");
   //hist->Draw();
   TF1* fitout = hist->GetFunction(name);
+  double acamp = fitout->GetParameter(0);
+  //std::cout<<" guessed amp: "<<amp<<std::endl;
+  //std::cout<<"     set amp: "<<samp<<std::endl;
+  //std::cout<<"post fit amp: "<<acamp<<std::endl;
   return fitout;
 }
 
@@ -64,9 +69,8 @@ TF1 * alphaRatioMaker(TH1D *hsb, TH1D *hsr){
   Double_t sbsig = sbfit->GetParameter(2);
   Double_t sroff = srfit->GetParameter(0);
   Double_t srmpv = srfit->GetParameter(1);
-  std::cout<<"srmpv: "<<srmpv<<std::endl;
   Double_t srsig = srfit->GetParameter(2);
-  TF1 *alpha = new TF1("alpha",landauRatio,6);
+  TF1 *alpha = new TF1("alpha",landauRatio,900,5000,6);
   alpha->SetParameter(0,sroff);
   alpha->SetParameter(1,srmpv);
   alpha->SetParameter(2,srsig);
@@ -74,8 +78,9 @@ TF1 * alphaRatioMaker(TH1D *hsb, TH1D *hsr){
   alpha->SetParameter(4,sbmpv);
   alpha->SetParameter(5,sbsig);
  
-  Double_t landau1mpv = alpha->GetParameter(1);
-  std::cout<<"landau1 mpv: "<<landau1mpv<<std::endl;
+  //Double_t landau1mpv = alpha->GetParameter(1);
+  //std::cout<<"Set Most Probable Value: "<<srmpv<<std::endl;
+  //std::cout<<"Read Most Probable Valu: "<<landau1mpv<<std::endl;
   //alpha->Draw();
   return alpha;
 }

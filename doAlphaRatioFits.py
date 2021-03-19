@@ -85,8 +85,8 @@ if __name__=='__main__':
     #srfit.Draw()
     tc.cd(3)
     alpha = ROOT.alphaRatioMaker(hsbt,hsrt)
-    print(alpha)
-    #alpha.Draw()
+    #print(alpha)
+    alpha.Draw()
 
     figname = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figname)

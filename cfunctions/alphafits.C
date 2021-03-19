@@ -3,6 +3,7 @@
 #include "TH1D.h"
 #include "TMath.h"
 #include <iostream>
+#include <cstring>
 
 //TF1 * fsb = NULL;
 //#TF1 * fsr = NULL;
@@ -17,25 +18,24 @@ Double_t landauCustom(Double_t *x, Double_t *par) {
   return TMath::Landau(*x,par[0],par[1]);
 }
 
-// this fucntion take 6 parameters 0..2 describe landau1
-// 3..5 describe landau2
-// returns landau1(x) / landau2(x)
-Double_t landauRatio(Double_t *x, Double_t *par) {
-  double numer = landauCustom(x,par);
-  double denom = landauCustom(x,&par[3]);
-  if (denom==0) return 1.0;  // project against divide by 0
-  return numer/denom;	  
-}
-
 // implement a regular C++ function for maximum flexibility
 Double_t landauModel(Double_t *X, Double_t *par){
   double x =X[0];  // get ring of pointer/array notation
   return par[0] * TMath::Landau(x,par[1],par[2]);
 }
 
-TF1 * landauFit(TH1D *hist) {
-  TF1 *lfit = new TF1("testl",landauModel,900,5000,3);//options: low range, high range, num param
+// this fucntion take 6 parameters 0..2 describe landau1
+// 3..5 describe landau2
+// returns landau1(x) / landau2(x)
+Double_t landauRatio(Double_t *x, Double_t *par) {
+  double numer = landauModel(x,par);
+  double denom = landauModel(x,&par[3]);
+  if (denom==0) return 1.0;  // project against divide by 0
+  return numer/denom;	  
+}
 
+TF1 * landauFit(TH1D *hist, char *name) {
+  TF1 *lfit = new TF1(name,landauModel,900,5000,3);//options: low range, high range, num param
   int binmax = hist->GetMaximumBin();
   double max = hist->GetXaxis()->GetBinCenter(binmax);
   double amp = hist->GetMaximum();
@@ -43,11 +43,43 @@ TF1 * landauFit(TH1D *hist) {
   lfit->SetParameter(0,amp);
   lfit->SetParameter(1,max);
   lfit->SetParameter(2,rms);
-  hist->Fit("testl","LR+");
-  hist->Draw();
-  TF1* fitout = hist->GetFunction("testl");
+  hist->Fit(name,"LR0+");
+  //hist->Draw();
+  TF1* fitout = hist->GetFunction(name);
   return fitout;
 }
+
+TF1 * alphaRatioMaker(TH1D *hsb, TH1D *hsr){
+  string sb = "sbl";
+  string sr = "srl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  TF1 *sbfit= landauFit(hsb,sbl);
+  TF1 *srfit= landauFit(hsr,srl);
+  Double_t sboff = sbfit->GetParameter(0);
+  Double_t sbmpv = sbfit->GetParameter(1);
+  Double_t sbsig = sbfit->GetParameter(2);
+  Double_t sroff = srfit->GetParameter(0);
+  Double_t srmpv = srfit->GetParameter(1);
+  std::cout<<"srmpv: "<<srmpv<<std::endl;
+  Double_t srsig = srfit->GetParameter(2);
+  TF1 *alpha = new TF1("alpha",landauRatio,6);
+  alpha->SetParameter(0,sroff);
+  alpha->SetParameter(1,srmpv);
+  alpha->SetParameter(2,srsig);
+  alpha->SetParameter(3,sboff);
+  alpha->SetParameter(4,sbmpv);
+  alpha->SetParameter(5,sbsig);
+ 
+  Double_t landau1mpv = alpha->GetParameter(1);
+  std::cout<<"landau1 mpv: "<<landau1mpv<<std::endl;
+  //alpha->Draw();
+  return alpha;
+}
+
 
 TF1 * landauFitExplicit(TH1D *hist) {
   TF1 *lfit = new TF1("testlfit","[0]*TMath::Landau(x,[1],[2])",500,5000);
@@ -62,26 +94,7 @@ TF1 * landauFitExplicit(TH1D *hist) {
   return (testfit);
 }
 
-TH1D *histDoubler(TH1D *hist){
-  hist->Scale(2);
-  return hist;
-}
 
-TF1 * alphaRatioMaker(TH1D *histsr,TH1D *histsb) {
-  TF1 *srfit = new TF1("srfit","[0]*TMath::Landau(x,[1],[2])",500,5000);
-  TF1 *sbfit = new TF1("sbfit","[0]*TMath::Landau(x,[1],[2])",500,5000);
-  srfit->SetParameter(0,30);
-  srfit->SetParameter(1,1592);
-  srfit->SetParameter(1,250);
-  histsr->Fit("srfit","R0");
-  TF1 * testfitsr = histsr->GetFunction("srfit");
-  sbfit->SetParameter(0,34);
-  sbfit->SetParameter(1,1598);
-  sbfit->SetParameter(1,250);
-  histsb->Fit("sbfit","R0");
-  TF1 * testfitsb = histsb->GetFunction("sbfit");
-  TF1 * alpha = new TF1("alpha","srfit/sbfit");
-  return alpha;
-}
+
 
 

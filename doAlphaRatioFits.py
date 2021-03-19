@@ -67,24 +67,23 @@ if __name__=='__main__':
     hsr.Reset("ICESM")
     hsr = makeAddedHist(f17dyjetsr,a18dyjetsr,xspairs,hsr)
     hsrt = hsr.Clone()
+    hsbt = hsb.Clone()
     #crysb = ROOT.TF1("crysb",ROOT.Math.CrystalBall())
     
     
     #Draw
     ROOT.gStyle.SetOptFit(1011)
     tc.cd(1)
-    hsb.Fit("landau","WLR+","",900,5000)
+    hsb.Fit("landau","LR+","",900,5000)
     lsb = hsb.GetFunction("landau")
     tc.cd(2)
-    hsr.Fit("landau","WLR+","",900,5000)
+    hsr.Fit("landau","LR+","",900,5000)
     lsr = hsr.GetFunction("landau")
 
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")
     tc.cd(3)
-    #doubled = ROOT.histDoubler(hclone)
-    testfit = ROOT.landauFit(hsrt)
-    #testfit.Draw()
-    
+    testfit = ROOT.landauFit(hsbt)
+
     figname = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figname)

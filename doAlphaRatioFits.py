@@ -7,11 +7,15 @@ import numpy as np
 import pandas as pd
 import configparser
 
-def makeAddedHist(s17,s18,xspairs,hsb):
+def makeAddedHist(s17,s18,errs17,errs18,xspairs,hsb):
     s17.sort(key = go.orderDY)
     s18.sort(key = go.orderDY)
-
+    errs17.sort(key = go.orderDY)
+    errs18.sort(key = go.orderDY)
+    bkgdfs = []
+    
     for i,f in enumerate(s17):
+        #make the hist
         tf = ROOT.TFile(f)
         numevents = float(str(tf.Get('hnevents').GetString()))
         xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
@@ -20,7 +24,14 @@ def makeAddedHist(s17,s18,xspairs,hsb):
         h.Scale(scale)
         hsb.Add(h)
 
+        #calc hist errors
+        df = pd.read_pickle(errs17[i])
+        sdf = df*scale
+        sqrddf = sdf**2
+        bkgdfs.append(sqrddf)
+
     for i,f in enumerate(s18):
+        #make the hist
         tf = ROOT.TFile(f)
         numevents = float(str(tf.Get('hnevents').GetString()))
         xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
@@ -29,7 +40,26 @@ def makeAddedHist(s17,s18,xspairs,hsb):
         h.Scale(scale)
         hsb.Add(h)
 
+        #calc hist errors
+        df = pd.read_pickle(errs17[i])
+        sdf = df*scale
+        sqrddf = sdf**2
+        bkgdfs.append(sqrddf)
+
+    uncsqdDYJetsdf = sum(bkgdfs)
+    uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
+
+    for ibin in range(hsb.GetNbinsX()+1):
+        if ibin == 0:
+            continue
+        else:
+            binerr = uncDYJetsdf['h_zp_jigm'][ibin-1]
+            hsb.SetBinError(ibin,binerr)
+            
     return hsb
+
+#def calcAddedHistErrors(samp,xspairs):
+#    samp.sort(key = go.
 
 if __name__=='__main__':
 
@@ -49,6 +79,12 @@ if __name__=='__main__':
     f17dyjetsr = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_upout_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
     a18dyjetsb = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
     a18dyjetsr = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+
+    #gather errors
+    f17dyjetsberrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    f17dyjetsrerrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    a18dyjetsberrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    a18dyjetsrerrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
     
     #scale and add together MC
     config = configparser.RawConfigParser()
@@ -60,12 +96,12 @@ if __name__=='__main__':
     tf1 = ROOT.TFile(f17dyjetsb[0])
     hsb = tf1.Get('h_zp_jigm')
     hsb.Reset("ICESM")#creates an empty hist with same structure
-    hsb = makeAddedHist(f17dyjetsb,a18dyjetsb,xspairs,hsb)
+    hsb = makeAddedHist(f17dyjetsb,a18dyjetsb,f17dyjetsberrs,a18dyjetsberrs,xspairs,hsb)
     
     tf2 = ROOT.TFile(f17dyjetsr[0])
     hsr = tf2.Get('h_zp_jigm')
     hsr.Reset("ICESM")
-    hsr = makeAddedHist(f17dyjetsr,a18dyjetsr,xspairs,hsr)
+    hsr = makeAddedHist(f17dyjetsr,a18dyjetsr,f17dyjetsrerrs,a18dyjetsrerrs,xspairs,hsr)
     
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")

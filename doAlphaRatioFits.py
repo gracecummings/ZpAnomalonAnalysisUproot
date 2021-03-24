@@ -111,11 +111,11 @@ if __name__=='__main__':
     #Draw
     ROOT.gStyle.SetOptFit(1011)
     tc.cd(1)
-    sbfit = ROOT.landauFit(hsbt,"sbl")
+    sbfit = ROOT.landauFit(hsbt,"sbl","LR0+")
     hsb.Draw()
     sbfit.Draw("SAME")
     tc.cd(2)
-    srfit = ROOT.landauFit(hsrt,"srl")
+    srfit = ROOT.landauFit(hsrt,"sbl","LR0+")
     hsr.Draw()
     srfit.Draw("SAME")
     #srfit.Draw()

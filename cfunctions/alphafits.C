@@ -34,7 +34,8 @@ Double_t landauRatio(Double_t *x, Double_t *par) {
   return numer/denom;	  
 }
 
-TF1 * landauFit(TH1D *hist, char *name) {
+//TF1 * landauFit(TH1D *hist, char *name) {
+TF1 * landauFit(TH1D *hist,TString name, TString opt="LR0+") {
   TF1 *lfit = new TF1(name,landauModel,900,5000,3);//options: low range, high range, num param
   int binmax = hist->GetMaximumBin();
   double max = hist->GetXaxis()->GetBinCenter(binmax);
@@ -44,8 +45,8 @@ TF1 * landauFit(TH1D *hist, char *name) {
   lfit->SetParameter(1,max);
   lfit->SetParameter(2,rms);
   double samp = lfit->GetParameter(0);
-  hist->Fit(name,"LR0+");
-  //hist->Draw();
+  //hist->Fit(name,"LR0+");
+  hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
   double acamp = fitout->GetParameter(0);
   //std::cout<<" guessed amp: "<<amp<<std::endl;

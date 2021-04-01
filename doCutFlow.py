@@ -29,6 +29,7 @@ if __name__=='__main__':
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
+    parser.add_argument("-r","--region",help="")
     parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
     args = parser.parse_args()
 
@@ -40,14 +41,12 @@ if __name__=='__main__':
     metcut        = args.metcut
     btagwp        = args.btagwp
     year          = args.year
+    reg           = args.region
 
-    #bkgupout17 = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout',zptcut,hptcut,metcut,btagwp,17)
-    #bkgtopia17 = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'topiary',0.0,250.0,0.0,0.0,17)
-    bkgupout17 = go.gatherBkg('analysis_output_ZpAnomalon/2021-03-29','upout',zptcut,hptcut,metcut,btagwp,17)
+    bkgupout17 = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,17)
     bkgtopia17 = go.gatherBkg('analysis_output_ZpAnomalon/2021-03-26','topiary',0.0,250.0,0.0,0.0,17)
-    bkgupout18 = go.gatherBkg('analysis_output_ZpAnomalon/2021-03-29','upout',zptcut,hptcut,metcut,btagwp,18)
+    bkgupout18 = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,18)
     bkgtopia18 = go.gatherBkg('analysis_output_ZpAnomalon/2021-03-28','topiary',0.0,250.0,0.0,0.0,18)
-    
     #bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
     
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
@@ -330,6 +329,10 @@ if __name__=='__main__':
         cftab.write(tabline)
         cftab.write('\\')
         cftab.write('\n')
+    cftab.write("\hline\n")
+    cftab.write("Events in signal region & "+str(round(cfdict[btgstr]['ZZTo2L2Q']-cfdict[sbstr]['ZZTo2L2Q'],2))+' & '+str(round(cfdict[btgstr]['WZTo2L2Q']-cfdict[sbstr]['WZTo2L2Q'],2))+' & '+str(round(cfdict[btgstr]['TT']-cfdict[sbstr]['TT'],2))+' & '+str(round(cfdict[btgstr]['DYJetsToLL']-cfdict[sbstr]['DYJetsToLL'],2))+' & '+str(round(cfdict[btgstr]['totbkg']-cfdict[sbstr]['totbkg'],2))+' \\')
+    cftab.write('\\')
+    cftab.write('\n')
     cftab.write("\end{tabular}\n")
     cftab.write("\caption{Cut Flow based on MC weighted yields with luminosity scaling for 2017 and 2018. Cut description for skims only relates to 2018, 2017 skims excluded the fat jet requirement.}\n")
     cftab.write("\label{tab:cutflow}\n")

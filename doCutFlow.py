@@ -22,25 +22,19 @@ def gatherYields(topiaryf,bkgbinf):
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-L","--lumi", type=float,default = 41.53, help = "integrated luminosity for scale in fb^-1")
-    parser.add_argument("-x","--xsec", type=float,help = "desired siganl cross section in fb")
     parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
     parser.add_argument("-r","--region",help="")
-    parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
     args = parser.parse_args()
 
     #Get command line parameters
-    lumi          = args.lumi
-    sig_xsec      = args.xsec
     zptcut        = args.zptcut
     hptcut        = args.hptcut
     metcut        = args.metcut
     btagwp        = args.btagwp
-    year          = args.year
     reg           = args.region
 
     bkgupout17 = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,17)

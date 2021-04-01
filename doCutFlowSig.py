@@ -22,24 +22,20 @@ def gatherYields(topiaryf,bkgbinf):
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-L","--lumi", type=float,default = 41.53, help = "integrated luminosity for scale in fb^-1")
     parser.add_argument("-x","--xsec", type=float,help = "desired siganl cross section in fb")
     parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
-    parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
     args = parser.parse_args()
 
     #Get command line parameters
-    lumi          = args.lumi
     sig_xsec      = args.xsec
     zptcut        = args.zptcut
     hptcut        = args.hptcut
     metcut        = args.metcut
     btagwp        = args.btagwp
-    year          = args.year
 
     zp1200nd175ns1top = "analysis_output_ZpAnomalon/2021-03-26/ZpAnomalonHZ_UFO-Zp1200-ND175-NS1_topiary_Zptcut0.0_Hptcut250.0_metcut0.0_btagwp0.0.root"
     zp2000nd300ns1top = "analysis_output_ZpAnomalon/2021-03-26/ZpAnomalonHZ_UFO-Zp2000-ND300-NS1_topiary_Zptcut0.0_Hptcut250.0_metcut0.0_btagwp0.0.root"

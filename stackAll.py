@@ -62,6 +62,7 @@ if __name__=='__main__':
         dat_info     = [ROOT.TFile(dat) for dat in datfiles]
         datuncs = (datuncs17**2+datuncs18**2)**(1/2)
         regiondescrip = reg+'_1718'
+        keys = bkg_info17[0]['binlist'][0]['tfile'].GetListOfKeys()
     if year == 17:
             lumi = 41.53
             print("Stacking for 2017 luminosity alone.")
@@ -70,6 +71,7 @@ if __name__=='__main__':
             datuncs = datuncs17
             bkguncs = bkguncs17
             regiondescrip = reg+'_17'
+            keys = bkg_info17[0]['binlist'][0]['tfile'].GetListOfKeys()
     if year == 18:
             lumi = 59.74
             print("Stacking for 2018 luminosity alone.")
@@ -78,6 +80,8 @@ if __name__=='__main__':
             datuncs = datuncs18
             bkguncs = bkguncs18
             regiondescrip = reg+'_18'
+            keys = bkg_info18[0]['binlist'][0]['tfile'].GetListOfKeys()
+
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
     sig_info   = gecorg.prepSig(sigfiles,sig_colors,sig_xsec,lumi)
@@ -103,7 +107,6 @@ if __name__=='__main__':
 
 
     #Make the stacks
-    keys = bkg_info17[0]['binlist'][0]['tfile'].GetListOfKeys()
     for i,key in enumerate(keys):
         hname = key.GetName()
         if 'hnevents' in hname:

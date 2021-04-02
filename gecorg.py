@@ -145,7 +145,7 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
             bkgbin_dict["scale"]   = findScale(float(bkgbin_sampsize),bkgbin_xs,lumi)
             bkgbin_dict["color"]   = bkg_colors[b]
             #get the number of passing events
-            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_ph').GetString()))#last cut hist
+            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_btag').GetString()))#last cut hist
             bkg_expyield          += bkgbin_yield*bkgbin_dict["scale"]
             bkg_binlist.append(bkgbin_dict)
             bkg_binsum["expyield"] = bkg_expyield

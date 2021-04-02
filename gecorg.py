@@ -198,6 +198,7 @@ def stackBkgMultiYear(bkginfo0,bkginfo1,hist_to_stack,hsbkg,legend,stack_max,sta
             hbkg1.SetMinimum(stack_min)
 
             hsbkg.Add(hbkg0)
+            hsbkg.Add(hbkg1)
             hsbkg.Draw("HIST")
             hsbkg.SetMaximum(stack_max)
             hsbkg.SetMinimum(stack_min)

@@ -109,8 +109,8 @@ if __name__=='__main__':
 
     #lets make some histograms.
     rootfilename  = go.makeOutFile(samp,'upout_'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
-    npfilename    = go.makeOutFile(samp,'totalevents_'+btaggr+'_'+region,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    pklfilename   = go.makeOutFile(samp,'selected_errors_'+btaggr+'_'+region,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    npfilename    = go.makeOutFile(samp,'totalevents_'+region+'_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    pklfilename   = go.makeOutFile(samp,'selected_errors_'+region+'_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     rootOutFile   = up3.recreate(rootfilename,compression = None)
     npOutFile     = open(npfilename,'wb')
 

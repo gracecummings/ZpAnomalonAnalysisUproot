@@ -79,30 +79,34 @@ if __name__=='__main__':
         #print(b)
         #do some cuts
         sddf   = b[b['hCandidate_sd'] > sdmcut]
-        metdf  = sddf[sddf['METclean'] > metcut]
+        srup   = sddf[sddf['hCandidate_sd'] > 70.]
+        srdf   = srup[srup['hCandidate_sd'] < 150.]
+        lowsb  = sddf[sddf['hCandidate_sd'] <= 70.]
+        highsb = sddf[sddf['hCandidate_sd'] >= 150.]
+        sbdf   = pd.concat([lowsb,highsb])
+
+        #make the region distinction
+        region = "sideband"
+        if stype != 0:
+            if sr:
+                regdf = srdf
+                region = "signalr"
+            elif comb:
+                regdf = sddf
+                region = "totalr"
+            else:
+                regdf = sbdf
+                region = "sideband"
+        else:
+            regdf = sbdf
+        
+        metdf  = regdf[regdf['METclean'] > metcut]
         zptdf  = metdf[metdf['ZCandidate_pt'] > zptcut]
         hptdf  = zptdf[zptdf['hCandidate_pt'] > hptcut]
         btdf   = hptdf[hptdf['hCandidate_'+btaggr] > float(btagwp)]
-        srup   = btdf[btdf['hCandidate_sd'] > 70.]
-        srdf   = srup[srup['hCandidate_sd'] < 150.]
-        lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
-        highsb = btdf[btdf['hCandidate_sd'] >= 150.]
-        sbdf   = pd.concat([lowsb,highsb])
+        fdf    = btdf
 
     #This will have to come out of the loop if true iteration is added
-    region = "sideband"
-    if stype != 0:
-        if sr:
-            fdf = srdf
-            region = "signalr"
-        elif comb:
-            fdf = btdf
-            region = "totalr"
-        else:
-            fdf = sbdf
-            region = "sideband"
-    else:
-        fdf = sbdf
 
     print("    number of passing events ",len(fdf))
     #print("number of btag passing events ",len(btdf))

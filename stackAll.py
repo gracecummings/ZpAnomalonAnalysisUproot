@@ -42,8 +42,6 @@ if __name__=='__main__':
     datfiles17 = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
     datfiles18 = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2018*upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
     
-    #datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
-    
     bkguncs17  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
     bkguncs18  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Autumn18.AllZpAnomalonBkgs_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
     datuncs17  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
@@ -87,8 +85,8 @@ if __name__=='__main__':
     sig_info   = gecorg.prepSig(sigfiles,sig_colors,sig_xsec,lumi)
 
     #some beauty stuff
-    max_plot = 100.
-    min_plot = 0.1
+    max_plot = 50.
+    min_plot = 0.
     titles = {
         "h_z_pt":"Z p_{T}",
         "h_z_eta":"\eta_{Z}",
@@ -147,7 +145,7 @@ if __name__=='__main__':
         #Prep the pads
         tc = ROOT.TCanvas("tc",hname,600,800)
         p1 = ROOT.TPad("p1","stack_"+hname,0,0.4,1.0,1.0)
-        p1.SetLogy()
+        #p1.SetLogy()
         #p1.SetBottomMargin(0)
         p1.SetLeftMargin(0.15)
         p1.SetRightMargin(0.05)

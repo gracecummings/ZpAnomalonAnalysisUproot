@@ -1038,7 +1038,6 @@ void TreeMakerTopiary::Init(TTree *tree, int sampt, int year)
    }
 
    if (sampt != 0) {
-     
      //Initialize the MC only branches
      GenElectrons = 0;
      GenHT = 0;

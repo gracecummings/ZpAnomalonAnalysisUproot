@@ -25,7 +25,8 @@ if __name__=='__main__':
     btaggr = args.btagger
     btagwp = args.btagWP
 
-    inputfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.png')
+    #inputfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.png')
+    #inputfiles = glob.glob('../notes/AN-20-120_/*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.png')
     for f in inputfiles:
         protoname = f.split("_Zpt")[0]
         name = protoname.split(args.date+"/")[-1]

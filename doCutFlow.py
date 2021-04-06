@@ -27,7 +27,7 @@ if __name__=='__main__':
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date",help="date folder with plots to stack")
-    parser.add_argument("-r","--region",help="")
+    parser.add_argument("-r","--region",help="region of phase space: totalr,sideband, or signalr")
     args = parser.parse_args()
 
     #Get command line parameters

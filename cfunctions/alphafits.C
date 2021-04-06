@@ -41,6 +41,13 @@ Double_t landauRatio(Double_t *x, Double_t *par) {
   return numer/denom;	  
 }
 
+Double_t expRatio(Double_t *x, Double_t *par) {
+  double numer = expModel(x,par);
+  double denom = expModel(x,&par[2]);
+  if (denom==0) return -1.0;
+  return numer/denom;
+}
+
 //TF1 * landauFit(TH1D *hist, char *name) {
 TF1 * landauFit(TH1D *hist,TString name, TString opt="LR0+") {
   TF1 *lfit = new TF1(name,landauModel,900,5000,3);//options: low range, high range, num param
@@ -62,7 +69,7 @@ TF1 * landauFit(TH1D *hist,TString name, TString opt="LR0+") {
   return fitout;
 }
 
-TF1 * alphaRatioMaker(TH1D *hsb, TH1D *hsr){
+TF1 * alphaRatioMakerLandau(TH1D *hsb, TH1D *hsr){
   string sb = "sbl";
   string sr = "srl";
   int len = sb.length();
@@ -106,4 +113,26 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="LR0+") {
   TF1* fitout = hist->GetFunction(name);
   return fitout;
   //double acamp = fitout->GetParameter(0);
+}
+
+TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
+  string sb = "sbl";
+  string sr = "srl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  TF1 *sbfit= expFit(hsb,sbl,"R0+");
+  TF1 *srfit= expFit(hsr,srl,"R0+");
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  TF1 *alpha = new TF1("alpha",expRatio,1500,3000,4);
+  alpha->SetParameter(0,sramp);
+  alpha->SetParameter(1,srlambda);
+  alpha->SetParameter(2,sbamp);
+  alpha->SetParameter(3,sblambda);
+  return alpha;
 }

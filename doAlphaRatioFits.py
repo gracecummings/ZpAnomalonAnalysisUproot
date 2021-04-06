@@ -115,11 +115,11 @@ if __name__=='__main__':
     hsb.Draw()
     sbfit.Draw("SAME")
     tc.cd(2)
-    srfit = ROOT.expFit(hsrt,"sbl","R0+")
+    srfit = ROOT.expFit(hsrt,"srl","R0+")
     hsr.Draw()
     srfit.Draw("SAME")
     tc.cd(3)
-    alpha = ROOT.alphaRatioMaker(hsbt,hsrt)
+    alpha = ROOT.alphaRatioMakerExp(hsbt,hsrt)
     #print(alpha)
     alpha.Draw()
 

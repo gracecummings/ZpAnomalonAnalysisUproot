@@ -55,15 +55,15 @@ def orderFall17TT(histFile):#NROKEN AT THE MOMENT
 def massPoints(nameSig):#do this for full name
     s1  = nameSig.split("-")
     #print s1
-    mzp = int(s1[1].split("Zp")[1])
-    mnd = int(s1[2].split("ND")[1])
-    ms1 = s1[3].split("_upout")[0]
+    mzp = int(s1[0].split("Zp")[1])
+    mnd = int(s1[1].split("ND")[1])
+    ms1 = s1[2].split("_upout")[0]
     mns = int(ms1.split("NS")[1])
     return mzp,mnd,mns
 
 def nameSignal(histFile):
-    s1 = histFile.split("ZpAnomalonHZ_UFO")[1]
-    s2 = s1.split("_hists")[0]
+    s1 = histFile.split("ZpAnomalonHZ_UFO-")[1]
+    s2 = s1.split("_upout")[0]
     return s2
 
 def findScale(prodnum,lumi,xsec):
@@ -122,7 +122,6 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
     for b,bkg in enumerate(bkgfiles):
         bkg_binsum   = {}
         bkg_binlist  = []
-        
         bkg_channel  = bkgnames[b]
         bkg_expyield = 0
         # bkg xs from .ini file
@@ -146,7 +145,7 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
             bkgbin_dict["scale"]   = findScale(float(bkgbin_sampsize),bkgbin_xs,lumi)
             bkgbin_dict["color"]   = bkg_colors[b]
             #get the number of passing events
-            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_ph').GetString()))#last cut hist
+            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_btag').GetString()))#last cut hist
             bkg_expyield          += bkgbin_yield*bkgbin_dict["scale"]
             bkg_binlist.append(bkgbin_dict)
             bkg_binsum["expyield"] = bkg_expyield
@@ -175,6 +174,37 @@ def stackBkg(bkg_info,hist_to_stack,hsbkg,legend,stack_max,stack_min):
             hsbkg.SetMinimum(stack_min)
             if b == len(bkg["binlist"])-1:
                 legend.AddEntry(hbkg,bkg["name"],"f")
+                
+def stackBkgMultiYear(bkginfo0,bkginfo1,hist_to_stack,hsbkg,legend,stack_max,stack_min):
+    for i,bkg in enumerate(bkginfo0):
+        #print(bkg["name"])
+        #print(bkginfo1[i]["name"])
+        for b,bkgbin in enumerate(bkg["binlist"]):
+            #print(bkgbin["binname"])
+            #print(bkginfo1[i]["binlist"][b]["binname"])
+            hbkg0 = bkgbin["tfile"].Get(hist_to_stack)
+            hbkg0.SetStats(0)
+            hbkg0.Scale(bkgbin["scale"])
+            hbkg0.SetFillColor(bkgbin["color"])
+            hbkg0.SetLineColor(bkgbin["color"])
+            hbkg0.SetMaximum(stack_max)
+            hbkg0.SetMinimum(stack_min)
+            hbkg1 = bkginfo1[i]["binlist"][b]["tfile"].Get(hist_to_stack)
+            hbkg1.SetStats(0)
+            hbkg1.Scale(bkginfo1[i]["binlist"][b]["scale"])
+            hbkg1.SetFillColor(bkginfo1[i]["binlist"][b]["color"])
+            hbkg1.SetLineColor(bkginfo1[i]["binlist"][b]["color"])
+            hbkg1.SetMaximum(stack_max)
+            hbkg1.SetMinimum(stack_min)
+
+            hsbkg.Add(hbkg0)
+            hsbkg.Add(hbkg1)
+            hsbkg.Draw("HIST")
+            hsbkg.SetMaximum(stack_max)
+            hsbkg.SetMinimum(stack_min)
+            
+            if b == len(bkg["binlist"])-1:
+                legend.AddEntry(hbkg1,bkg["name"],"f")
 
 def saveNpUncertainties(uncdf,filename):
     npF = open(filename,'wb')

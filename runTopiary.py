@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 if __name__=="__main__":
     parser.add_argument("-s","--sample",help="sample name")
     parser.add_argument("-y","--year",help="analysis year")
-    args = parser.parse_args()
+    args = parser.parse_args() 
     samp = args.sample
     year = args.year
     samptype = -1
@@ -46,6 +46,7 @@ if __name__=="__main__":
 
 
     ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")
+    #ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","kfc")
     ROOT.gSystem.Load('TreeMakerTopiary_C')
     topiary = ROOT.TreeMakerTopiary(inChain,samptype,checkedyear)
     topiary.Loop(outFile,origevnts,samptype,checkedyear)

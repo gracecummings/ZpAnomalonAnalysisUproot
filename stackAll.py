@@ -2,7 +2,6 @@ import argparse
 import ROOT
 import glob
 import os
-#import gecorg_composite as gecorg
 import gecorg as gecorg
 import pandas as pd
 import numpy as np
@@ -15,52 +14,79 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
 
     #Define parser imputs
-    parser.add_argument("-L","--lumi", type=float,default = 41.53, help = "integrated luminosity for scale in fb^-1")
     parser.add_argument("-x","--xsec", type=float,help = "desired siganl cross section in fb")
     parser.add_argument("-m","--metcut", type=float,help = "met cut of samples")
     parser.add_argument("-z","--zptcut", type=float,help = "zpt cut of samples")
     parser.add_argument("-j","--hptcut", type=float,help = "hpt cut of samples")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-date","--date", type=str,help = "date folder with output")
+    parser.add_argument("-r","--region",help="region of phase space: totalr,sideband, or signalr")
     parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
     args = parser.parse_args()
 
     #Get command line parameters
-    lumi          = args.lumi
     sig_xsec      = args.xsec
     zptcut        = args.zptcut
     hptcut        = args.hptcut
     metcut        = args.metcut
     btagwp        = args.btagwp
     year          = args.year
-
+    reg           = args.region
+    lumi          = 0
+    
     #samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp,year)#recalculated ones with errrors
-    mcprefix = 'Autumn18'
-    descrip = 'upout'
+    bkgupout17 = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,17)
+    bkgupout18 = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,18)
+    bkgnames   = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
+    sigfiles   = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_upout_'+reg+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+    datfiles17 = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+    datfiles18 = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2018*upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
     
-    bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
-    datfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Run2017*upout*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')#not changed for new naming yet
-    
-    bkguncs  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
-    datuncs  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    bkguncs17  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    bkguncs18  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Autumn18.AllZpAnomalonBkgs_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    datuncs17  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    datuncs18  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2018.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+
+
+    #check for plotting, prep backgrounds
+    bkg_colors = gecorg.colsFromPalette(bkgnames,ROOT.kLake)
+    if not year:
+        lumi = 41.53+59.74
+        print("Stacking for a luminosity of ",round(lumi,2))
+        bkg_info17   = gecorg.prepBkg(bkgupout17,bkgnames,bkg_colors,'xsects_2017.ini',41.53,"yes")
+        bkg_info18   = gecorg.prepBkg(bkgupout18,bkgnames,bkg_colors,'xsects_2017.ini',59.74,"yes")
+        bkguncs      = (bkguncs17**2+bkguncs18**2)**(1/2)
+        datfiles     = datfiles17+datfiles18
+        dat_info     = [ROOT.TFile(dat) for dat in datfiles]
+        datuncs = (datuncs17**2+datuncs18**2)**(1/2)
+        regiondescrip = reg+'_1718'
+        keys = bkg_info17[0]['binlist'][0]['tfile'].GetListOfKeys()
+    if year == 17:
+            lumi = 41.53
+            print("Stacking for 2017 luminosity alone.")
+            bkg_info17   = gecorg.prepBkg(bkgupout17,bkgnames,bkg_colors,'xsects_2017.ini',41.53,"yes")
+            dat_info = [ROOT.TFile(dat) for dat in datfiles17]
+            datuncs = datuncs17
+            bkguncs = bkguncs17
+            regiondescrip = reg+'_17'
+            keys = bkg_info17[0]['binlist'][0]['tfile'].GetListOfKeys()
+    if year == 18:
+            lumi = 59.74
+            print("Stacking for 2018 luminosity alone.")
+            bkg_info18   = gecorg.prepBkg(bkgupout18,bkgnames,bkg_colors,'xsects_2017.ini',59.74,"yes")
+            dat_info = [ROOT.TFile(dat) for dat in datfiles18]
+            datuncs = datuncs18
+            bkguncs = bkguncs18
+            regiondescrip = reg+'_18'
+            keys = bkg_info18[0]['binlist'][0]['tfile'].GetListOfKeys()
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
     sig_info   = gecorg.prepSig(sigfiles,sig_colors,sig_xsec,lumi)
 
-    #Prep backgrounds
-    bkg_colors = gecorg.colsFromPalette(bkgnames,ROOT.kLake)
-    bkg_info   = gecorg.prepBkg(bkgfiles,bkgnames,bkg_colors,'xsects_2017.ini',lumi,"yes")
-
-    #Prep Data
-    dat_info = [ROOT.TFile(dat) for dat in datfiles]
-    print(dat_info)
-
     #some beauty stuff
-    max_plot = 100.
-    min_plot = 0.1
+    max_plot = 50.
+    min_plot = 0.
     titles = {
         "h_z_pt":"Z p_{T}",
         "h_z_eta":"\eta_{Z}",
@@ -79,7 +105,6 @@ if __name__=='__main__':
 
 
     #Make the stacks
-    keys = bkg_info[0]['binlist'][0]['tfile'].GetListOfKeys()
     for i,key in enumerate(keys):
         hname = key.GetName()
         if 'hnevents' in hname:
@@ -91,8 +116,13 @@ if __name__=='__main__':
 
         #bkg stack
         hsbkg = ROOT.THStack('hsbkg','')
-        gecorg.stackBkg(bkg_info,hname,hsbkg,leg,max_plot,min_plot)
-
+        if not year:
+            gecorg.stackBkgMultiYear(bkg_info17,bkg_info18,hname,hsbkg,leg,max_plot,min_plot)
+        if year == 17:
+            gecorg.stackBkg(bkg_info17,hname,hsbkg,leg,max_plot,min_plot)
+        if year == 18:
+            gecorg.stackBkg(bkg_info18,hname,hsbkg,leg,max_plot,min_plot)
+            
         #data hist
         hsdat = dat_info[0].Get(hname)
         hsdat.SetStats(0)
@@ -115,7 +145,7 @@ if __name__=='__main__':
         #Prep the pads
         tc = ROOT.TCanvas("tc",hname,600,800)
         p1 = ROOT.TPad("p1","stack_"+hname,0,0.4,1.0,1.0)
-        p1.SetLogy()
+        #p1.SetLogy()
         #p1.SetBottomMargin(0)
         p1.SetLeftMargin(0.15)
         p1.SetRightMargin(0.05)
@@ -159,16 +189,16 @@ if __name__=='__main__':
 
         #Now the ratio calculation
         hsumb = hsbkg.GetStack().Last()
-        binlist = np.zeros(hsumb.GetNbinsX())
-        fill    = np.zeros(hsumb.GetNbinsX())
-        ratiolist = np.zeros(hsumb.GetNbinsX())
-        pulllist = np.zeros(hsumb.GetNbinsX())
-        rerrlist = np.zeros(hsumb.GetNbinsX())
+        binlist = np.zeros(hsumb.GetNbinsX()+1)
+        fill    = np.zeros(hsumb.GetNbinsX()+1)
+        ratiolist = np.zeros(hsumb.GetNbinsX()+1)
+        pulllist = np.zeros(hsumb.GetNbinsX()+1)
+        rerrlist = np.zeros(hsumb.GetNbinsX()+1)
 
         #Load in the uncertainties
         #uncf = np.load()
         
-        for ibin in range(hsumb.GetNbinsX()):
+        for ibin in range(hsumb.GetNbinsX()+1):#CHECK
             bincen = hsumb.GetBinCenter(ibin)
             bkgmc  = hsumb.GetBinContent(ibin)
             data   = hsdat.GetBinContent(ibin)
@@ -251,5 +281,5 @@ if __name__=='__main__':
         leg.Draw()
 
         #Save the plot
-        pngname = gecorg.makeOutFile(hname,'ratio_2018','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+        pngname = gecorg.makeOutFile(hname,'ratio_'+regiondescrip,'.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
         tc.SaveAs(pngname)

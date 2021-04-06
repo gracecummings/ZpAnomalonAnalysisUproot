@@ -1,0 +1,14 @@
+#runTopiary.py#
+RestFrames
+*~
+*_C.d
+*_C.so
+*_C_ACLiC*
+__pycache__
+analysis_output_ZpAnomalon
+cutgrid.txt
+cutsiggrid.txt
+*.pyc
+old_faithful/
+opt_plots/
+

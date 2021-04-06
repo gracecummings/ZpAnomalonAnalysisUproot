@@ -22,6 +22,7 @@ if __name__=='__main__':
     parser.add_argument("-date","--date",help="date folder with plots to stack")
     parser.add_argument("-wp","--btagwp", type=float,help = "btag working point")
     parser.add_argument("-y","--year", type=float,help = "year of samples eg. 2017 -> 17")
+
     args = parser.parse_args()
 
     #Get command line parameters
@@ -33,25 +34,30 @@ if __name__=='__main__':
     metcut        = args.metcut
     btagwp        = args.btagwp
     year          = args.year
-    plotmax       = 100.0
+    plotmax       = 20.0
+
+     
     #Samples
-    bkgfiles = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout',zptcut,hptcut,metcut,btagwp,year)
+    bkgfiles17 = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout_totalr',zptcut,hptcut,metcut,btagwp,17)
+    bkgfiles18 = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date+'/','upout_totalr',zptcut,hptcut,metcut,btagwp,18)
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+    sigfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*totalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
-    sig_info   = gecorg.prepSig(sigfiles,sig_colors,sig_xsec,lumi)
+    sig_info   = gecorg.prepSig(sigfiles,sig_colors,sig_xsec,101.27)
 
     #Prep backgrounds
     bkg_colors = gecorg.colsFromPalette(bkgnames,ROOT.kLake)
-    bkg_info   = gecorg.prepBkg(bkgfiles,bkgnames,bkg_colors,'xsects_2017.ini',lumi,"yes")
+    bkg_info17 = gecorg.prepBkg(bkgfiles17,bkgnames,bkg_colors,'xsects_2017.ini',41.53,"yes")
+    bkg_info18 = gecorg.prepBkg(bkgfiles18,bkgnames,bkg_colors,'xsects_2017.ini',59.74,"yes")
+
     #Make the stacked plot
     hname = released_plot
     leg = ROOT.TLegend(0.45,0.55,0.90,0.88)
     hsbkg = ROOT.THStack('hsbkg','')
-    #gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,10000000,0.1)
-    gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,plotmax,0.0)
+    gecorg.stackBkgMultiYear(bkg_info17,bkg_info18,released_plot,hsbkg,leg,plotmax,0.0)
+    #gecorg.stackBkg(bkg_info,released_plot,hsbkg,leg,plotmax,0.0)
 
 
     #LUT with titles
@@ -69,13 +75,13 @@ if __name__=='__main__':
     mg = ROOT.TMultiGraph()
                 
     #Prep the pads
-    tc = ROOT.TCanvas("tc",hname,600,800)
-    p1 = ROOT.TPad("p1","stack_"+hname,0,0.4,1.0,1.0)
+    tc = ROOT.TCanvas("tc",hname,500,700)
+    p1 = ROOT.TPad("p1","stack_"+hname,0,0.3,1.0,1.0)
     #p1.SetLogy()
     #p1.SetBottomMargin(0)
     p1.SetLeftMargin(0.15)
     p1.SetRightMargin(0.05)
-    p2 = ROOT.TPad("p2","signif_"+hname,0,0.0,1.0,0.4)
+    p2 = ROOT.TPad("p2","signif_"+hname,0,0.0,1.0,0.3)
     #p2.SetTopMargin(0)
     p2.SetRightMargin(.05)
     p2.SetLeftMargin(0.15)
@@ -170,7 +176,7 @@ if __name__=='__main__':
         mg.GetYaxis().SetTitleOffset(.7)
         mg.GetYaxis().SetLabelSize(0.05)
         mg.SetMinimum(0)
-        mg.SetMaximum(30)
+        mg.SetMaximum(20)
         
         #Go back to previous pad so next kinematic plots draw
         tc.cd()

@@ -26,6 +26,8 @@ if __name__=='__main__':
     parser.add_argument("-met","--metPtCut",type=float,default = 50.0,help = "pT cut on met")
     parser.add_argument("-sdm","--sdmCut",type=float,default = 10.0,help = "lowest soft drop mass cut")
     parser.add_argument("-date","--date",type=str,help = "where are your topiary plots?")
+    parser.add_argument("-sr","--signalregion",type=bool,help = "do you want a signal region plot?")
+    parser.add_argument("-c","--comboregion",type=bool,help = "do you want combined SR and SB?")
     args = parser.parse_args()
 
     samp   = args.sample
@@ -35,6 +37,8 @@ if __name__=='__main__':
     metcut = args.metPtCut
     btaggr = args.btagger
     btagwp = args.btagWP
+    sr     = args.signalregion
+    comb   = args.comboregion
 
     #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/2020-12-29/'+samp+'*_topiary*.root')
     #inputfiles = glob.glob('../RestFrames/analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
@@ -43,6 +47,12 @@ if __name__=='__main__':
     print(inputfiles)
     stype,year = go.sampleType(samp)
     print(stype)
+    if sr and stype != 0:
+        print("    using signal region selections")
+    elif comb and stype != 0:
+        print("    using full region selections")
+    else:
+        print("    using sideband selections")
     
     branches = [b'ZCandidate_*',
                 b'hCandidate_*',
@@ -78,23 +88,29 @@ if __name__=='__main__':
         lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
         highsb = btdf[btdf['hCandidate_sd'] >= 150.]
         sbdf   = pd.concat([lowsb,highsb])
-        #btagging
-        #btdf = srdf[srdf['hCandidate_'+btaggr] > float(btagwp)]
 
-        #fdf is always the last dataframe
-        #fdf = btdf
-        if stype != 0:
-            fdf = sbdf
+    #This will have to come out of the loop if true iteration is added
+    region = "sideband"
+    if stype != 0:
+        if sr:
+            fdf = srdf
+            region = "signalr"
+        elif comb:
+            fdf = btdf
+            region = "totalr"
         else:
             fdf = sbdf
+            region = "sideband"
+    else:
+        fdf = sbdf
 
-        print("    number of passing events ",len(fdf))
-        #print("number of btag passing events ",len(btdf))
+    print("    number of passing events ",len(fdf))
+    #print("number of btag passing events ",len(btdf))
 
     #lets make some histograms.
-    rootfilename  = go.makeOutFile(samp,'upout_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
-    npfilename    = go.makeOutFile(samp,'totalevents_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    pklfilename   = go.makeOutFile(samp,'selected_errors_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    rootfilename  = go.makeOutFile(samp,'upout_'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
+    npfilename    = go.makeOutFile(samp,'totalevents_'+region+'_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    pklfilename   = go.makeOutFile(samp,'selected_errors_'+region+'_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     rootOutFile   = up3.recreate(rootfilename,compression = None)
     npOutFile     = open(npfilename,'wb')
 

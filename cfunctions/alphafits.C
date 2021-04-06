@@ -5,15 +5,6 @@
 #include <iostream>
 #include <cstring>
 
-//TF1 * fsb = NULL;
-//#TF1 * fsr = NULL;
-
-//Double_t function_divide(Double_t *x, Double_t *par)
-//{
-//  const Double_t xx = x[0];
-//  return fsr->Eval(xx)/fsb->Eval(xx);
-//}
-
 Double_t landauCustom(Double_t *x, Double_t *par) {
   return TMath::Landau(*x,par[0],par[1]);
 }
@@ -22,6 +13,22 @@ Double_t landauCustom(Double_t *x, Double_t *par) {
 Double_t landauModel(Double_t *X, Double_t *par){
   double x =X[0];  // get ring of pointer/array notation
   return par[0] * TMath::Landau(x,par[1],par[2]);
+}
+
+Double_t guessDecayConstant(TH1D *hist,double max) {
+  double halfmax  = max/2;
+  int halflifebin = hist->FindLastBinAbove(halfmax);
+  Double_t halflife = hist->GetBinCenter(halflifebin);
+  Double_t guess = TMath::Log(0.5)/halflife;
+  return guess;
+}
+
+Double_t expModel(Double_t *X, Double_t *par){
+  double x = X[0];
+  //Double_t arg= 0;
+  //if (par[2] != 0) arg = (x[0] - par[1]/par[2]);
+  Double_t fitval = par[0]*TMath::Exp(par[1]*x);
+  return fitval;
 }
 
 // this fucntion take 6 parameters 0..2 describe landau1
@@ -86,21 +93,17 @@ TF1 * alphaRatioMaker(TH1D *hsb, TH1D *hsr){
   return alpha;
 }
 
-
-TF1 * landauFitExplicit(TH1D *hist) {
-  TF1 *lfit = new TF1("testlfit","[0]*TMath::Landau(x,[1],[2])",500,5000);
-  //lfit->SetParameter(0,hist->GetMean());
-  lfit->SetParameter(0,30);
-  //lfit->SetParameter(1,hist->GetRMS());
-  lfit->SetParameter(1,1592);
-  lfit->SetParameter(1,250);
-  hist->Fit("testlfit","R0");
-  TF1 * testfit = hist->GetFunction("testlfit");
-  std::cout<<lfit->GetParameters()<<std::endl;
-  return (testfit);
+TF1 * expFit(TH1D *hist, TString name, TString opt="LR0+") {
+  TF1 *expfit = new TF1(name,expModel,1500,3000,2);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,amp);
+  expfit->SetParameter(1,lambda);
+  //double samp = lfit->GetParameter(0);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  return fitout;
+  //double acamp = fitout->GetParameter(0);
 }
-
-
-
-
-

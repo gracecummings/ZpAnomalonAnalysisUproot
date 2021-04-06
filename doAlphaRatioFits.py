@@ -68,17 +68,17 @@ if __name__=='__main__':
     tc.Divide(3,1)
     
     #will replace with command line options
-    bkg_dir = 'analysis_output_ZpAnomalon/2021-03-16/'
-    zptcut  = '200.0'
+    bkg_dir = 'analysis_output_ZpAnomalon/2021-03-31/'
+    zptcut  = '150.0'
     hptcut  = '300.0'
-    metcut  = '300.0'
+    metcut  = '200.0'
     btagwp  = '0.8'
     
     #gather the MC files
-    f17dyjetsb = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_upout_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    f17dyjetsr = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_upout_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsb = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsr = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    f17dyjetsb = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    f17dyjetsr = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    a18dyjetsb = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    a18dyjetsr = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
 
     #gather errors
     f17dyjetsberrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
@@ -111,14 +111,13 @@ if __name__=='__main__':
     #Draw
     ROOT.gStyle.SetOptFit(1011)
     tc.cd(1)
-    sbfit = ROOT.landauFit(hsbt,"sbl","LR0+")
+    sbfit = ROOT.expFit(hsbt,"sbl","R0+")
     hsb.Draw()
     sbfit.Draw("SAME")
     tc.cd(2)
-    srfit = ROOT.landauFit(hsrt,"sbl","LR0+")
+    srfit = ROOT.expFit(hsrt,"sbl","R0+")
     hsr.Draw()
     srfit.Draw("SAME")
-    #srfit.Draw()
     tc.cd(3)
     alpha = ROOT.alphaRatioMaker(hsbt,hsrt)
     #print(alpha)

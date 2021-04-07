@@ -120,7 +120,7 @@ if __name__=='__main__':
     cftab = open(cutFlowTableTex,"w")
     cftab.write(r'\clearpage')
     cftab.write('\n')
-    cftab.write(r'\being{sidewaystable}[h!]\centering')
+    cftab.write(r'\begin{sidewaystable}[h!]\centering')
     cftab.write('\n')
     cftab.write(r'\begin{tabular}{l | c | c | c | c | c }')#need to make dynamic
     cftab.write('\n')

@@ -118,14 +118,16 @@ if __name__=='__main__':
 
     cutFlowTableTex = go.makeOutFile("ZpAnomalon_mumu_sig","cutflow",'.tex',str(int(zptcut)),str(int(hptcut)),str(int(metcut)),str(btagwp).split('.')[-1]+'E-10')
     cftab = open(cutFlowTableTex,"w")
-    cftab.write(r'\begin{table}[htbp]')
+    cftab.write(r'\clearpage')
     cftab.write('\n')
-    cftab.write(r'\begin{center}')
+    cftab.write(r'\being{sidewaystable}[h!]\centering')
     cftab.write('\n')
     cftab.write(r'\begin{tabular}{l | c | c | c | c | c }')#need to make dynamic
     cftab.write('\n')
     cftab.write("\hline\hline\n")
-    cftab.write(r'cut description & mzp1200mnn175mns1 & mzp2000mnd300mns1 & mzp2000mnd800mns200 & mzp3000mnd1200mns1 \\')
+    cftab.write(r'cut description & mzp1200    & mzp2000    & mzp2000      & mzp3000     \\')
+    cftab.write('\n')
+    cftab.write(r'                & mnn175mns1 & mnd300mns1 & mnd800mns200 & mnd1200mns1 \\')
     cftab.write('\n')
     cftab.write("\hline\n")
     cftab.write(skimstr+' & '+str(cfdict[skimstr]['Zp1200-ND175-NS1'])+' & '+str(cfdict[skimstr]['Zp2000-ND300-NS1'])+' & '+str(cfdict[skimstr]['Zp2000-ND800-NS200'])+' & '+str(cfdict[skimstr]['Zp3000-ND1200-NS1']))
@@ -162,8 +164,8 @@ if __name__=='__main__':
     cftab.write("\end{tabular}\n")
     cftab.write("\caption{Signal yields with luminosity scaling for 2017 and 2018.}\n")
     cftab.write("\label{tab:sigeff}\n")
-    cftab.write("\end{center}\n")
-    cftab.write("\end{table}\n")
+    cftab.write("\end{sidewaystable}\n")
+    cftab.write(r'\clearpage')
     cftab.close()
         
 

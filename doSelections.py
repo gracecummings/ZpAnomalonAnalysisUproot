@@ -23,6 +23,21 @@ def wrapPhi(phi):
         wphi = phi
     return wphi
 
+def wrapDeltaPhi(dphi):
+    if dphi > 3.14159:
+        dp = 2*3.14159 - dphi
+    else:
+        dp = dphi
+    return dp
+ 
+
+def deltaPhi(v1phi,v2phi):
+    dp = abs(v1phi-v2phi)
+    wdp = dp.map(wrapDeltaPhi)
+    #This returns a df with the same number of events as input
+    #If a cut is introduced, need to carry weight column
+    return wdp
+
 if __name__=='__main__':
     parser.add_argument("-f","--sample",help = "sample file")
     parser.add_argument("-o","--output",help = "output file name")
@@ -114,9 +129,10 @@ if __name__=='__main__':
     print("    number of passing events ",len(fdf))
     #print("number of btag passing events ",len(btdf))
 
-    #Calculated quanties
-    print(fdf['ZCandidate_phi'])
-    print(fdf['ZCandidate_phi'].map(wrapPhi))
+    #calculated quantities
+    deltaphizhdf   = deltaPhi(fdf['ZCandidate_phi'],fdf['hCandidate_phi'])
+    deltaphizmetdf = deltaPhi(fdf['ZCandidate_phi'],fdf['METPhiclean'])
+    deltaphihmetdf = deltaPhi(fdf['hCandidate_phi'],fdf['METPhiclean'])
 
     #lets make some histograms.
     rootfilename  = go.makeOutFile(samp,'upout_'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
@@ -144,6 +160,9 @@ if __name__=='__main__':
     rootOutFile["h_ns_jigm"]    = np.histogram(fdf['NS_mass_est'],bins=50,range=(0,500),weights=fdf['event_weight'])
     rootOutFile["h_btag"]       = np.histogram(fdf['hCandidate_'+btaggr],bins=110,range=(0,1.1),weights=fdf['event_weight'])
     rootOutFile["h_weights"]    = np.histogram(fdf['event_weight'],bins=40,range=(-1,7))
+    rootOutFile["h_dphi_zh"]    = np.histogram(deltaphizhdf,bins=100,range=(0,3.14159),weights=fdf['event_weight'])
+    rootOutFile["h_dphi_zmet"]  = np.histogram(deltaphizmetdf,bins=100,range=(0,3.14159),weights=fdf['event_weight'])
+    rootOutFile["h_dphi_hmet"]  = np.histogram(deltaphihmetdf,bins=100,range=(0,3.14159),weights=fdf['event_weight'])
 
     zpterrs      = boostUnc(fdf['ZCandidate_pt'],fdf['event_weight'],80,0,800)
     zetaerrs     = boostUnc(fdf['ZCandidate_eta'],fdf['event_weight'],100,-5,5)
@@ -163,7 +182,10 @@ if __name__=='__main__':
     ndjigerrs    = boostUnc(fdf['ND_mass_est'],fdf['event_weight'],70,100,800)
     nsjigerrs    = boostUnc(fdf['NS_mass_est'],fdf['event_weight'],50,0,500)
     btagerrs     = boostUnc(fdf['hCandidate_'+btaggr],fdf['event_weight'],110,0,1.1)
-
+    dphizherrs   = boostUnc(deltaphizhdf,fdf['event_weight'],100,0,3.14159)
+    dphizmeterrs   = boostUnc(deltaphizmetdf,fdf['event_weight'],100,0,3.14159)
+    dphihmeterrs   = boostUnc(deltaphihmetdf,fdf['event_weight'],100,0,3.14159)
+    
     unc_arrays = [zpterrs,
                   zetaerrs,
                   zphierrs,
@@ -181,7 +203,10 @@ if __name__=='__main__':
                   zpjigerrs,
                   ndjigerrs,
                   nsjigerrs,
-                  btagerrs
+                  btagerrs,
+                  dphizherrs,
+                  dphizmeterrs,
+                  dphihmeterrs
     ]
 
     unc_names = ['h_z_pt',
@@ -197,11 +222,14 @@ if __name__=='__main__':
                  'h_h_sd',
                  'h_met',
                  'h_met_phi',
-                 'h_met_phie',
+                 'h_met_phiw',
                  'h_zp_jigm',
                  'h_nd_jigm',
                  'h_ns_jigm',
-                 'h_btag'
+                 'h_btag',
+                 'h_dphi_zh',
+                 'h_dphi_zmet',
+                 'h_dphi_hmet'
     ]
 
     max_length = len(max(unc_arrays,key = lambda ar : len(ar)))

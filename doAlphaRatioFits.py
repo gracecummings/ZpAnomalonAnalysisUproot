@@ -1,4 +1,6 @@
 import argparse
+import tdrstyle
+import CMS_lumi
 import ROOT
 import glob
 import os
@@ -6,6 +8,11 @@ import gecorg as go
 import numpy as np
 import pandas as pd
 import configparser
+
+tdrstyle.setTDRStyle()
+CMS_lumi.lumi_13TeV = "101.27 fb^{-1}"
+CMS_lumi.writeExtraText = 1
+CMS_lumi.extraText = "Simulation Preliminary"
 
 def makeAddedHist(s17,s18,errs17,errs18,xspairs,hsb):
     s17.sort(key = go.orderDY)
@@ -58,6 +65,13 @@ def makeAddedHist(s17,s18,errs17,errs18,xspairs,hsb):
             
     return hsb
 
+def plotMzp(pad,hist,histmax,textForPave):
+    hist.SetMaximum(histmax)
+    hist.GetXaxis().SetTitle("M_{Z'}")
+    hist.GetYaxis().SetTitle("Events / 45 GeV")
+    hist.Draw()
+
+
 #def calcAddedHistErrors(samp,xspairs):
 #    samp.sort(key = go.
 
@@ -65,10 +79,14 @@ if __name__=='__main__':
 
     #make the output
     tc = ROOT.TCanvas("tc","alphafits",1100,400)
-    tc.Divide(3,1)
+    #tc.Divide(3,1)
+    p1 = ROOT.TPad("p1","sb",0,0,0.33,1.0)
+    p2 = ROOT.TPad("p2","sr",0.34,0,0.66,1.0)
+    p3 = ROOT.TPad("p3","alpha",0.67,0,1.0,1.0)
     
     #will replace with command line options
-    bkg_dir = 'analysis_output_ZpAnomalon/2021-03-31/'
+    #bkg_dir = 'analysis_output_ZpAnomalon/2021-03-31/'
+    bkg_dir = 'analysis_output_ZpAnomalon/2021-04-12/'
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
@@ -81,10 +99,10 @@ if __name__=='__main__':
     a18dyjetsr = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
 
     #gather errors
-    f17dyjetsberrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    f17dyjetsrerrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsberrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsrerrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_DeepMassDecorrelTagZHbbvsQCD_signalr_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    f17dyjetsberrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    f17dyjetsrerrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    a18dyjetsberrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    a18dyjetsrerrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
     
     #scale and add together MC
     config = configparser.RawConfigParser()
@@ -109,19 +127,53 @@ if __name__=='__main__':
     hsbt = hsb.Clone()
     
     #Draw
+    histmax = 45.
     ROOT.gStyle.SetOptFit(1011)
-    tc.cd(1)
-    sbfit = ROOT.expFit(hsbt,"sbl","R0+")
-    hsb.Draw()
-    sbfit.Draw("SAME")
-    tc.cd(2)
-    srfit = ROOT.expFit(hsrt,"srl","R0+")
-    hsr.Draw()
-    srfit.Draw("SAME")
-    tc.cd(3)
-    alpha = ROOT.alphaRatioMakerExp(hsbt,hsrt)
-    #print(alpha)
-    alpha.Draw()
+    ROOT.gStyle.SetOptStat(0)
 
+    p1.Draw()
+    p1.cd()
+    plotMzp(p1,hsb,histmax,'sideband')
+    tc.Update()
+    sbfit = ROOT.expFit(hsbt,"sbl","R0+")
+    sbfit.Draw("SAME")
+    CMS_lumi.CMS_lumi(p1,4,13)
+    p1.Update()
+
+    label = ROOT.TPaveText(2500,20,4500,35,"NB")
+    label.AddText("DY MC Sideband")
+    label.AddText("30 < m_{hcand,SD} < 70")
+    label.AddText("150 < m_{hcand,SD}")
+    label.SetFillColor(0)
+    label.Draw()
+    p1.Update()
+     
+    tc.cd()
+    p2.Draw()
+    p2.cd()
+    plotMzp(p2,hsr,histmax,"foo")
+    srfit = ROOT.expFit(hsrt,"srl","R0+")
+    srfit.Draw("SAME")
+    CMS_lumi.CMS_lumi(p2,4,13)
+    p2.Update()
+
+    label2 = ROOT.TPaveText(2500,20,4500,35,"NB")
+    label2.AddText("DY MC Signal Region")
+    label2.AddText("70 < m_{hcand,SD} < 150")
+    label2.SetFillColor(0)
+    label2.Draw()
+    p2.Update()
+    
+    tc.cd()
+    p3.Draw()
+    p3.cd()
+    alpha = ROOT.alphaRatioMakerExp(hsbt,hsrt)
+    alpha.GetYaxis().SetTitle("alpha(M_{Z'})")
+    alpha.GetXaxis().SetTitle("M_{Z'}")
+    alpha.Draw()
+    #CMS_lumi.CMS_lumi(p3,4,13)
+    #p3.Update()
+
+    
     figname = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figname)

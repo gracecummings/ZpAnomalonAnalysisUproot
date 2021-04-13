@@ -81,12 +81,12 @@ if __name__=='__main__':
     tc = ROOT.TCanvas("tc","alphafits",1100,400)
     #tc.Divide(3,1)
     p1 = ROOT.TPad("p1","sb",0,0,0.33,1.0)
-    p2 = ROOT.TPad("p2","sr",0.34,0,0.66,1.0)
-    p3 = ROOT.TPad("p3","alpha",0.67,0,1.0,1.0)
+    p2 = ROOT.TPad("p2","sr",0.33,0,0.66,1.0)
+    p3 = ROOT.TPad("p3","alpha",0.66,0,1.0,1.0)
     
     #will replace with command line options
     #bkg_dir = 'analysis_output_ZpAnomalon/2021-03-31/'
-    bkg_dir = 'analysis_output_ZpAnomalon/2021-04-12/'
+    bkg_dir = 'analysis_output_ZpAnomalon/2021-04-13/'
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
@@ -127,7 +127,7 @@ if __name__=='__main__':
     hsbt = hsb.Clone()
     
     #Draw
-    histmax = 45.
+    histmax = 17.
     ROOT.gStyle.SetOptFit(1011)
     ROOT.gStyle.SetOptStat(0)
 
@@ -140,7 +140,7 @@ if __name__=='__main__':
     CMS_lumi.CMS_lumi(p1,4,13)
     p1.Update()
 
-    label = ROOT.TPaveText(2500,20,4500,35,"NB")
+    label = ROOT.TPaveText(2500,histmax/2,4500,histmax/2+histmax*.2,"NB")
     label.AddText("DY MC Sideband")
     label.AddText("30 < m_{hcand,SD} < 70")
     label.AddText("150 < m_{hcand,SD}")
@@ -151,15 +151,16 @@ if __name__=='__main__':
     tc.cd()
     p2.Draw()
     p2.cd()
-    plotMzp(p2,hsr,histmax,"foo")
+    plotMzp(p2,hsr,10,"foo")
     srfit = ROOT.expFit(hsrt,"srl","R0+")
     srfit.Draw("SAME")
     CMS_lumi.CMS_lumi(p2,4,13)
     p2.Update()
 
-    label2 = ROOT.TPaveText(2500,20,4500,35,"NB")
+    label2 = ROOT.TPaveText(2500,10/2,4500,10/2+10*.2,"NB")
     label2.AddText("DY MC Signal Region")
-    label2.AddText("70 < m_{hcand,SD} < 150")
+    label2.AddText("110 <= m_{hcand,SD} < 150")#higgs mass
+    #label2.AddText("70 < m_{hcand,SD} < 110")
     label2.SetFillColor(0)
     label2.Draw()
     p2.Update()

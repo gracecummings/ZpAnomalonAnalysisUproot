@@ -92,17 +92,7 @@ if __name__=='__main__':
     metcut  = '200.0'
     btagwp  = '0.8'
     
-    #gather the MC files
-    f17dyjetsb = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    f17dyjetsr = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsb = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsr = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-
-    #gather errors
-    f17dyjetsberrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    f17dyjetsrerrs = glob.glob(str(bkg_dir)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsberrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
-    a18dyjetsrerrs = glob.glob(str(bkg_dir)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+    bkgs = go.backgrounds(bkg_dir,zptcut,hptcut,metcut,btagwp)
     
     #scale and add together MC
     config = configparser.RawConfigParser()
@@ -111,15 +101,15 @@ if __name__=='__main__':
     config.read_file(fp)
     xspairs = config.items("DYJetsToLL")
 
-    tf1 = ROOT.TFile(f17dyjetsb[0])
+    tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
     hsb = tf1.Get('h_zp_jigm')
     hsb.Reset("ICESM")#creates an empty hist with same structure
-    hsb = makeAddedHist(f17dyjetsb,a18dyjetsb,f17dyjetsberrs,a18dyjetsberrs,xspairs,hsb)
+    hsb = makeAddedHist(bkgs.f17dyjetsb,bkgs.a18dyjetsb,bkgs.f17dyjetsberrs,bkgs.a18dyjetsberrs,xspairs,hsb)
     
-    tf2 = ROOT.TFile(f17dyjetsr[0])
+    tf2 = ROOT.TFile(bkgs.f17dyjetsr[0])
     hsr = tf2.Get('h_zp_jigm')
     hsr.Reset("ICESM")
-    hsr = makeAddedHist(f17dyjetsr,a18dyjetsr,f17dyjetsrerrs,a18dyjetsrerrs,xspairs,hsr)
+    hsr = makeAddedHist(bkgs.f17dyjetsr,bkgs.a18dyjetsr,bkgs.f17dyjetsrerrs,bkgs.a18dyjetsrerrs,xspairs,hsr)
     
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")

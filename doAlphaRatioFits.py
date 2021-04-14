@@ -93,6 +93,8 @@ if __name__=='__main__':
     btagwp  = '0.8'
     
     bkgs = go.backgrounds(bkg_dir,zptcut,hptcut,metcut,btagwp)
+    hist = bkgs.getAddedHist("TT","sb","h_zp_jigm")
+    print(hist)
 
     #scale and add together MC
     config = configparser.RawConfigParser()

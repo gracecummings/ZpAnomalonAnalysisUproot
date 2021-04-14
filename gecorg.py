@@ -269,3 +269,46 @@ class backgrounds:
         self.a18zzsberrs = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18zzsrerrs = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
 
+        self.bkgs = {"DYJetsToLL":
+                {18:
+                 {"sb":[self.a18dyjetsb,self.a18dyjetsberrs],
+                  "sr":[self.a18dyjetsr,self.a18dyjetsrerrs]},
+                 17:
+                 {"sb":[self.f17dyjetsb,self.f17dyjetsberrs],
+                  "sr":[self.f17dyjetsr,self.f17dyjetsrerrs]},
+                },
+                "TT":
+                {18:
+                 {"sb":[self.a18ttsb,self.a18ttsberrs],
+                  "sr":[self.a18ttsr,self.a18ttsrerrs]},
+                 17:
+                 {"sb":[self.f17ttsb,self.f17ttsberrs],
+                  "sr":[self.f17ttsr,self.f17ttsrerrs]},
+                },
+                "WZTo2L2Q":
+                {18:
+                 {"sb":[self.a18wzsb,self.a18wzsberrs],
+                  "sr":[self.a18wzsr,self.a18wzsrerrs]},
+                 17:
+                 {"sb":[self.f17wzsb,self.f17wzsberrs],
+                  "sr":[self.f17wzsr,self.f17wzsrerrs]},
+                },
+                "ZZTo2L2Q":
+                {18:
+                 {"sb":[self.a18zzsb,self.a18zzsberrs],
+                  "sr":[self.a18zzsr,self.a18zzsrerrs]},
+                 17:
+                 {"sb":[self.f17zzsb,self.f17zzsberrs],
+                  "sr":[self.f17zzsr,self.f17zzsrerrs]},
+                }
+        }
+                
+    def getAddedHist(self,samp,region,hname,years = [17,18]):
+        bkg = self.bkgs[samp]
+
+        tf = ROOT.TFile(bkg[18]["sb"][0][0])
+        keys = tf.GetListOfKeys()
+        keynames = [key.GetName() for key in keys]
+        self.temp = tf.Get(hname)
+        print(self.temp)
+        return self.temp

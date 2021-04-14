@@ -93,7 +93,7 @@ if __name__=='__main__':
     btagwp  = '0.8'
     
     bkgs = go.backgrounds(bkg_dir,zptcut,hptcut,metcut,btagwp)
-    
+
     #scale and add together MC
     config = configparser.RawConfigParser()
     config.optionxform = str

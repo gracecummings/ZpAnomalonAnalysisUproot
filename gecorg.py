@@ -316,6 +316,11 @@ class backgrounds:
         bkgdfs  = []
         
         for year in years:
+            if year == 17:
+                lumi = 41.53
+            if year == 18:
+                lumi = 59.74
+                
             files = bkg[year][region][0]
             errs  = bkg[year][region][1]
             if "DYJetsToLL" in samp:
@@ -325,7 +330,7 @@ class backgrounds:
                 tf = ROOT.TFile(f)
                 numevents = float(str(tf.Get('hnevents').GetString()))
                 xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
-                scale = findScale(numevents,xs,41.53)
+                scale = findScale(numevents,xs,lumi)
                 h = tf.Get(hname)
                 h.Scale(scale)
                 hist.Add(h)

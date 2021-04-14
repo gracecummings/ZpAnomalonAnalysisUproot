@@ -93,8 +93,8 @@ if __name__=='__main__':
     btagwp  = '0.8'
     
     bkgs = go.backgrounds(bkg_dir,zptcut,hptcut,metcut,btagwp)
-    hist = bkgs.getAddedHist("TT","sb","h_zp_jigm")
-    print(hist)
+    #hist = bkgs.getAddedHist(hist,"TT","sb","h_zp_jigm")
+    #print(hist)
 
     #scale and add together MC
     config = configparser.RawConfigParser()
@@ -104,9 +104,12 @@ if __name__=='__main__':
     xspairs = config.items("DYJetsToLL")
 
     tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
-    hsb = tf1.Get('h_zp_jigm')
-    hsb.Reset("ICESM")#creates an empty hist with same structure
-    hsb = makeAddedHist(bkgs.f17dyjetsb,bkgs.a18dyjetsb,bkgs.f17dyjetsberrs,bkgs.a18dyjetsberrs,xspairs,hsb)
+    empty = tf1.Get('h_zp_jigm')
+    empty.Reset("ICESM")#creates an empty hist with same structure
+    hsb1 = empty.Clone()
+    hsb2 = empty.Clone()
+    hsb = bkgs.getAddedHist(hsb1,"DYJetsToLL","sb","h_zp_jigm")
+    #hsb = makeAddedHist(bkgs.f17dyjetsb,bkgs.a18dyjetsb,bkgs.f17dyjetsberrs,bkgs.a18dyjetsberrs,xspairs,hsb2)
     
     tf2 = ROOT.TFile(bkgs.f17dyjetsr[0])
     hsr = tf2.Get('h_zp_jigm')

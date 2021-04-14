@@ -3,6 +3,7 @@ import sys
 import glob
 import ROOT
 import configparser
+import pandas as pd
 from datetime import date
 
 def sampleType(sampstring):
@@ -302,13 +303,48 @@ class backgrounds:
                   "sr":[self.f17zzsr,self.f17zzsrerrs]},
                 }
         }
-                
-    def getAddedHist(self,samp,region,hname,years = [17,18]):
-        bkg = self.bkgs[samp]
 
-        tf = ROOT.TFile(bkg[18]["sb"][0][0])
-        keys = tf.GetListOfKeys()
-        keynames = [key.GetName() for key in keys]
-        self.temp = tf.Get(hname)
-        print(self.temp)
-        return self.temp
+        self.config = configparser.RawConfigParser()
+        self.config.optionxform = str
+        fp = open('xsects_2017.ini')#2017 and 2018dy+jets xs same
+        self.config.read_file(fp)
+
+        
+    def getAddedHist(self,hist,samp,region,hname,years = [17,18]):
+        bkg = self.bkgs[samp]
+        xspairs = self.config.items(samp)
+        bkgdfs  = []
+        
+        for year in years:
+            files = bkg[year][region][0]
+            errs  = bkg[year][region][1]
+            if "DYJetsToLL" in samp:
+                files.sort(key = orderDY)
+                errs.sort(key = orderDY)
+            for i,f in enumerate(files):
+                tf = ROOT.TFile(f)
+                numevents = float(str(tf.Get('hnevents').GetString()))
+                xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
+                scale = findScale(numevents,xs,41.53)
+                h = tf.Get(hname)
+                h.Scale(scale)
+                hist.Add(h)
+                
+                #calc hist errors
+                df = pd.read_pickle(errs[i])
+                sdf = df*scale
+                sqrddf = sdf**2
+                bkgdfs.append(sqrddf)
+
+        uncsqdDYJetsdf = sum(bkgdfs)
+        uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
+
+        for ibin in range(hist.GetNbinsX()+1):
+            if ibin == 0:
+                continue
+            else:
+                binerr = uncDYJetsdf['h_zp_jigm'][ibin-1]
+                hist.SetBinError(ibin,binerr)
+
+        return hist
+

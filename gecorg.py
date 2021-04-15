@@ -334,6 +334,13 @@ class backgrounds:
                 h = tf.Get(hname)
                 h.Scale(scale)
                 hist.Add(h)
+
+                #print(f)
+                #print(numevents)
+                #print(xs)
+                #print(scale)
+                #print(lumi)
+                
                 
                 #calc hist errors
                 df = pd.read_pickle(errs[i])

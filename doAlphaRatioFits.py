@@ -46,9 +46,9 @@ def makeAddedHist(s17,s18,errs17,errs18,xspairs,hsb):
         h = tf.Get('h_zp_jigm')
         h.Scale(scale)
         hsb.Add(h)
-
+        
         #calc hist errors
-        df = pd.read_pickle(errs17[i])
+        df = pd.read_pickle(errs18[i])
         sdf = df*scale
         sqrddf = sdf**2
         bkgdfs.append(sqrddf)
@@ -72,9 +72,6 @@ def plotMzp(pad,hist,histmax,textForPave):
     hist.Draw()
 
 
-#def calcAddedHistErrors(samp,xspairs):
-#    samp.sort(key = go.
-
 if __name__=='__main__':
 
     #make the output
@@ -93,8 +90,6 @@ if __name__=='__main__':
     btagwp  = '0.8'
     
     bkgs = go.backgrounds(bkg_dir,zptcut,hptcut,metcut,btagwp)
-    #hist = bkgs.getAddedHist(hist,"TT","sb","h_zp_jigm")
-    #print(hist)
 
     #scale and add together MC
     config = configparser.RawConfigParser()
@@ -106,20 +101,15 @@ if __name__=='__main__':
     tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
     empty = tf1.Get('h_zp_jigm')
     empty.Reset("ICESM")#creates an empty hist with same structure
-    hsb1 = empty.Clone()
-    hsb2 = empty.Clone()
-    hsb = bkgs.getAddedHist(hsb1,"DYJetsToLL","sb","h_zp_jigm")
-    #hsb = makeAddedHist(bkgs.f17dyjetsb,bkgs.a18dyjetsb,bkgs.f17dyjetsberrs,bkgs.a18dyjetsberrs,xspairs,hsb2)
+    hsb = bkgs.getAddedHist(empty,"DYJetsToLL","sb","h_zp_jigm")
     
     tf2 = ROOT.TFile(bkgs.f17dyjetsr[0])
-    hsr = tf2.Get('h_zp_jigm')
-    hsr.Reset("ICESM")
-    hsr = makeAddedHist(bkgs.f17dyjetsr,bkgs.a18dyjetsr,bkgs.f17dyjetsrerrs,bkgs.a18dyjetsrerrs,xspairs,hsr)
-    
+    empty2 = tf2.Get('h_zp_jigm')
+    empty2.Reset("ICESM")
+    hsr = bkgs.getAddedHist(empty2,"DYJetsToLL","sr","h_zp_jigm")
+
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")
-    hsrt = hsr.Clone()
-    hsbt = hsb.Clone()
     
     #Draw
     histmax = 17.
@@ -130,8 +120,9 @@ if __name__=='__main__':
     p1.cd()
     plotMzp(p1,hsb,histmax,'sideband')
     tc.Update()
-    sbfit = ROOT.expFit(hsbt,"sbl","R0+")
+    sbfit = ROOT.expFit(hsb,"sbl","R0+")
     sbfit.Draw("SAME")
+
     CMS_lumi.CMS_lumi(p1,4,13)
     p1.Update()
 
@@ -146,13 +137,13 @@ if __name__=='__main__':
     tc.cd()
     p2.Draw()
     p2.cd()
-    plotMzp(p2,hsr,10,"foo")
-    srfit = ROOT.expFit(hsrt,"srl","R0+")
+    plotMzp(p2,hsr,4,"foo")
+    srfit = ROOT.expFit(hsr,"srl","R0+")
     srfit.Draw("SAME")
     CMS_lumi.CMS_lumi(p2,4,13)
     p2.Update()
 
-    label2 = ROOT.TPaveText(2500,10/2,4500,10/2+10*.2,"NB")
+    label2 = ROOT.TPaveText(2500,4/2,4500,4/2+4*.2,"NB")
     label2.AddText("DY MC Signal Region")
     label2.AddText("110 <= m_{hcand,SD} < 150")#higgs mass
     #label2.AddText("70 < m_{hcand,SD} < 110")
@@ -163,7 +154,7 @@ if __name__=='__main__':
     tc.cd()
     p3.Draw()
     p3.cd()
-    alpha = ROOT.alphaRatioMakerExp(hsbt,hsrt)
+    alpha = ROOT.alphaRatioMakerExp(hsb,hsr)
     alpha.GetYaxis().SetTitle("alpha(M_{Z'})")
     alpha.GetXaxis().SetTitle("M_{Z'}")
     alpha.Draw()

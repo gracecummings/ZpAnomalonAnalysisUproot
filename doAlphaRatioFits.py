@@ -28,6 +28,9 @@ def plotMzp(pad,hist,islog=False,logmin=0.1):
         histmin = logmin
     hist.SetMaximum(histmax)
     hist.SetMinimum(histmin)
+    hist.SetMarkerStyle(8)
+    hist.SetMarkerSize(0.5)
+    hist.SetMarkerColor(ROOT.kBlue)
     xax = hist.GetXaxis()
     yax = hist.GetYaxis()
     xax.SetTitle("M_{Z'}")
@@ -38,8 +41,15 @@ def plotMzp(pad,hist,islog=False,logmin=0.1):
     yax.SetLabelSize(0.04)
     yax.SetLabelOffset(0.015)
     
-    hist.Draw()
+    hist.Draw("E1")
 
+def pavedLabel(text):
+    label = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
+    label.AddText(text)
+    label.SetFillColor(0)
+    label.Draw()
+
+    
 if __name__=='__main__':
 
     #make the output
@@ -84,8 +94,10 @@ if __name__=='__main__':
     hsrzz = bkgs.getAddedHist(empty7,"ZZTo2L2Q","sr","h_zp_jigm")
     hsbwz = bkgs.getAddedHist(empty5,"WZTo2L2Q","sb","h_zp_jigm")
     hsrwz = bkgs.getAddedHist(empty8,"WZTo2L2Q","sr","h_zp_jigm")
-    hsbvv = hsbzz.Add(hsbwz)
-    hsrvv = hsrzz.Add(hsrwz)
+    hsbvv = hsbzz.Clone()
+    hsbvv.Add(hsbwz)
+    hsrvv = hsrzz.Clone()
+    hsrvv.Add(hsrwz)
 
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")
@@ -142,7 +154,14 @@ if __name__=='__main__':
     p22.cd()
     setLogAxis(p22,islog)
     plotMzp(p22,hsbtt,islog)
+    sbttfit = ROOT.expFit(hsbtt,"sbl","R0+")
+    sbttfit.Draw("SAME")
     CMS_lumi.CMS_lumi(p22,4,13)
+    p22.Update()
+    label3 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
+    label3.AddText("TT MC SB")
+    label3.SetFillColor(0)
+    label3.Draw()
     p22.Update()
 
     tc.cd()
@@ -150,24 +169,44 @@ if __name__=='__main__':
     p12.cd()
     setLogAxis(p12,islog)
     plotMzp(p12,hsrtt,islog)
+    srttfit = ROOT.expFit(hsrtt,"sbl","R0+")
+    srttfit.Draw("SAME")
     CMS_lumi.CMS_lumi(p12,4,13)
+    p12.Update()
+    label4 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
+    label4.AddText("TT MC SR")
+    label4.SetFillColor(0)
+    label4.Draw()
     p12.Update()
 
     tc.cd()
     p23.Draw()
     p23.cd()
     setLogAxis(p23,islog)
-    plotMzp(p23,hsbzz,islog,0.001)
+    plotMzp(p23,hsbvv,islog,0.001)
+    sbvvfit = ROOT.expFit(hsbvv,"sbl","R0+")
+    sbvvfit.Draw("SAME")
     CMS_lumi.CMS_lumi(p23,4,13)
+    p23.Update()
+    label5 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
+    label5.AddText("VV MC SB")
+    label5.SetFillColor(0)
+    label5.Draw()
     p23.Update()
 
     tc.cd()
     p13.Draw()
     p13.cd()
     setLogAxis(p13,islog)
-    plotMzp(p13,hsrzz,islog,0.001)
+    plotMzp(p13,hsrvv,islog,0.001)
+    srvvfit = ROOT.expFit(hsrvv,"sbl","R0+")
+    srvvfit.Draw("SAME")
     CMS_lumi.CMS_lumi(p13,4,13)
     p13.Update()
+    label6 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
+    label6.AddText("VV MC SR")
+    label6.SetFillColor(0)
+    label6.Draw()
 
     
     figalpha = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))

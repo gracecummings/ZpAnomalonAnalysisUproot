@@ -28,8 +28,16 @@ def plotMzp(pad,hist,islog=False,logmin=0.1):
         histmin = logmin
     hist.SetMaximum(histmax)
     hist.SetMinimum(histmin)
-    hist.GetXaxis().SetTitle("M_{Z'}")
-    hist.GetYaxis().SetTitle("Events / 45 GeV")
+    xax = hist.GetXaxis()
+    yax = hist.GetYaxis()
+    xax.SetTitle("M_{Z'}")
+    xax.SetTitleSize(0.05)
+    xax.SetLabelSize(0.035)
+    yax.SetTitle("Events / 45 GeV")
+    yax.SetTitleSize(0.05)
+    yax.SetLabelSize(0.04)
+    yax.SetLabelOffset(0.015)
+    
     hist.Draw()
 
 if __name__=='__main__':

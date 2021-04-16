@@ -30,8 +30,7 @@ if __name__=='__main__':
     p3 = ROOT.TPad("p3","alpha",0.66,0,1.0,1.0)
     
     #will replace with command line options
-    #bkg_dir = 'analysis_output_ZpAnomalon/2021-03-31/'
-    bkg_dir = 'analysis_output_ZpAnomalon/2021-04-13/'
+    bkg_dir = 'analysis_output_ZpAnomalon/2021-04-16/'
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
@@ -53,7 +52,7 @@ if __name__=='__main__':
     ROOT.gSystem.Load("cfunctions/alphafits_C")
     
     #Draw
-    histmax = 17.
+    histmax = 15.
     ROOT.gStyle.SetOptFit(0)
     ROOT.gStyle.SetOptStat(0)
 
@@ -65,8 +64,8 @@ if __name__=='__main__':
     sbfit = ROOT.expFit(hsb,"sbl","QR0+")
     sbfit.Draw("SAME")
 
-    label = ROOT.TPaveText(2500,histmax/2,4500,histmax/2+histmax*.2,"NB")
-    label.AddText("DY MC Sideband")
+    label = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
+    label.AddText("DY MC SB")
     label.AddText("30 < m_{hcand,SD} < 70")
     label.AddText("150 < m_{hcand,SD}")
     label.SetFillColor(0)
@@ -76,16 +75,16 @@ if __name__=='__main__':
     tc.cd()
     p2.Draw()
     p2.cd()
-    plotMzp(p2,hsr,4,"foo")
-    srfit = ROOT.expFit(hsr,"srl","R0+")
+    plotMzp(p2,hsr,6,"foo")
+    srfit = ROOT.expFit(hsr,"srl","QR0+")
     srfit.Draw("SAME")
     CMS_lumi.CMS_lumi(p2,4,13)
     p2.Update()
 
-    label2 = ROOT.TPaveText(2500,4/2,4500,4/2+4*.2,"NB")
-    label2.AddText("DY MC Signal Region")
+    label2 = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
+    label2.AddText("DY MC SR")
     label2.AddText("110 <= m_{hcand,SD} < 150")#higgs mass
-    #label2.AddText("70 < m_{hcand,SD} < 110")
+    label2.AddText("70 < m_{hcand,SD} < 110")
     label2.SetFillColor(0)
     label2.Draw()
     p2.Update()

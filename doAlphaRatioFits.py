@@ -14,63 +14,11 @@ CMS_lumi.lumi_13TeV = "101.27 fb^{-1}"
 CMS_lumi.writeExtraText = 1
 CMS_lumi.extraText = "Simulation Preliminary"
 
-def makeAddedHist(s17,s18,errs17,errs18,xspairs,hsb):
-    s17.sort(key = go.orderDY)
-    s18.sort(key = go.orderDY)
-    errs17.sort(key = go.orderDY)
-    errs18.sort(key = go.orderDY)
-    bkgdfs = []
-    
-    for i,f in enumerate(s17):
-        #make the hist
-        tf = ROOT.TFile(f)
-        numevents = float(str(tf.Get('hnevents').GetString()))
-        xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
-        scale = go.findScale(numevents,xs,41.53)
-        h = tf.Get('h_zp_jigm')
-        h.Scale(scale)
-        hsb.Add(h)
-
-        #calc hist errors
-        df = pd.read_pickle(errs17[i])
-        sdf = df*scale
-        sqrddf = sdf**2
-        bkgdfs.append(sqrddf)
-
-    for i,f in enumerate(s18):
-        #make the hist
-        tf = ROOT.TFile(f)
-        numevents = float(str(tf.Get('hnevents').GetString()))
-        xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
-        scale = go.findScale(numevents,xs,59.74)
-        h = tf.Get('h_zp_jigm')
-        h.Scale(scale)
-        hsb.Add(h)
-        
-        #calc hist errors
-        df = pd.read_pickle(errs18[i])
-        sdf = df*scale
-        sqrddf = sdf**2
-        bkgdfs.append(sqrddf)
-
-    uncsqdDYJetsdf = sum(bkgdfs)
-    uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
-
-    for ibin in range(hsb.GetNbinsX()+1):
-        if ibin == 0:
-            continue
-        else:
-            binerr = uncDYJetsdf['h_zp_jigm'][ibin-1]
-            hsb.SetBinError(ibin,binerr)
-            
-    return hsb
-
 def plotMzp(pad,hist,histmax,textForPave):
     hist.SetMaximum(histmax)
     hist.GetXaxis().SetTitle("M_{Z'}")
     hist.GetYaxis().SetTitle("Events / 45 GeV")
     hist.Draw()
-
 
 if __name__=='__main__':
 
@@ -91,13 +39,6 @@ if __name__=='__main__':
     
     bkgs = go.backgrounds(bkg_dir,zptcut,hptcut,metcut,btagwp)
 
-    #scale and add together MC
-    config = configparser.RawConfigParser()
-    config.optionxform = str
-    fp = open('xsects_2017.ini')#2017 and 2018dy+jets xs same
-    config.read_file(fp)
-    xspairs = config.items("DYJetsToLL")
-
     tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
     empty = tf1.Get('h_zp_jigm')
     empty.Reset("ICESM")#creates an empty hist with same structure
@@ -113,18 +54,16 @@ if __name__=='__main__':
     
     #Draw
     histmax = 17.
-    ROOT.gStyle.SetOptFit(1011)
+    ROOT.gStyle.SetOptFit(0)
     ROOT.gStyle.SetOptStat(0)
 
     p1.Draw()
     p1.cd()
     plotMzp(p1,hsb,histmax,'sideband')
-    tc.Update()
-    sbfit = ROOT.expFit(hsb,"sbl","R0+")
-    sbfit.Draw("SAME")
-
     CMS_lumi.CMS_lumi(p1,4,13)
     p1.Update()
+    sbfit = ROOT.expFit(hsb,"sbl","QR0+")
+    sbfit.Draw("SAME")
 
     label = ROOT.TPaveText(2500,histmax/2,4500,histmax/2+histmax*.2,"NB")
     label.AddText("DY MC Sideband")

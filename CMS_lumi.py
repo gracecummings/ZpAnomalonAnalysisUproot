@@ -13,17 +13,17 @@ writeExtraText = True
 extraText   = "Preliminary"
 extraTextFont = 52 
 
-lumiTextSize     = 0.6
+lumiTextSize     = 0.8#0.6
 lumiTextOffset   = 0.2
 
-cmsTextSize      = 0.75
+cmsTextSize      = 1#0.75
 cmsTextOffset    = 0.1
 
 relPosX    = 0.045
 relPosY    = 0.035
 relExtraDY = 1.2
 
-extraOverCmsTextSize  = 0.76
+extraOverCmsTextSize  = .9#0.76
 
 lumi_13TeV = "20.1 fb^{-1}"
 lumi_8TeV  = "19.7 fb^{-1}" 
@@ -89,8 +89,6 @@ def CMS_lumi(pad,  iPeriod,  iPosX ):
     elif ( iPeriod==0 ):
         lumiText += lumi_sqrtS
             
-    print(lumiText)
-
     latex = rt.TLatex()
     latex.SetNDC()
     latex.SetTextAngle(0)

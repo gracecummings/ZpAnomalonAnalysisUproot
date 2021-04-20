@@ -2,6 +2,8 @@
 #include "TF1.h"
 #include "TH1D.h"
 #include "TMath.h"
+#include "TGraphErrors.h"
+#include "TVirtualFitter.h"
 #include <iostream>
 #include <cstring>
 
@@ -111,9 +113,30 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="LR0+") {
   //double samp = lfit->GetParameter(0);
   hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
+
   return fitout;
   //double acamp = fitout->GetParameter(0);
 }
+
+TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="LR0+") {
+  TH1D *empty = new TH1D("empty","Attempt at error bands",100,500,5000);
+  TF1 *expfit = new TF1(name,expModel,1500,3000,2);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,amp);
+  expfit->SetParameter(1,lambda);
+  //double samp = lfit->GetParameter(0);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  //above is the old fit
+  (TVirtualFitter::GetFitter())->GetConfidenceIntervals(empty);
+  
+  return empty;
+  //double acamp = fitout->GetParameter(0);
+}
+
 
 TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
   string sb = "sbl";

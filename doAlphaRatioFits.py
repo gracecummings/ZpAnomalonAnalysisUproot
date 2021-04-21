@@ -24,7 +24,7 @@ def plotMzp(pad,hist,islog=False,logmin=0.1):
     histmax = mr+mr*0.30
     histmin = 0
     if islog:
-        histmax = mr*100
+        histmax = mr*10
         histmin = logmin
     hist.SetMaximum(histmax)
     hist.SetMinimum(histmin)
@@ -111,18 +111,17 @@ if __name__=='__main__':
     tc.cd()
     p21.Draw()
     p21.cd()
+    sbfit = ROOT.expFit(hsbdy,"sbl","QR0+")
+    #needs to be played with to get the plotting order right
+    #needs better errors
+    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+")
+    uncbands.SetStats(ROOT.kFALSE)
+    uncbands.SetFillColor(2)
     plotMzp(p21,hsbdy)
     CMS_lumi.CMS_lumi(p21,4,13)
     p21.Update()
-    sbfit = ROOT.expFit(hsbdy,"sbl","QR0+")
+    uncbands.Draw("e4same")#err bands are 1 sigma bands
     sbfit.Draw("SAME")
-
-    #needs to be played with to get the plotting order right
-    #needs better errors
-    #uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+")
-    #uncbands.SetStats(ROOT.kFALSE)
-    #uncbands.SetFillColor(2)
-    #uncbands.Draw("e3 same")
     
     label = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
     label.AddText("DY MC SB")
@@ -137,7 +136,8 @@ if __name__=='__main__':
     p11.cd()
     plotMzp(p11,hsrdy)
     srfit = ROOT.expFit(hsrdy,"srl","QR0+")
-    srfit.Draw("SAME")
+    srfit.SetFillColor(ROOT.kRed)
+    srfit.Draw("E3 same")
     CMS_lumi.CMS_lumi(p11,4,13)
     p11.Update()
 

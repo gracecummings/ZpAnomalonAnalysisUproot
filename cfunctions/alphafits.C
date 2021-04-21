@@ -1,3 +1,6 @@
+#include "Math/WrappedTF1.h"
+#include "TMatrixD.h"
+#include "TVectorD.h"
 #include "TROOT.h"
 #include "TF1.h"
 #include "TH1D.h"
@@ -118,22 +121,70 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="LR0+") {
   //double acamp = fitout->GetParameter(0);
 }
 
+// here we can do error propagation for an arbitrary function
+// matrix and vector notation is used
+// return error on function evaluated at x, sigma_f(x;par)
+double GetError(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixD &COV, Int_t npar){
+  Double_t *grad=new Double_t[npar];
+  f.ParameterGradient(x,pars,grad);
+  TVectorD g(npar,grad);
+  double var = g*(COV*g);
+  delete[] grad;
+  return TMath::Sqrt(var);
+}
+
 TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="LR0+") {
-  TH1D *empty = new TH1D("empty","Attempt at error bands",100,500,5000);
-  TF1 *expfit = new TF1(name,expModel,1500,3000,2);
+  const Int_t nPars=2;
+  Double_t pars[nPars], grad[nPars];
   int binmax = hist->GetMaximumBin();
   double max = hist->GetXaxis()->GetBinCenter(binmax);
   double amp = hist->GetMaximum();
   double_t lambda = guessDecayConstant(hist,amp);
+  
+  TH1D *errhist = new TH1D("errhist","Histogram with sigma for fit",100,500,5000);
+  TH1D *errup = new TH1D("errup","Histogram with up-sigma for fit",100,500,5000);
+  TH1D *errdown = new TH1D("errdown","Histogram with down-sigma for fit",100,500,5000);
+  TF1 *expfit = new TF1(name,expModel,1500,3000,nPars);
+
   expfit->SetParameter(0,amp);
   expfit->SetParameter(1,lambda);
-  //double samp = lfit->GetParameter(0);
   hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
-  //above is the old fit
-  (TVirtualFitter::GetFitter())->GetConfidenceIntervals(empty);
-  
-  return empty;
+  fitout->GetParameters(pars);
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  //hack for bin ranges!!
+  for (int ib=23;ib<=56;ib++){
+    //std::cout<<"Bin Edge is: "<<hist->GetBinLowEdge(ib)<<std::endl;//hackworks for fit limits
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    //std::cout<<"sigma on the fit point is "<<sigma<<std::endl;
+    //std::cout<<"             fit point is "<<(*fitout)(x)<<std::endl;
+    //std::cout<<"            hist point is "<<hist->GetBinContent(ib)<<std::endl;
+    errhist->SetBinContent(ib,(*fitout)(x));
+    errhist->SetBinError(ib,sigma);
+    errup->SetBinContent(ib,(*fitout)(x)+sigma);
+    errdown->SetBinContent(ib,(*fitout)(x)-sigma);
+  }
+
+  //debug errors to show values are the same
+  //for (int ib=23;ib<=56;ib++){
+  //  double x = hist->GetBinCenter(ib);
+  //  double fitval = (*fitout)(x);
+  //  double sigma = GetError(wfit,x,pars,*COV,nPars);
+  //  std::cout<<"sigma on the fit point is "<<sigma<<std::endl;
+  //  std::cout<<"             fit point is "<<fitval<<std::endl;
+  // std::cout<<"          err hist val is "<<errhist->GetBinContent(ib)<<std::endl;
+  //  std::cout<<"          err hist err is "<<errhist->GetBinError(ib)<<std::endl;
+  //  std::cout<<"           up hist val is "<<errup->GetBinContent(ib)<<std::endl;
+  // std::cout<<"         up hist swing is "<<errup->GetBinContent(ib)-fitval<<std::endl;
+  //}
+
+  return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error
   //double acamp = fitout->GetParameter(0);
 }
 

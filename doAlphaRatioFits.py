@@ -112,14 +112,19 @@ if __name__=='__main__':
     p21.Draw()
     p21.cd()
     sbfit = ROOT.expFit(hsbdy,"sbl","QR0+")
+
     #needs to be played with to get the plotting order right
     #needs better errors
     uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+")
-    uncbands.SetStats(ROOT.kFALSE)
-    uncbands.SetFillColor(2)
     plotMzp(p21,hsbdy)
     CMS_lumi.CMS_lumi(p21,4,13)
     p21.Update()
+    uncbands.SetStats(ROOT.kFALSE)
+    uncbands.SetFillColor(2)
+    uncbands.SetMarkerStyle(8)
+    uncbands.SetMarkerSize(0)
+    sbfit.SetMarkerStyle(8)
+    sbfit.SetMarkerSize(0)
     uncbands.Draw("e4same")#err bands are 1 sigma bands
     sbfit.Draw("SAME")
     

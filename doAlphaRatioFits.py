@@ -32,7 +32,7 @@ def plotMzp(pad,hist,islog=False,logmin=0.1,isData=False):
     hist.SetMarkerSize(0.5)
     if isData:
         hist.SetMarkerColor(ROOT.kBlack)
-        drawopts = "E2"
+        drawopts = "SAMEE2"
     else:
         hist.SetMarkerColor(ROOT.kBlue)
         drawopts = "E1"
@@ -275,20 +275,48 @@ if __name__=='__main__':
     tc2.cd()
     pd11.Draw()
     pd11.cd()
-    plotMzp(pd11,hdatsb,isData=True)
+    #plotMzp(pd11,hdatsb,isData=True)
     sbdatfit = ROOT.expFit(hdatsb,"sbl","R0+",1500,5000)
     sbdatunc = ROOT.expFitErrBands(hdatsb,"sbl","QR0+",1500,5000)
     sbdatunc.SetFillColor(2)
     sbdatunc.SetMarkerSize(0)
-    l111 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l111 = ROOT.TLegend(0.55,0.4,0.9,0.8)
     l111.AddEntry(hdatsb,"Data SB - full","ep")
     l111.AddEntry(sbdatfit,"2 Param Exp fit","l")
     l111.AddEntry(sbdatunc,"2 $\sigma$ uncertainty","f")
     l111.SetBorderSize(0)
     hsbkg = ROOT.THStack("hsbkg","")
-    bkgs.getStackofBkgs(hsbkg,"sb",'h_zp_jigm',l111)
-    #hsbkg.Draw("SAME")
 
+    #####REMOVE THS ATROCITY
+    bkgfiles17 = [bkgs.bkgs["DYJetsToLL"][17]["sb"][0],
+                  bkgs.bkgs["TT"][17]["sb"][0],
+                  bkgs.bkgs["WZTo2L2Q"][17]["sb"][0],
+                  bkgs.bkgs["ZZTo2L2Q"][17]["sb"][0]
+    ]
+    bkgfiles18 = [bkgs.bkgs["DYJetsToLL"][18]["sb"][0],
+                  bkgs.bkgs["TT"][18]["sb"][0],
+                  bkgs.bkgs["WZTo2L2Q"][18]["sb"][0],
+                  bkgs.bkgs["ZZTo2L2Q"][18]["sb"][0]
+    ]
+    bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
+    bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
+    
+    info17 = go.prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
+    info18 = go.prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
+    go.stackBkgMultiYear(info17,info18,'h_zp_jigm',hsbkg,l111,18,0)
+    #####
+    xax = hsbkg.GetXaxis()
+    yax = hsbkg.GetYaxis()
+    xax.SetTitle("M_{Z'}")
+    xax.SetTitleSize(0.05)
+    xax.SetLabelSize(0.035)
+    yax.SetTitle("Events / 45 GeV")
+    yax.SetTitleSize(0.05)
+    yax.SetLabelSize(0.04)
+    yax.SetLabelOffset(0.015)
+
+    hsbkg.Draw("HIST")
+    plotMzp(pd11,hdatsb,isData=True)
     sbdatunc.Draw("e3,same,c")
     sbdatfit.Draw("SAME")
     hdatsb.Draw("SAME,E1")

@@ -353,24 +353,26 @@ class backgrounds:
 
         return hist
 
-    def getStackofBkgs(self,hstk,region,hname,legend,years = [17,18]):
-        bkgfiles17 = [self.bkgs["DYJetsToLL"][17][region][0],
-                      self.bkgs["TT"][17][region][0],
-                      self.bkgs["WZTo2L2Q"][17][region][0],
-                      self.bkgs["ZZTo2L2Q"][17][region][0]
-                      ]
-        bkgfiles18 = [self.bkgs["DYJetsToLL"][18][region][0],
-                      self.bkgs["TT"][18][region][0],
-                      self.bkgs["WZTo2L2Q"][18][region][0],
-                      self.bkgs["ZZTo2L2Q"][18][region][0]
-                      ]
-        bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-        bkgcols  = colsFromPalette(bkgnames,ROOT.kLake)
+    #Add something that does this nicely within this class
+    #no craziness
+    #def getStackofBkgs(self,hstk,region,hname,legend,years = [17,18]):
+    #    bkgfiles17 = [self.bkgs["DYJetsToLL"][17][region][0],
+    #                  self.bkgs["TT"][17][region][0],
+    #                  self.bkgs["WZTo2L2Q"][17][region][0],
+    #                  self.bkgs["ZZTo2L2Q"][17][region][0]
+    #                  ]
+    #    bkgfiles18 = [self.bkgs["DYJetsToLL"][18][region][0],
+    #                  self.bkgs["TT"][18][region][0],
+    #                  self.bkgs["WZTo2L2Q"][18][region][0],
+    #                  self.bkgs["ZZTo2L2Q"][18][region][0]
+    #                  ]
+    #    bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
+    #    bkgcols  = colsFromPalette(bkgnames,ROOT.kLake)
 
-        info17 = prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
-        info18 = prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
+    #    info17 = prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
+    #    info18 = prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
+    #    stackBkgMultiYear(info17,info18,hname,hstk,legend,18,0)
 
-        stackBkgMultiYear(info17,info18,hname,hstk,legend,18,0)
 
 class run2:
     def __init__(self,path,zptcut,hptcut,metcut,btagwp):

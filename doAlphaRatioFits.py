@@ -18,7 +18,7 @@ def setLogAxis(pad,islog):
     if islog:
         pad.SetLogy()
 
-def plotMzp(pad,hist,islog=False,logmin=0.1):
+def plotMzp(pad,hist,islog=False,logmin=0.1,isData=False):
     maxi = hist.GetMaximum()
     mr   = round(maxi,0)
     histmax = mr+mr*0.30
@@ -30,7 +30,12 @@ def plotMzp(pad,hist,islog=False,logmin=0.1):
     hist.SetMinimum(histmin)
     hist.SetMarkerStyle(8)
     hist.SetMarkerSize(0.5)
-    hist.SetMarkerColor(ROOT.kBlue)
+    if isData:
+        hist.SetMarkerColor(ROOT.kBlack)
+        drawopts = "E2"
+    else:
+        hist.SetMarkerColor(ROOT.kBlue)
+        drawopts = "E1"
     xax = hist.GetXaxis()
     yax = hist.GetYaxis()
     xax.SetTitle("M_{Z'}")
@@ -41,15 +46,11 @@ def plotMzp(pad,hist,islog=False,logmin=0.1):
     yax.SetLabelSize(0.04)
     yax.SetLabelOffset(0.015)
     
-    hist.Draw("E1")
+    hist.Draw(drawopts)
     
 if __name__=='__main__':
 
     #make the output
-    #tc = ROOT.TCanvas("tc","alphafits",1100,400)
-    #p1 = ROOT.TPad("p1","datsb",0,0,0.5,1.0)
-    #p2 = ROOT.TPad("p2","alpha",0.5,0,1.0,1.0)
-
     tc = ROOT.TCanvas("tc","shapes",1100,800)
     p11 = ROOT.TPad("p11","dysr",0,0,0.33,.5)
     p12 = ROOT.TPad("p12","ttsr",0.33,0,0.66,.5)
@@ -61,13 +62,14 @@ if __name__=='__main__':
         
     
     #will replace with command line options
-    bkg_dir = 'analysis_output_ZpAnomalon/2021-04-16/'
+    path    = 'analysis_output_ZpAnomalon/2021-04-28/'
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
     btagwp  = '0.8'
     
-    bkgs = go.backgrounds(bkg_dir,zptcut,hptcut,metcut,btagwp)
+    bkgs = go.backgrounds(path,zptcut,hptcut,metcut,btagwp)
+    data = go.run2(path,zptcut,hptcut,metcut,btagwp)
 
     tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
     empty = tf1.Get('h_zp_jigm')
@@ -79,6 +81,7 @@ if __name__=='__main__':
     empty6 = empty.Clone()
     empty7 = empty.Clone()
     empty8 = empty.Clone()
+    empty9 = empty.Clone()
     
     hsbdy = bkgs.getAddedHist(empty,"DYJetsToLL","sb","h_zp_jigm")
     hsrdy = bkgs.getAddedHist(empty2,"DYJetsToLL","sr","h_zp_jigm")
@@ -93,6 +96,8 @@ if __name__=='__main__':
     hsrvv = hsrzz.Clone()
     hsrvv.Add(hsrwz)
 
+    hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
+
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")
     
@@ -106,11 +111,11 @@ if __name__=='__main__':
     p21.Draw()
     p21.cd()
     hsbdy2 = hsbdy.Clone()
-    sbfit = ROOT.expFit(hsbdy,"sbl","R0+",1500,5000)
-    #sbfit2 = ROOT.expNFit(hsbdy2,"sbl","R0+",1500,5000)
+    sbfit = ROOT.expFit(hsbdy,"sbl","QR0+",1500,5000)
+    #sbfit2 = ROOT.expNFit(hsbdy2,"sbl","QR0+",1500,5000)
     #needs to be played with to get the plotting order right
     #needs better errors
-    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+",1500,5000)
+    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QQR0+",1500,5000)
     plotMzp(p21,hsbdy)
     CMS_lumi.CMS_lumi(p21,4,13)
     p21.Update()
@@ -159,7 +164,7 @@ if __name__=='__main__':
     l11 = ROOT.TLegend(0.55,0.65,0.9,0.8)
     l11.AddEntry(hsrdy,"DY Jets SR MC","ep")
     l11.AddEntry(srfit,"2 Param Exp fit","l")
-    l11.AddEntry(srdyunc,"2 $\sigma$ uncertainty","f")
+    l11.AddEntry(srdyunc,"\(2 \sigma\ uncertainty\)","f")
     l11.SetBorderSize(0)
     l11.Draw()
     
@@ -176,8 +181,8 @@ if __name__=='__main__':
     p22.cd()
     setLogAxis(p22,islog)
     plotMzp(p22,hsbtt,islog)
-    sbttfit = ROOT.expFit(hsbtt,"sbl","R0+")
-    sbttunc = ROOT.expFitErrBands(hsbtt,"sbl","R0+")
+    sbttfit = ROOT.expFit(hsbtt,"sbl","QR0+")
+    sbttunc = ROOT.expFitErrBands(hsbtt,"sbl","QR0+")
     sbttunc.SetFillColor(2)
     sbttunc.SetMarkerSize(0)
     CMS_lumi.CMS_lumi(p22,4,13)
@@ -198,8 +203,8 @@ if __name__=='__main__':
     p12.cd()
     setLogAxis(p12,islog)
     plotMzp(p12,hsrtt,islog)
-    srttfit = ROOT.expFit(hsrtt,"sbl","R0+")
-    srttunc = ROOT.expFitErrBands(hsrtt,"sbl","R0+")
+    srttfit = ROOT.expFit(hsrtt,"sbl","QR0+")
+    srttunc = ROOT.expFitErrBands(hsrtt,"sbl","QR0+")
     srttunc.SetFillColor(2)
     srttunc.SetMarkerSize(0)
     srttunc.Draw("e3,same,c")
@@ -220,8 +225,8 @@ if __name__=='__main__':
     p23.cd()
     setLogAxis(p23,islog)
     plotMzp(p23,hsbvv,islog,0.001)
-    sbvvfit = ROOT.expFit(hsbvv,"sbl","R0+")
-    sbvvunc = ROOT.expFitErrBands(hsbvv,"sbl","R0+")
+    sbvvfit = ROOT.expFit(hsbvv,"sbl","QR0+")
+    sbvvunc = ROOT.expFitErrBands(hsbvv,"sbl","QR0+")
     sbvvunc.SetFillColor(2)
     sbvvunc.SetMarkerSize(0)
     CMS_lumi.CMS_lumi(p23,4,13)
@@ -243,8 +248,8 @@ if __name__=='__main__':
     p13.cd()
     setLogAxis(p13,islog)
     plotMzp(p13,hsrvv,islog,0.001)
-    srvvfit = ROOT.expFit(hsrvv,"sbl","R0+")
-    srvvunc = ROOT.expFitErrBands(hsrvv,"sbl","R0+")
+    srvvfit = ROOT.expFit(hsrvv,"sbl","QR0+")
+    srvvunc = ROOT.expFitErrBands(hsrvv,"sbl","QR0+")
     srvvunc.SetFillColor(2)
     srvvunc.SetMarkerSize(0)
     srvvunc.Draw("e3,same,c")
@@ -263,8 +268,33 @@ if __name__=='__main__':
     tc.SaveAs(figshapes)
 
 
-    tc2 = ROOT.TCanvas("tc","ratio",500,500)
+    tc2 = ROOT.TCanvas("tc","ratio",734,500)
+    pd11 = ROOT.TPad("pd11","datsb",0,0,.5,1)
+    pd12 = ROOT.TPad("pd12","alpha",.5,0,1,1)
+    
     tc2.cd()
+    pd11.Draw()
+    pd11.cd()
+    plotMzp(pd11,hdatsb,isData=True)
+    sbdatfit = ROOT.expFit(hdatsb,"sbl","R0+",1500,5000)
+    sbdatunc = ROOT.expFitErrBands(hdatsb,"sbl","QR0+",1500,5000)
+    sbdatunc.SetFillColor(2)
+    sbdatunc.SetMarkerSize(0)
+    sbdatunc.Draw("e3,same,c")
+    sbdatfit.Draw("SAME")
+    hdatsb.Draw("SAME,E1")
+    CMS_lumi.CMS_lumi(pd11,4,13)
+    pd11.Update()
+    l111 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l111.AddEntry(hsrvv,"Data SB","ep")
+    l111.AddEntry(srvvfit,"2 Param Exp fit","l")
+    l111.AddEntry(srvvunc,"2 $\sigma$ uncertainty","f")
+    l111.SetBorderSize(0)
+    l111.Draw()
+
+    tc2.cd()
+    pd12.Draw()
+    pd12.cd()
     alpha = ROOT.alphaRatioMakerExp(hsbdy,hsrdy)
     alpha.GetYaxis().SetTitle("alpha(M_{Z'})")
     alpha.GetXaxis().SetTitle("M_{Z'}")

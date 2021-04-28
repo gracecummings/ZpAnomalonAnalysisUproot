@@ -360,3 +360,65 @@ class backgrounds:
 
         return hist
 
+class run2:
+    def __init__(self,path,zptcut,hptcut,metcut,btagwp):
+        self.path = path
+        self.zptcut = zptcut
+        self.hptcut = hptcut
+        self.metcut = metcut
+        self.btagwp = btagwp
+
+        #gather data files
+        self.run17sb = glob.glob(str(path)+'/Run2017*upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+        self.run18sb = glob.glob(str(path)+'/Run2018*upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+        self.run17sr = glob.glob(str(path)+'/Run2017*upout_signalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+        self.run18sr = glob.glob(str(path)+'/Run2018*upout_signalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+
+        #gather errors
+        self.run17sberrs = glob.glob(str(path)+'/Run2017*selected_errors_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+        self.run18sberrs = glob.glob(str(path)+'/Run2018*selected_errors_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+        self.run17srerrs = glob.glob(str(path)+'/Run2017*selected_errors_signalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+        self.run18srerrs = glob.glob(str(path)+'/Run2018*selected_errors_signalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+
+        self.data = {18:
+                      {"sb":[self.run18sb,self.run18sberrs],
+                       "sr":[self.run18sr,self.run18srerrs],
+                       },
+                      17:
+                      {"sb":[self.run17sb,self.run17sberrs],
+                       "sr":[self.run17sr,self.run17srerrs],
+                       }
+                      }
+
+    def getAddedHist(self,hist,region,hname,years = [17,18]):
+        data = self.data
+        datadfs = []
+
+        for year in years:
+            files = data[year][region][0]
+            errs  = data[year][region][1]
+            files.sort()
+            errs.sort()
+            for i,f in enumerate(files):
+                tf = ROOT.TFile(f)
+                h = tf.Get(hname)
+                hist.Add(h)
+
+                #calc errs
+                df = pd.read_pickle(errs[i])
+                sqrddf = df**2
+                datadfs.append(sqrddf)
+
+        uncsqddf = sum(datadfs)
+        uncdf   = uncsqddf**(1/2)
+        
+        for ibin in range(hist.GetNbinsX()+1):
+            if ibin == 0:
+                continue
+            else:
+                binerr = uncdf[hname][ibin-1]
+                hist.SetBinError(ibin,binerr)
+
+        return hist
+
+

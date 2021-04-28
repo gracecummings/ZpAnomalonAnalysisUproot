@@ -149,7 +149,7 @@ if __name__=='__main__':
     srdyunc = ROOT.expFitErrBands(hsrdy,"sbl","QR0+")
     srdyunc.SetFillColor(2)
     srdyunc.SetMarkerSize(0)
-    srfit = ROOT.expFit(hsrdy,"srl","QR0+")
+    srfit = ROOT.expFit(hsrdy,"srl","QR0+",1500,4000)#be aware, diff range from err and sb
     CMS_lumi.CMS_lumi(p11,4,13)
     srdyunc.Draw("e4,same,c")
     srfit.Draw("same")

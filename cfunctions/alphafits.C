@@ -25,7 +25,9 @@ Double_t guessDecayConstant(TH1D *hist,double max) {
 
 Double_t expModel(Double_t *X, Double_t *par){
   double x = X[0];
-  Double_t fitval = par[0]*TMath::Exp(par[1]*x);
+  //Double_t fitval = par[0]*TMath::Exp(par[1]*x);//old way, works great
+  //Double_t fitval = TMath::Exp(TMath::Log(par[0])+par[1]*x);//same as above
+  Double_t fitval = TMath::Exp(par[0]+par[1]*x);//new way, same as old with small range
   return fitval;
 }
 
@@ -116,7 +118,7 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int high
   double max = hist->GetXaxis()->GetBinCenter(binmax);
   double amp = hist->GetMaximum();
   double_t lambda = guessDecayConstant(hist,amp);
-  expfit->SetParameter(0,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
   expfit->SetParameter(1,lambda);
   //double samp = lfit->GetParameter(0);
   hist->Fit(name,opt);

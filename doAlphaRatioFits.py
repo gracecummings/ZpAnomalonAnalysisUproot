@@ -42,13 +42,6 @@ def plotMzp(pad,hist,islog=False,logmin=0.1):
     yax.SetLabelOffset(0.015)
     
     hist.Draw("E1")
-
-def pavedLabel(text):
-    label = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
-    label.AddText(text)
-    label.SetFillColor(0)
-    label.Draw()
-
     
 if __name__=='__main__':
 
@@ -64,6 +57,7 @@ if __name__=='__main__':
     p21 = ROOT.TPad("p21","dysb",0,.5,0.33,1.0)
     p22 = ROOT.TPad("p22","ttsb",0.33,.5,0.66,1.0)
     p23 = ROOT.TPad("p23","vvsb",0.66,.5,1.0,1.0)
+
         
     
     #will replace with command line options
@@ -116,7 +110,7 @@ if __name__=='__main__':
     #sbfit2 = ROOT.expNFit(hsbdy2,"sbl","R0+",1500,5000)
     #needs to be played with to get the plotting order right
     #needs better errors
-    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+")
+    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+",1500,5000)
     plotMzp(p21,hsbdy)
     CMS_lumi.CMS_lumi(p21,4,13)
     p21.Update()
@@ -129,13 +123,19 @@ if __name__=='__main__':
     #sbfit2.SetLineColor(ROOT.kMagenta)
     #sbfit2.SetMarkerStyle(8)
     #sbfit2.SetMarkerSize(0)
-    uncbands.Draw("e4same")#err bands are 1 sigma bands
+    uncbands.Draw("e4same")#err bands are 2 sigma bands
     #sbfit2.Draw("SAME")
     sbfit.Draw("SAME")
     hsbdy.Draw("SAME")
+
+    l21 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l21.AddEntry(hsbdy,"DY Jets SB MC","ep")
+    l21.AddEntry(sbfit,"2 Param Exp fit","l")
+    l21.AddEntry(uncbands,"2 $\sigma$ uncertainty","f")
+    l21.SetBorderSize(0)
+    l21.Draw()
     
-    label = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
-    label.AddText("DY MC SB")
+    label = ROOT.TPaveText(.5,.4,.9,.5,"NBNDC")
     label.AddText("30 < m_{hcand,SD} < 70")
     label.AddText("150 < m_{hcand,SD}")
     label.SetFillColor(0)
@@ -146,7 +146,7 @@ if __name__=='__main__':
     p11.Draw()
     p11.cd()
     plotMzp(p11,hsrdy)
-    srdyunc = ROOT.expFitErrBands(hsrdy,"sbl","QR0+")
+    srdyunc = ROOT.expFitErrBands(hsrdy,"sbl","QR0+",1500,4000)
     srdyunc.SetFillColor(2)
     srdyunc.SetMarkerSize(0)
     srfit = ROOT.expFit(hsrdy,"srl","QR0+",1500,4000)#be aware, diff range from err and sb
@@ -156,8 +156,14 @@ if __name__=='__main__':
     hsrdy.Draw("SAME")
     p11.Update()
 
-    label2 = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
-    label2.AddText("DY MC SR")
+    l11 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l11.AddEntry(hsrdy,"DY Jets SR MC","ep")
+    l11.AddEntry(srfit,"2 Param Exp fit","l")
+    l11.AddEntry(srdyunc,"2 $\sigma$ uncertainty","f")
+    l11.SetBorderSize(0)
+    l11.Draw()
+    
+    label2 = ROOT.TPaveText(.5,.4,.9,.5,"NBNDC")
     label2.AddText("110 <= m_{hcand,SD} < 150")#higgs mass
     label2.AddText("70 < m_{hcand,SD} < 110")
     label2.SetFillColor(0)
@@ -179,10 +185,12 @@ if __name__=='__main__':
     sbttfit.Draw("SAME")
     hsbtt.Draw("SAME")
     p22.Update()
-    label3 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
-    label3.AddText("TT MC SB")
-    label3.SetFillColor(0)
-    label3.Draw()
+    l22 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l22.AddEntry(hsbtt,"ttbar SB MC","ep")
+    l22.AddEntry(sbttfit,"2 Param Exp fit","l")
+    l22.AddEntry(sbttunc,"2 $\sigma$ uncertainty","f")
+    l22.SetBorderSize(0)
+    l22.Draw()
     p22.Update()
 
     tc.cd()
@@ -199,10 +207,12 @@ if __name__=='__main__':
     hsrtt.Draw("SAME")
     CMS_lumi.CMS_lumi(p12,4,13)
     p12.Update()
-    label4 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
-    label4.AddText("TT MC SR")
-    label4.SetFillColor(0)
-    label4.Draw()
+    l12 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l12.AddEntry(hsrtt,"ttbar SR MC","ep")
+    l12.AddEntry(srttfit,"2 Param Exp fit","l")
+    l12.AddEntry(srttunc,"2 $\sigma$ uncertainty","f")
+    l12.SetBorderSize(0)
+    l12.Draw()
     p12.Update()
 
     tc.cd()
@@ -220,10 +230,12 @@ if __name__=='__main__':
     hsbvv.Draw("SAME")
 
     p23.Update()
-    label5 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
-    label5.AddText("VV MC SB")
-    label5.SetFillColor(0)
-    label5.Draw()
+    l23 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l23.AddEntry(hsbvv,"VV SB MC","ep")
+    l23.AddEntry(sbvvfit,"2 Param Exp fit","l")
+    l23.AddEntry(sbvvunc,"2 $\sigma$ uncertainty","f")
+    l23.SetBorderSize(0)
+    l23.Draw()
     p23.Update()
 
     tc.cd()
@@ -240,13 +252,13 @@ if __name__=='__main__':
     hsrvv.Draw("SAME")
     CMS_lumi.CMS_lumi(p13,4,13)
     p13.Update()
-    label6 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
-    label6.AddText("VV MC SR")
-    label6.SetFillColor(0)
-    label6.Draw()
+    l13 = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    l13.AddEntry(hsrvv,"VV SR MC","ep")
+    l13.AddEntry(srvvfit,"2 Param Exp fit","l")
+    l13.AddEntry(srvvunc,"2 $\sigma$ uncertainty","f")
+    l13.SetBorderSize(0)
+    l13.Draw()
 
-    
-    #figalpha = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     figshapes = go.makeOutFile('Run2_2017_2018','alpha_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figshapes)
 

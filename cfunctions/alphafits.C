@@ -10,11 +10,6 @@
 #include <iostream>
 #include <cstring>
 
-Double_t landauCustom(Double_t *x, Double_t *par) {
-  return TMath::Landau(*x,par[0],par[1]);
-}
-
-// implement a regular C++ function for maximum flexibility
 Double_t landauModel(Double_t *X, Double_t *par){
   double x =X[0];  // get ring of pointer/array notation
   return par[0] * TMath::Landau(x,par[1],par[2]);
@@ -30,9 +25,13 @@ Double_t guessDecayConstant(TH1D *hist,double max) {
 
 Double_t expModel(Double_t *X, Double_t *par){
   double x = X[0];
-  //Double_t arg= 0;
-  //if (par[2] != 0) arg = (x[0] - par[1]/par[2]);
   Double_t fitval = par[0]*TMath::Exp(par[1]*x);
+  return fitval;
+}
+
+Double_t expNModel(Double_t *X, Double_t *par){
+  double x = X[0];
+  Double_t fitval = par[0]*TMath::Exp(par[1]*x+par[2]/x);
   return fitval;
 }
 
@@ -53,7 +52,13 @@ Double_t expRatio(Double_t *x, Double_t *par) {
   return numer/denom;
 }
 
-//TF1 * landauFit(TH1D *hist, char *name) {
+Double_t expNRatio(Double_t *x, Double_t *par) {
+  double numer = expNModel(x,par);
+  double denom = expNModel(x,&par[2]);
+  if (denom==0) return -1.0;
+  return numer/denom;
+}
+
 TF1 * landauFit(TH1D *hist,TString name, TString opt="LR0+") {
   TF1 *lfit = new TF1(name,landauModel,900,5000,3);//options: low range, high range, num param
   int binmax = hist->GetMaximumBin();
@@ -105,8 +110,8 @@ TF1 * alphaRatioMakerLandau(TH1D *hsb, TH1D *hsr){
   return alpha;
 }
 
-TF1 * expFit(TH1D *hist, TString name, TString opt="LR0+") {
-  TF1 *expfit = new TF1(name,expModel,1500,3000,2);
+TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
   int binmax = hist->GetMaximumBin();
   double max = hist->GetXaxis()->GetBinCenter(binmax);
   double amp = hist->GetMaximum();
@@ -119,6 +124,20 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="LR0+") {
 
   return fitout;
   //double acamp = fitout->GetParameter(0);
+}
+
+TF1 * expNFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
+  TF1 *expNfit = new TF1(name,expNModel,1500,5000,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expNfit->SetParameter(0,amp);
+  expNfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
 }
 
 // here we can do error propagation for an arbitrary function
@@ -142,8 +161,8 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="LR0+") {
   double_t lambda = guessDecayConstant(hist,amp);
   
   TH1D *errhist = new TH1D("errhist","Histogram with sigma for fit",100,500,5000);
-  TH1D *errup = new TH1D("errup","Histogram with up-sigma for fit",100,500,5000);
-  TH1D *errdown = new TH1D("errdown","Histogram with down-sigma for fit",100,500,5000);
+  //TH1D *errup = new TH1D("errup","Histogram with up-sigma for fit",100,500,5000);
+  //TH1D *errdown = new TH1D("errdown","Histogram with down-sigma for fit",100,500,5000);
   TF1 *expfit = new TF1(name,expModel,1500,3000,nPars);
 
   expfit->SetParameter(0,amp);
@@ -167,8 +186,8 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="LR0+") {
     //std::cout<<"            hist point is "<<hist->GetBinContent(ib)<<std::endl;
     errhist->SetBinContent(ib,(*fitout)(x));
     errhist->SetBinError(ib,sigma);
-    errup->SetBinContent(ib,(*fitout)(x)+sigma);
-    errdown->SetBinContent(ib,(*fitout)(x)-sigma);
+    //errup->SetBinContent(ib,(*fitout)(x)+sigma);
+    //errdown->SetBinContent(ib,(*fitout)(x)-sigma);
   }
 
   //debug errors to show values are the same

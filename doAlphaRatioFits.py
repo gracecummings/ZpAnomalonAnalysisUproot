@@ -111,8 +111,9 @@ if __name__=='__main__':
     tc.cd()
     p21.Draw()
     p21.cd()
-    sbfit = ROOT.expFit(hsbdy,"sbl","QR0+")
-
+    hsbdy2 = hsbdy.Clone()
+    sbfit = ROOT.expFit(hsbdy,"sbl","R0+",1500,5000)
+    #sbfit2 = ROOT.expNFit(hsbdy2,"sbl","R0+",1500,5000)
     #needs to be played with to get the plotting order right
     #needs better errors
     uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+")
@@ -125,8 +126,13 @@ if __name__=='__main__':
     uncbands.SetMarkerSize(0)
     sbfit.SetMarkerStyle(8)
     sbfit.SetMarkerSize(0)
+    #sbfit2.SetLineColor(ROOT.kMagenta)
+    #sbfit2.SetMarkerStyle(8)
+    #sbfit2.SetMarkerSize(0)
     uncbands.Draw("e4same")#err bands are 1 sigma bands
+    #sbfit2.Draw("SAME")
     sbfit.Draw("SAME")
+    hsbdy.Draw("SAME")
     
     label = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
     label.AddText("DY MC SB")
@@ -147,6 +153,7 @@ if __name__=='__main__':
     CMS_lumi.CMS_lumi(p11,4,13)
     srdyunc.Draw("e4,same,c")
     srfit.Draw("same")
+    hsrdy.Draw("SAME")
     p11.Update()
 
     label2 = ROOT.TPaveText(.5,.5,.9,.7,"NBNDC")
@@ -157,13 +164,6 @@ if __name__=='__main__':
     label2.Draw()
     p11.Update()
     
-    #tc.cd()
-    #p22.Draw()
-    #p22.cd()
-    #alpha = ROOT.alphaRatioMakerExp(hsbdy,hsrdy)
-    #alpha.GetYaxis().SetTitle("alpha(M_{Z'})")
-    #alpha.GetXaxis().SetTitle("M_{Z'}")
-    #alpha.Draw()
 
     tc.cd()
     p22.Draw()
@@ -177,6 +177,7 @@ if __name__=='__main__':
     CMS_lumi.CMS_lumi(p22,4,13)
     sbttunc.Draw("e3,same,c")
     sbttfit.Draw("SAME")
+    hsbtt.Draw("SAME")
     p22.Update()
     label3 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
     label3.AddText("TT MC SB")
@@ -190,7 +191,12 @@ if __name__=='__main__':
     setLogAxis(p12,islog)
     plotMzp(p12,hsrtt,islog)
     srttfit = ROOT.expFit(hsrtt,"sbl","R0+")
+    srttunc = ROOT.expFitErrBands(hsrtt,"sbl","R0+")
+    srttunc.SetFillColor(2)
+    srttunc.SetMarkerSize(0)
+    srttunc.Draw("e3,same,c")
     srttfit.Draw("SAME")
+    hsrtt.Draw("SAME")
     CMS_lumi.CMS_lumi(p12,4,13)
     p12.Update()
     label4 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
@@ -211,6 +217,7 @@ if __name__=='__main__':
     CMS_lumi.CMS_lumi(p23,4,13)
     sbvvunc.Draw("e4,same,c")
     sbvvfit.Draw("SAME")
+    hsbvv.Draw("SAME")
 
     p23.Update()
     label5 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
@@ -225,7 +232,12 @@ if __name__=='__main__':
     setLogAxis(p13,islog)
     plotMzp(p13,hsrvv,islog,0.001)
     srvvfit = ROOT.expFit(hsrvv,"sbl","R0+")
+    srvvunc = ROOT.expFitErrBands(hsrvv,"sbl","R0+")
+    srvvunc.SetFillColor(2)
+    srvvunc.SetMarkerSize(0)
+    srvvunc.Draw("e3,same,c")
     srvvfit.Draw("SAME")
+    hsrvv.Draw("SAME")
     CMS_lumi.CMS_lumi(p13,4,13)
     p13.Update()
     label6 = ROOT.TPaveText(.5,.65,.9,.7,"NBNDC")
@@ -234,7 +246,17 @@ if __name__=='__main__':
     label6.Draw()
 
     
-    figalpha = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    #figshapes = go.makeOutFile('Run2_2017_2018','alpha_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    tc.SaveAs(figalpha)
-    #xtc2.SaveAs(figshapes)
+    #figalpha = go.makeOutFile('Run2_2017_2018','alpha_fits','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    figshapes = go.makeOutFile('Run2_2017_2018','alpha_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    tc.SaveAs(figshapes)
+
+
+    tc2 = ROOT.TCanvas("tc","ratio",500,500)
+    tc2.cd()
+    alpha = ROOT.alphaRatioMakerExp(hsbdy,hsrdy)
+    alpha.GetYaxis().SetTitle("alpha(M_{Z'})")
+    alpha.GetXaxis().SetTitle("M_{Z'}")
+    alpha.Draw()
+
+    figalpha = go.makeOutFile('Run2_2017_2018','alpha_ratio','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    tc2.SaveAs(figalpha)

@@ -47,8 +47,10 @@ if __name__=='__main__':
     #commented out for the SD mass sideband plot making
     #bkguncs17  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
     #bkguncs18  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Autumn18.AllZpAnomalonBkgs_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
-    datuncs17  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
-    datuncs18  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2018.AllZpAnomalonData_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    datuncs17  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+
+    datuncs18  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2018.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+
 
 
     #check for plotting, prep backgrounds
@@ -90,20 +92,31 @@ if __name__=='__main__':
     #some beauty stuff
     max_plot = 50.
     min_plot = 0.
+    #max_plot = 500.
+    #min_plot = 0.1
     titles = {
         "h_z_pt":"Z p_{T}",
         "h_z_eta":"\eta_{Z}",
+        "h_z_phi":"\phi_{Z}",
+        "h_z_phiw":"\phi_{Z}",
         "h_z_m":"m_{Z}",
         "h_h_pt":"Higgs p_{T}",
         "h_h_eta":"\eta_{Higss}",
+        "h_h_phi":"\phi_{Higgs}",
+        "h_h_phiw":"\phi_{Higgs}",
         "h_h_m":"m_{h}",
         "h_h_sd":"Higgs Soft Drop Mass",
         "h_met":"p_{T}^{miss}",
+        "h_met_phi":"\phi p_{T}^{miss}",
+        "h_met_phiw":"\phi p_{T}^{miss}",
         "h_zp_jigm":"Jigsaw Mass Estimator Z'",
         "h_nd_jigm":"Jigsaw Mass Estimator ND",
         "h_ns_jigm":"Jigsaw Mass Estimator NS",
         "h_weights":"event weights",
-        "h_btag":"btag operating point"
+        "h_btag":"btag operating point",
+        "h_dphi_zh":"\delta \phi_{ZH}",
+        "h_dphi_zmet":"\delta \phi_{ZMET}",
+        "h_dphi_hmet":"\delta \phi_{HMET}"
     }
 
 

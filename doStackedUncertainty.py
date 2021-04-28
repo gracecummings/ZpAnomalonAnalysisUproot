@@ -108,8 +108,7 @@ if __name__=='__main__':
         totalUncFile = go.makeOutFile(mcprefix+'.AllZpAnomalonBkgs','unc_'+reg,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
         uncAlldf.to_pickle(totalUncFile)
 
-    daterrfs = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+datprefix+'*selected_errors_'+reg+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
-
+    daterrfs = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+datprefix+'*selected_errors_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
     datadfs = []
     if len(daterrfs) > 0:
         for d  in daterrfs:

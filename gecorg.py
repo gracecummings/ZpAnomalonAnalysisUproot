@@ -114,7 +114,7 @@ def prepSig(sigfiles,sig_colors,sig_xsec,lumi):
 
     return sig_info
 
-def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag):
+def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag="yes"):
     config = configparser.RawConfigParser()
     config.optionxform = str
     fp = open(ini_file)
@@ -334,13 +334,6 @@ class backgrounds:
                 h = tf.Get(hname)
                 h.Scale(scale)
                 hist.Add(h)
-
-                #print(f)
-                #print(numevents)
-                #print(xs)
-                #print(scale)
-                #print(lumi)
-                
                 
                 #calc hist errors
                 df = pd.read_pickle(errs[i])
@@ -359,6 +352,25 @@ class backgrounds:
                 hist.SetBinError(ibin,binerr)
 
         return hist
+
+    def getStackofBkgs(self,hstk,region,hname,legend,years = [17,18]):
+        bkgfiles17 = [self.bkgs["DYJetsToLL"][17][region][0],
+                      self.bkgs["TT"][17][region][0],
+                      self.bkgs["WZTo2L2Q"][17][region][0],
+                      self.bkgs["ZZTo2L2Q"][17][region][0]
+                      ]
+        bkgfiles18 = [self.bkgs["DYJetsToLL"][18][region][0],
+                      self.bkgs["TT"][18][region][0],
+                      self.bkgs["WZTo2L2Q"][18][region][0],
+                      self.bkgs["ZZTo2L2Q"][18][region][0]
+                      ]
+        bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
+        bkgcols  = colsFromPalette(bkgnames,ROOT.kLake)
+
+        info17 = prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
+        info18 = prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
+
+        stackBkgMultiYear(info17,info18,hname,hstk,legend,18,0)
 
 class run2:
     def __init__(self,path,zptcut,hptcut,metcut,btagwp):

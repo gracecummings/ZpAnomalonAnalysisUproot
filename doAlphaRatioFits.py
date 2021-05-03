@@ -97,7 +97,8 @@ if __name__=='__main__':
     hsrvv.Add(hsrwz)
 
     hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
-
+    hdatsbsub = hdatsb.Clone()
+    
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")
     
@@ -276,8 +277,8 @@ if __name__=='__main__':
     p23.cd()
     setLogAxis(p23,islog)
     plotMzp(p23,hsbvv,islog,0.001)
-    sbvvfit = ROOT.expFit(hsbvv,"sbl","QR0+")
-    sbvvunc = ROOT.expFitErrBands(hsbvv,"sbl","QR0+")
+    sbvvfit = ROOT.expFit(hsbvv,"sbl","QR0+",1500,5000)
+    sbvvunc = ROOT.expFitErrBands(hsbvv,"sbl","QR0+",1500,5000)
     sbvvunc.SetFillColor(2)
     sbvvunc.SetMarkerSize(0)
     CMS_lumi.CMS_lumi(p23,4,13)
@@ -325,9 +326,49 @@ if __name__=='__main__':
 
     
     figshapes = go.makeOutFile('Run2_2017_2018','alpha_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    datavis = go.makeOutFile('Run2_2017_2018','alpha_sub_tester','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figshapes)
 
+    #Subtracted Background canvas
+    tc2 = ROOT.TCanvas("tc","ratio",734,500)
+    pd11 = ROOT.TPad("pd11","datsb",0,0,.5,1)
+    pd12 = ROOT.TPad("pd12","alpha",.5,0,1,1)
 
+    #hdatsbsub.Add(sbttunc,-1)
+    hdatsbsub.Add(sbvvunc,-1)
+
+    print("Integral of data sub sideband ",hdatsbsub.Integral())
+    print("Integral of data sideband     ",hdatsb.Integral())
+    tc2.cd()
+    pd11.Draw()
+    pd11.cd()
+    sbdatsubfit = ROOT.expFit(hdatsbsub,"sbl","R0+",1500,2500)
+    sbdatsubunc = ROOT.expFitErrBands(hdatsbsub,"sbl","QR0+",1500,2500)
+    sbdatsubunc.SetFillColor(2)
+    sbdatsubunc.SetMarkerSize(0)
+    hsbdy.SetFillColor(bkgcols[0])
+    lsub = ROOT.TLegend(0.55,0.4,0.9,0.8)
+    lsub.AddEntry(hdatsbsub,"Data SB - ttvv sub","ep")
+    lsub.AddEntry(sbdatsubfit,"2 Param Exp fit","l")
+    lsub.AddEntry(sbdatsubunc,"2 $\sigma$ uncertainty","f")
+    lsub.AddEntry(hsbdy,"DY SB","f")
+    lsub.SetBorderSize(0)
+
+    plotMzp(pd11,hdatsbsub,isData=True)
+    hsbdy.Draw("HISTSAME")
+    sbdatsubfit.Draw("SAME")
+    sbdatsubunc.Draw("e3,same,c")
+    hdatsbsub.Draw("SAME")
+
+    tc2.cd()
+    pd12.Draw()
+    pd12.cd()
+    plotMzp(pd12,hdatsb,isData=True)
+    
+    tc2.SaveAs(datavis)
+    
+    
+    #moving stacked plot and alpha ratio to other canvas
     #tc2 = ROOT.TCanvas("tc","ratio",734,500)
     #pd11 = ROOT.TPad("pd11","datsb",0,0,.5,1)
     #pd12 = ROOT.TPad("pd12","alpha",.5,0,1,1)

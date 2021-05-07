@@ -116,7 +116,7 @@ if __name__=='__main__':
     #sbfit2 = ROOT.expNFit(hsbdy2,"sbl","QR0+",1500,5000)
     #needs to be played with to get the plotting order right
     #needs better errors
-    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QQR0+",1500,5000)
+    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+",2,1500,5000)
     plotMzp(p21,hsbdy)
     CMS_lumi.CMS_lumi(p21,4,13)
     p21.Update()
@@ -152,7 +152,7 @@ if __name__=='__main__':
     p11.Draw()
     p11.cd()
     plotMzp(p11,hsrdy)
-    srdyunc = ROOT.expFitErrBands(hsrdy,"sbl","QR0+",1500,4000)
+    srdyunc = ROOT.expFitErrBands(hsrdy,"sbl","QR0+",2,1500,4000)
     srdyunc.SetFillColor(2)
     srdyunc.SetMarkerSize(0)
     srfit = ROOT.expFit(hsrdy,"srl","QR0+",1500,4000)#be aware, diff range from err and sb
@@ -183,7 +183,7 @@ if __name__=='__main__':
     setLogAxis(p22,islog)
     plotMzp(p22,hsbtt,islog)
     sbttfit = ROOT.expFit(hsbtt,"sbl","QR0+")
-    sbttunc = ROOT.expFitErrBands(hsbtt,"sbl","QR0+")
+    sbttunc = ROOT.expFitErrBands(hsbtt,"sbl","QR0+",1)
     sbttunc.SetFillColor(2)
     sbttunc.SetMarkerSize(0)
     CMS_lumi.CMS_lumi(p22,4,13)
@@ -194,7 +194,7 @@ if __name__=='__main__':
     l22 = ROOT.TLegend(0.55,0.65,0.9,0.8)
     l22.AddEntry(hsbtt,"ttbar SB MC","ep")
     l22.AddEntry(sbttfit,"2 Param Exp fit","l")
-    l22.AddEntry(sbttunc,"2 $\sigma$ uncertainty","f")
+    l22.AddEntry(sbttunc,"1 $\sigma$ uncertainty","f")
     l22.SetBorderSize(0)
     l22.Draw()
     p22.Update()
@@ -225,7 +225,7 @@ if __name__=='__main__':
     p12.Draw()
     p12.cd()
     sbdatfit = ROOT.expFit(hdatsb,"sbl","R0+",1500,5000)
-    sbdatunc = ROOT.expFitErrBands(hdatsb,"sbl","QR0+",1500,5000)
+    sbdatunc = ROOT.expFitErrBands(hdatsb,"sbl","QR0+",2,1500,5000)
     sbdatunc.SetFillColor(2)
     sbdatunc.SetMarkerSize(0)
     l111 = ROOT.TLegend(0.55,0.4,0.9,0.8)
@@ -278,7 +278,7 @@ if __name__=='__main__':
     setLogAxis(p23,islog)
     plotMzp(p23,hsbvv,islog,0.001)
     sbvvfit = ROOT.expFit(hsbvv,"sbl","QR0+",1500,5000)
-    sbvvunc = ROOT.expFitErrBands(hsbvv,"sbl","QR0+",1500,5000)
+    sbvvunc = ROOT.expFitErrBands(hsbvv,"sbl","QR0+",1,1500,5000)
     sbvvunc.SetFillColor(2)
     sbvvunc.SetMarkerSize(0)
     CMS_lumi.CMS_lumi(p23,4,13)
@@ -290,7 +290,7 @@ if __name__=='__main__':
     l23 = ROOT.TLegend(0.55,0.65,0.9,0.8)
     l23.AddEntry(hsbvv,"VV SB MC","ep")
     l23.AddEntry(sbvvfit,"2 Param Exp fit","l")
-    l23.AddEntry(sbvvunc,"2 $\sigma$ uncertainty","f")
+    l23.AddEntry(sbvvunc,"1 $\sigma$ uncertainty","f")
     l23.SetBorderSize(0)
     l23.Draw()
     p23.Update()
@@ -300,8 +300,8 @@ if __name__=='__main__':
     #p13.cd()
     #setLogAxis(p13,islog)
     #plotMzp(p13,hsrvv,islog,0.001)
-    #srvvfit = ROOT.expFit(hsrvv,"sbl","QR0+")
-    #srvvunc = ROOT.expFitErrBands(hsrvv,"sbl","QR0+")
+    #srvvfit = ROOT.expFit(hsrvv,"sbl","QR0+",1500,5000)
+    #srvvunc = ROOT.expFitErrBands(hsrvv,"sbl","QR0+",1500,5000)
     #srvvunc.SetFillColor(2)
     #srvvunc.SetMarkerSize(0)
     #srvvunc.Draw("e3,same,c")
@@ -330,9 +330,10 @@ if __name__=='__main__':
     tc.SaveAs(figshapes)
 
     #Subtracted Background canvas
-    tc2 = ROOT.TCanvas("tc","ratio",734,500)
-    pd11 = ROOT.TPad("pd11","datsb",0,0,.5,1)
-    pd12 = ROOT.TPad("pd12","alpha",.5,0,1,1)
+    tc2 = ROOT.TCanvas("tc","ratio",1200,500)
+    pd112 = ROOT.TPad("pd112","datsb",0,0,.33,1)
+    pd122 = ROOT.TPad("pd122","alpha",.33,0,.67,1)
+    pd132 = ROOT.TPad("pd122","alpha",.67,0,1,1)
 
     #hdatsbsub.Add(sbttunc,-1)
     hdatsbsub.Add(sbvvunc,-1)
@@ -340,98 +341,56 @@ if __name__=='__main__':
     print("Integral of data sub sideband ",hdatsbsub.Integral())
     print("Integral of data sideband     ",hdatsb.Integral())
     tc2.cd()
-    pd11.Draw()
-    pd11.cd()
+    pd112.Draw()
+    pd112.cd()
     sbdatsubfit = ROOT.expFit(hdatsbsub,"sbl","R0+",1500,2500)
-    sbdatsubunc = ROOT.expFitErrBands(hdatsbsub,"sbl","QR0+",1500,2500)
+    sbdatsubunc = ROOT.expFitErrBands(hdatsbsub,"sbl","QR0+",2,1500,2500)
     sbdatsubunc.SetFillColor(2)
     sbdatsubunc.SetMarkerSize(0)
     hsbdy.SetFillColor(bkgcols[0])
-    lsub = ROOT.TLegend(0.55,0.4,0.9,0.8)
-    lsub.AddEntry(hdatsbsub,"Data SB - ttvv sub","ep")
-    lsub.AddEntry(sbdatsubfit,"2 Param Exp fit","l")
-    lsub.AddEntry(sbdatsubunc,"2 $\sigma$ uncertainty","f")
-    lsub.AddEntry(hsbdy,"DY SB","f")
-    lsub.SetBorderSize(0)
-
-    plotMzp(pd11,hdatsbsub,isData=True)
+    hsbdy.SetLineColor(bkgcols[0])
+    plotMzp(pd112,hdatsbsub,isData=True)
+    CMS_lumi.CMS_lumi(pd112,4,13)
     hsbdy.Draw("HISTSAME")
-    sbdatsubfit.Draw("SAME")
     sbdatsubunc.Draw("e3,same,c")
+    sbdatsubfit.Draw("SAME")
+    hdatsbsub.GetXaxis().SetRangeUser(1500,5000)
     hdatsbsub.Draw("SAME")
 
+    lstack = ROOT.TLegend(0.40,0.6,0.93,0.8)
+    lstack.AddEntry(hdatsbsub,"Data SB, VV subtracted","ep")
+    lstack.AddEntry(sbdatsubfit,"2 Param Exp fit","l")
+    lstack.AddEntry(sbdatsubunc,"2 $\sigma$ uncertainty","f")
+    lstack.AddEntry(hsbdy,"DY MC SB","f")
+    lstack.SetBorderSize(0)
+    lstack.Draw()
+
+
     tc2.cd()
-    pd12.Draw()
-    pd12.cd()
-    plotMzp(pd12,hdatsb,isData=True)
-    
+    pd122.Draw()
+    pd122.cd()
+    alpha.GetYaxis().SetTitle("alpha(M_{Z'})")
+    alpha.GetXaxis().SetTitle("M_{Z'}")
+    alpha.Draw()
+
+    tc2.cd()
+    pd132.Draw()
+    pd132.cd()
+    hsrdy.SetFillColor(bkgcols[0])
+    hsrdy.SetLineColor(bkgcols[0])
+    hdatsbsub1 = hdatsbsub.Clone()#check errors
+    hdatsbsub1.Multiply(alpha)
+    hdatsbsub1.GetXaxis().SetRangeUser(1500,5000)
+    hdatsbsub1.GetYaxis().SetRangeUser(0,8)
+    hdatsbsub1.Draw()
+    hsrdy.Draw("HISTSAME")
+    hdatsbsub1.Draw("SAME")
+    CMS_lumi.CMS_lumi(pd132,4,13)
+
+    lstack1 = ROOT.TLegend(0.40,0.6,0.93,0.8)
+    lstack1.AddEntry(hdatsbsub1,"DY Predict SR alpha*hist","ep")
+    lstack1.AddEntry(hsrdy,"DY MC SR","f")
+    lstack1.SetBorderSize(0)
+    lstack1.Draw()
+
     tc2.SaveAs(datavis)
-    
-    
-    #moving stacked plot and alpha ratio to other canvas
-    #tc2 = ROOT.TCanvas("tc","ratio",734,500)
-    #pd11 = ROOT.TPad("pd11","datsb",0,0,.5,1)
-    #pd12 = ROOT.TPad("pd12","alpha",.5,0,1,1)
-    
-    #tc2.cd()
-    #pd11.Draw()
-    #pd11.cd()
-    #plotMzp(pd11,hdatsb,isData=True)
-    #sbdatfit = ROOT.expFit(hdatsb,"sbl","R0+",1500,5000)
-    #sbdatunc = ROOT.expFitErrBands(hdatsb,"sbl","QR0+",1500,5000)
-    #sbdatunc.SetFillColor(2)
-    #sbdatunc.SetMarkerSize(0)
-    #l111 = ROOT.TLegend(0.55,0.4,0.9,0.8)
-    #l111.AddEntry(hdatsb,"Data SB - full","ep")
-    #l111.AddEntry(sbdatfit,"2 Param Exp fit","l")
-    #l111.AddEntry(sbdatunc,"2 $\sigma$ uncertainty","f")
-    #l111.SetBorderSize(0)
-    #hsbkg = ROOT.THStack("hsbkg","")
-
-    #####REMOVE THS ATROCITY
-    #bkgfiles17 = [bkgs.bkgs["DYJetsToLL"][17]["sb"][0],
-    #              bkgs.bkgs["TT"][17]["sb"][0],
-    #              bkgs.bkgs["WZTo2L2Q"][17]["sb"][0],
-    #              bkgs.bkgs["ZZTo2L2Q"][17]["sb"][0]
-    #]
-    #bkgfiles18 = [bkgs.bkgs["DYJetsToLL"][18]["sb"][0],
-    #              bkgs.bkgs["TT"][18]["sb"][0],
-    #              bkgs.bkgs["WZTo2L2Q"][18]["sb"][0],
-    #              bkgs.bkgs["ZZTo2L2Q"][18]["sb"][0]
-    #]
-    #bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
-    #bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
-    
-    #info17 = go.prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
-    #info18 = go.prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
-    #go.stackBkgMultiYear(info17,info18,'h_zp_jigm',hsbkg,l111,18,0)
-    #####
-    #xax = hsbkg.GetXaxis()
-    #yax = hsbkg.GetYaxis()
-    #xax.SetTitle("M_{Z'}")
-    #xax.SetTitleSize(0.05)
-    #xax.SetLabelSize(0.035)
-    #yax.SetTitle("Events / 45 GeV")
-    #yax.SetTitleSize(0.05)
-    #yax.SetLabelSize(0.04)
-    #yax.SetLabelOffset(0.015)
-
-    #hsbkg.Draw("HIST")
-    #plotMzp(pd11,hdatsb,isData=True)
-    #sbdatunc.Draw("e3,same,c")
-    #sbdatfit.Draw("SAME")
-    #hdatsb.Draw("SAME,E1")
-    #CMS_lumi.CMS_lumi(pd11,4,13)
-    #pd11.Update()
-    #l111.Draw()
-
-    #tc2.cd()
-    #pd12.Draw()
-    #pd12.cd()
-    #alpha = ROOT.alphaRatioMakerExp(hsbdy,hsrdy)
-    #alpha.GetYaxis().SetTitle("alpha(M_{Z'})")
-    #alpha.GetXaxis().SetTitle("M_{Z'}")
-    #alpha.Draw()
-
-    #figalpha = go.makeOutFile('Run2_2017_2018','alpha_ratio','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    #tc2.SaveAs(figalpha)

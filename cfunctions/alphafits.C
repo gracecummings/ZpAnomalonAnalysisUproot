@@ -155,7 +155,7 @@ double GetError(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixD 
   return TMath::Sqrt(var);
 }
 
-TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
   const Int_t nPars=2;
   Double_t pars[nPars], grad[nPars];
   int binmax = hist->GetMaximumBin();
@@ -182,7 +182,7 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",int lowr=1500,
     double x = hist->GetBinCenter(ib);
     double sigma = GetError(wfit,x,pars,*COV,nPars);
     errhist->SetBinContent(ib,(*fitout)(x));
-    errhist->SetBinError(ib,2*sigma);
+    errhist->SetBinError(ib,nsig*sigma);
   }
 
   //debug errors to show values are the same
@@ -217,7 +217,7 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
   Double_t sblambda = sbfit->GetParameter(1);
   Double_t sramp = srfit->GetParameter(0);
   Double_t srlambda = srfit->GetParameter(1);
-  TF1 *alpha = new TF1("alpha",expRatio,1500,3000,4);
+  TF1 *alpha = new TF1("alpha",expRatio,1500,5000,4);
   alpha->SetParameter(0,sramp);
   alpha->SetParameter(1,srlambda);
   alpha->SetParameter(2,sbamp);

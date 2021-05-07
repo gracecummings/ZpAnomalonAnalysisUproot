@@ -79,6 +79,7 @@ def colsFromPalette(samplist,palname):
     colsnum = cols.GetSize()
     for i in range(len(samplist)):
         collist.append(cols.At(0+i*int(colsnum/len(samplist))))
+    collist.reverse()
     return collist
 
 def gatherBkg(bkg_dir,descrip,zptcut,hptcut,metcut,btagwp,year):

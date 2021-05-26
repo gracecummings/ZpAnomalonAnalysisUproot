@@ -6,58 +6,13 @@ if __name__=='__main__':
     #steps to run
     #assumes you have run the whole thing at the start of the day
     #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
-    steps = {"topiary":False,"selections":False,"uncs":True,"ratios":False,"opts":False,"cutflow":False}
+    steps = {"topiary":False,"selections":True,"uncs":False,"ratios":False,"opts":False,"cutflow":False}
     
     #cut list, Zpt, Hpt, met,btagger,btagwp
     cutlist = [#['0.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['50.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['100.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
                #['150.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['200.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['250.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['300.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['0.0','300.0','50.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['50.0','300.0','50.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['100.0','300.0','50.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['150.0','300.0','50.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['200.0','300.0','50.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['250.0','300.0','50.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['300.0','300.0','50.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['0.0','300.0','100.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['50.0','300.0','100.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['100.0','300.0','100.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['150.0','300.0','100.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['200.0','300.0','100.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['250.0','300.0','100.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['300.0','300.0','100.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['0.0','300.0','150.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['50.0','300.0','150.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['100.0','300.0','150.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['150.0','300.0','150.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['200.0','300.0','150.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['250.0','300.0','150.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['300.0','300.0','150.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
                #['0.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['50.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['100.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
                ['150.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['200.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['250.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['300.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['0.0','300.0','250.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['50.0','300.0','250.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['100.0','300.0','250.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['150.0','300.0','250.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['200.0','300.0','250.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['250.0','300.0','250.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['300.0','300.0','250.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['0.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['50.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['100.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['150.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['200.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['250.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['300.0','300.0','300.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
                ]
 
     lumi = "41.53"
@@ -73,12 +28,12 @@ if __name__=='__main__':
     samplelist = [['2021-03-26','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
                   ['2021-03-26','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
                   ['2021-03-26','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
                   ['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND800-NS200'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
-                  ##['2021-03-26','ZpAnomalonHZ_UFO-Zp3000-ND500-NS1'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
+                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp3000-ND500-NS1'],
                   ['2021-03-26','Run2017B-31Mar2018-v1.SingleMuon'],
                   ['2021-03-26','Run2017C-31Mar2018-v1.SingleMuon'],
                   ['2021-03-26','Run2017D-31Mar2018-v1.SingleMuon'],
@@ -121,14 +76,15 @@ if __name__=='__main__':
             if steps["uncs"]:
                 #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0],"-r","totalr"])
                 subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0],"-r","sideband"])
-                subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0],"-r","signalr"])
+                #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0],"-r","signalr"])
 
         #stack all  
         if steps["ratios"]:
-            #subprocess.run(["python","stackAll.py","-L",era[1],"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0]])
-            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","totalr"])
-            #subprocess.run(["python","stackAll.py","-L","41.53","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y","17")
-            #subprocess.run(["python","stackAll.py","-L",lumi,"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today())+'/signalregion_only/'])
+            #subprocess.run(["python","stackAll.py","-L",era[1],"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today())])
+            #subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","totalr"])
+            #subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","signalr"])
+            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","sideband"])
+            #subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-05-18","-r","signalr"])
 
         #Optimization Plots
         if steps["opts"]:

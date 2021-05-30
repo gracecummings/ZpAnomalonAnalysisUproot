@@ -6,7 +6,7 @@ if __name__=='__main__':
     #steps to run
     #assumes you have run the whole thing at the start of the day
     #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
-    steps = {"topiary":False,"selections":False,"uncs":True,"ratios":False,"opts":False,"cutflow":False}
+    steps = {"topiary":True,"selections":True,"uncs":False,"ratios":False,"opts":False,"cutflow":False}
     
     #cut list, Zpt, Hpt, met,btagger,btagwp
     cutlist = [#['0.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
@@ -70,42 +70,43 @@ if __name__=='__main__':
     plots = ['h_z_pt']#['h_h_pt','h_z_pt','h_met','h_nd_jigm','h_zp_jigm','h_h_sd','h_btag']
 
     #topiary sample list: dateforfolder, samplename
-    samplelist = [['2021-03-26','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
-                  ['2021-03-26','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  ['2021-03-26','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
+    samplelist = [#['2021-03-26','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
+                  #['2021-03-26','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
+                  #['2021-03-26','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
                   ['2021-03-26','ZpAnomalonHZ_UFO-Zp2000-ND800-NS200'],
-                  #['2021-03-26','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
+                  ['2021-03-26','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
                   ##['2021-03-26','ZpAnomalonHZ_UFO-Zp3000-ND500-NS1'],
-                  ['2021-03-26','Run2017B-31Mar2018-v1.SingleMuon'],
-                  ['2021-03-26','Run2017C-31Mar2018-v1.SingleMuon'],
-                  ['2021-03-26','Run2017D-31Mar2018-v1.SingleMuon'],
-                  ['2021-03-26','Run2017E-31Mar2018-v1.SingleMuon'],
-                  ['2021-03-26','Run2017F-31Mar2018-v1.SingleMuon'],
-                  ['2021-03-26','Fall17.DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-03-26','Fall17.DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-03-26','Fall17.DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-03-26','Fall17.DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-03-26','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-03-26','Fall17.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-03-26','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-04-27','Run2018C-17Sep2018-v1.SingleMuon'],
-                  ['2021-04-27','Run2018B-17Sep2018-v1.SingleMuon'],
-                  ['2021-04-27','Run2018A-17Sep2018-v1.SingleMuon'],
-                  ['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-03-26','Run2017B-31Mar2018-v1.SingleMuon'],
+                  #['2021-03-26','Run2017C-31Mar2018-v1.SingleMuon'],
+                  #['2021-03-26','Run2017D-31Mar2018-v1.SingleMuon'],
+                  #['2021-03-26','Run2017E-31Mar2018-v1.SingleMuon'],
+                  #['2021-03-26','Run2017F-31Mar2018-v1.SingleMuon'],
+                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-04-27','Run2018C-17Sep2018-v1.SingleMuon'],
+                  #['2021-04-27','Run2018B-17Sep2018-v1.SingleMuon'],
+                  #['2021-04-27','Run2018A-17Sep2018-v1.SingleMuon'],
+                  #['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-04-27','Autumn18.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
                   ]
 
     if steps["topiary"]:
         for samp in samplelist:
             subprocess.run(["python","runTopiary.py","-s",samp[1],"-y","2018"])
+            #subprocess.run(["python","runTopiary.py","-s",samp[1],"-y","2017"])
     
     for cut in cutlist:
         print("Doing ZpT cut {0}, HpT cut {1}, MET cut {2}, btag wp {3}".format(cut[0],cut[1],cut[2],cut[4]))

@@ -345,6 +345,7 @@ class backgrounds:
         uncsqdDYJetsdf = sum(bkgdfs)
         uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
 
+        
         for ibin in range(hist.GetNbinsX()+1):
             if ibin == 0:
                 continue
@@ -436,4 +437,19 @@ class run2:
 
         return hist
 
-
+class signal:
+    def __init__(self,path,zptcut,hptcut,metcut,btagwp,xs,lumi):
+        self.path = path
+        self.zptcut = zptcut
+        self.hptcut = hptcut
+        self.metcut = metcut
+        self.btagwp = btagwp
+        
+        #gather signal plots
+        self.sigsr = glob.glob(str(path)+'/Zp*_upout_signalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+        self.sigsb = glob.glob(str(path)+'/Zp*_upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+        
+        sig_colors = colsFromPalette(self.sigsr,ROOT.kCMYK)
+        
+        #prep signals
+        self.prepsigsr = prepSig(self.sigsr,sig_colors,xs,lumi)

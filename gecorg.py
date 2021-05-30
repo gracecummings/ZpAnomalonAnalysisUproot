@@ -448,6 +448,7 @@ class signal:
         #gather signal plots
         self.sigsr = glob.glob(str(path)+'/Zp*_upout_signalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
         self.sigsb = glob.glob(str(path)+'/Zp*_upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+        self.sigfl = glob.glob(str(path)+'/Zp*_upout_totalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
         
         sig_colors = colsFromPalette(self.sigsr,ROOT.kCMYK)
         

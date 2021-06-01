@@ -7,7 +7,7 @@ if __name__=='__main__':
 
     #will replace with command line options
     #pathrec    = 'analysis_output_ZpAnomalon/2021-05-18/'#reclustering sr only
-    pathrec    = 'analysis_output_ZpAnomalon/2021-05-31/'#reclustering total r
+    pathrec    = 'analysis_output_ZpAnomalon/2021-05-31_totalr_reclustering/'#reclustering total r
     #pathori    = 'analysis_output_ZpAnomalon/2021-05-30/'#no reclustering sr only
     pathori    = 'analysis_output_ZpAnomalon/2021-05-31_fullregion_noreclustering/'#no reclustering totalr
     zptcut  = '150.0'
@@ -58,10 +58,19 @@ if __name__=='__main__':
         hptori.SetStats(0)
         hsdmrec.SetStats(0)
         hptrec.SetStats(0)
-        
+        hsdmori.GetXaxis().SetTitle("h cand soft drop mass")
+        hptori.GetXaxis().SetTitle("h cand p_{T}")
+        hsdmori.GetYaxis().SetTitle("Events")
+        hptori.GetYaxis().SetTitle("Events")
+
+        hsdmrec.GetXaxis().SetTitle("h cand soft drop mass")
+        hptrec.GetXaxis().SetTitle("h cand p_{T}")
+        hsdmrec.GetYaxis().SetTitle("Events")
+        hptrec.GetYaxis().SetTitle("Events")
+
         tc = ROOT.TCanvas("tc","comp",1200,600)
-        legsd = ROOT.TLegend(0.50,0.50,0.88,0.88)
-        legpt = ROOT.TLegend(0.50,0.50,0.88,0.88)
+        legsd = ROOT.TLegend(0.50,0.75,0.88,0.88)
+        legpt = ROOT.TLegend(0.50,0.75,0.88,0.88)
         
         legsd.AddEntry(hsdmori,"No reclustering")
         legsd.AddEntry(hptrec,"w/ reclustering")

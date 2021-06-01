@@ -7,9 +7,13 @@ if __name__=='__main__':
 
     #will replace with command line options
     #pathrec    = 'analysis_output_ZpAnomalon/2021-05-18/'#reclustering sr only
-    pathrec    = 'analysis_output_ZpAnomalon/2021-05-31_totalr_reclustering/'#reclustering total r
+    #pathrec    = 'analysis_output_ZpAnomalon/2021-05-31_totalr_reclustering/'#reclustering total r
     #pathori    = 'analysis_output_ZpAnomalon/2021-05-30/'#no reclustering sr only
-    pathori    = 'analysis_output_ZpAnomalon/2021-05-31_fullregion_noreclustering/'#no reclustering totalr
+    #pathori    = 'analysis_output_ZpAnomalon/2021-05-31_fullregion_noreclustering/'#no reclustering totalr
+
+    pathrec = 'analysis_output_ZpAnomalon/2021-06-01_totalr_reclustered_0sdm/'
+    pathori = 'analysis_output_ZpAnomalon/2021-06-01_totalr_orignal_0sdm/'
+    
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'

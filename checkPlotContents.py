@@ -6,18 +6,19 @@ import pandas as pd
 if __name__=='__main__':
 
     #will replace with command line options
-    #pathrec    = 'analysis_output_ZpAnomalon/2021-05-18/'#reclustering sr only
+    pathrec    = 'analysis_output_ZpAnomalon/2021-05-18/'#reclustering sr only
     #pathrec    = 'analysis_output_ZpAnomalon/2021-05-31_totalr_reclustering/'#reclustering total r
-    #pathori    = 'analysis_output_ZpAnomalon/2021-05-30/'#no reclustering sr only
+    pathori    = 'analysis_output_ZpAnomalon/2021-05-30/'#no reclustering sr only
     #pathori    = 'analysis_output_ZpAnomalon/2021-05-31_fullregion_noreclustering/'#no reclustering totalr
 
-    pathrec = 'analysis_output_ZpAnomalon/2021-06-01_totalr_reclustered_0sdm/'
-    pathori = 'analysis_output_ZpAnomalon/2021-06-01_totalr_orignal_0sdm/'
+    #pathrec = 'analysis_output_ZpAnomalon/2021-06-01_totalr_reclustered_0sdm_0btag/'
+    #pathori = 'analysis_output_ZpAnomalon/2021-06-01_totalr_orignal_0sdm_0btag/'
     
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
     btagwp  = '0.8'
+    #btagwp  = '0.0'
 
     #bkgs = go.backgrounds(path,zptcut,hptcut,metcut,btagwp)
     sigsrec = go.signal(pathrec,zptcut,hptcut,metcut,btagwp,10,101.27)
@@ -40,14 +41,14 @@ if __name__=='__main__':
     #print("mZp   mnd   mns   zpnddiff     ndnsdiff    overlap    nonoverlap    overlapeff    nonovereff")
     #print(pmap)
 
-    #for i,sig in enumerate(sigsrec.sigsr):
-    for i,sig in enumerate(sigsrec.sigfl):
+    for i,sig in enumerate(sigsrec.sigsr):
+    #for i,sig in enumerate(sigsrec.sigfl):
         #print(sig)
         #print(sigsori.sigsr[i])
         mzp,mnd,mns = go.massPoints(sig.replace(pathrec+"ZpAnomalonHZ_UFO-",""))
         tfrec = ROOT.TFile(sig)
-        #tfori = ROOT.TFile(sigsori.sigsr[i])####
-        tfori = ROOT.TFile(sigsori.sigfl[i])####
+        tfori = ROOT.TFile(sigsori.sigsr[i])####
+        #tfori = ROOT.TFile(sigsori.sigfl[i])####
         hsdmrec = tfrec.Get('h_h_sd')
         hsdmori = tfori.Get('h_h_sd')
         hptrec  = tfrec.Get('h_h_pt')

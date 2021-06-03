@@ -23,6 +23,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("ZCandidates*",1);
    fChain->SetBranchStatus("SelectedElectrons*",1);
    fChain->SetBranchStatus("eeBadScFilter",1);
+   fChain->SetBranchStatus("GenParticles*",1);
 
    if (sampleType != 0){
      fChain->SetBranchStatus("GenParticles*",1);
@@ -209,9 +210,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       }
 
       //debug
-      //if (jentry == 20) {
-      //break;
-      //}
+      if (jentry == 20) {
+	break;
+      }
 
       //Trigger decisions
       size_t pos = 0;
@@ -301,7 +302,26 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  evntw_hold = ewknlosf*qcdnnlosf*qcdnlosf;
 	}
       }
-      
+
+
+      //gen particle addition. Should update with above
+      TLorentzVector theGenZ;
+      TLorentzVector theGenH;
+      unsigned long ngen = GenParticles->size();
+      if (sampleType != 0) {//Not Data
+	int gpid;
+	for (unsigned long i = 0; i < ngen; ++i) {
+	  int gpid = GenParticles_PdgId->at(i);
+	  //std::cout<<"PID "<<gpid<<std::endl;
+	  if (gpid == 23) {
+	    theGenZ = GenParticles->at(i);
+	  }
+	  if (gpid == 25) {
+	    theGenH = GenParticles->at(i);
+	  }
+	}
+      }
+	  
       //Z exploration
       unsigned int nselmu = SelectedMuons->size();
       unsigned int nselel = SelectedElectrons->size();

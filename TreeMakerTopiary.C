@@ -76,6 +76,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double hCandidate_dmdzbbvqcd;
    double hCandidate_dmdzhbbvqcd;
    double hCandidate_middb;
+   double ghCandidate_pt;
+   double ghCandidate_phi;
+   double ghCandidate_eta;
+   double ghCandidate_m;
+   double gzCandidate_pt;
+   double gzCandidate_phi;
+   double gzCandidate_eta;
+   double gzCandidate_m;
    double mEstZp;
    double mEstND;
    double mEstNS;
@@ -124,6 +132,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    TBranch *ZpMest    = trimTree->Branch("ZPrime_mass_est",&mEstZp,"mEstZp/D");
    TBranch *NDMest    = trimTree->Branch("ND_mass_est",&mEstND,"mEstND/D");
    TBranch *NSMest    = trimTree->Branch("NS_mass_est",&mEstNS,"mEstNS/D");
+   TBranch *ghCand_pt  = trimTree->Branch("ghCandidate_pt",&ghCandidate_pt,"ghCandidate_pt/D");
+   TBranch *ghCand_phi = trimTree->Branch("ghCandidate_phi",&ghCandidate_phi,"ghCandidate_phi/D");
+   TBranch *ghCand_eta = trimTree->Branch("ghCandidate_eta",&ghCandidate_eta,"ghCandidate_eta/D");
+   TBranch *ghCand_m   = trimTree->Branch("ghCandidate_m",&ghCandidate_m,"ghCandidate_m/D");
+   TBranch *gzCand_pt  = trimTree->Branch("gzCandidate_pt",&gzCandidate_pt,"gzCandidate_pt/D");
+   TBranch *gzCand_phi = trimTree->Branch("gzCandidate_phi",&gzCandidate_phi,"gzCandidate_phi/D");
+   TBranch *gzCand_eta = trimTree->Branch("gzCandidate_eta",&gzCandidate_eta,"gzCandidate_eta/D");
+   TBranch *gzCand_m   = trimTree->Branch("gzCandidate_m",&gzCandidate_m,"gzCandidate_m/D");
    TBranch *evntweight = trimTree->Branch("event_weight",&evntw,"evntw/D");
    hnskimed->SetBinContent(1,nentries);
    hnorigevnts->SetBinContent(1,totalOriginalEvents);
@@ -472,6 +488,15 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	sLMuCandidate_phi = subleadmu.Phi();
 	sLMuCandidate_eta = subleadmu.Eta();
 	sLMuCandidate_m   = subleadmu.M();
+	ghCandidate_pt  = theGenH.Pt();
+	ghCandidate_phi = theGenH.Phi();
+	ghCandidate_eta = theGenH.Eta();
+	ghCandidate_m   = theGenH.M();
+	gzCandidate_pt  = theGenZ.Pt();
+	gzCandidate_phi = theGenZ.Phi();
+	gzCandidate_eta = theGenZ.Eta();
+	gzCandidate_m   = theGenZ.M();
+
 	evntw          = evntw_hold;
 	counthpass += 1;
       }

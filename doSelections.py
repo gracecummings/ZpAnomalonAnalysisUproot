@@ -88,6 +88,8 @@ if __name__=='__main__':
                 b'ND_mass_est',
                 b'NS_mass_est',
                 b'event_weight',
+                b'LMuCandidate_*',
+                b'sLMuCandidate_*',
     ]
 
     
@@ -136,12 +138,13 @@ if __name__=='__main__':
     deltaphizmetdf = deltaPhi(fdf['ZCandidate_phi'],fdf['METPhiclean'])
     deltaphihmetdf = deltaPhi(fdf['hCandidate_phi'],fdf['METPhiclean'])
     deltaRzhdf     = deltaR(fdf['ZCandidate_phi'],fdf['hCandidate_phi'],fdf['ZCandidate_eta'],fdf['hCandidate_eta'])
-    #deltaRzhdf     = deltaR(fdf['ZCandidate_phi'],fdf['hCandidate_phi'],fdf['ZCandidate_eta'],fdf['hCandidate_eta'])
+    deltaRlmuhdf   = deltaR(fdf['LMuCandidate_phi'],fdf['hCandidate_phi'],fdf['LMuCandidate_eta'],fdf['hCandidate_eta'])
+    deltaRslmuhdf   = deltaR(fdf['sLMuCandidate_phi'],fdf['hCandidate_phi'],fdf['sLMuCandidate_eta'],fdf['hCandidate_eta'])
 
     #lets make some histograms.
-    rootfilename  = go.makeOutFile(samp,'upout_'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
-    npfilename    = go.makeOutFile(samp,'totalevents_'+region+'_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    pklfilename   = go.makeOutFile(samp,'selected_errors_'+region+'_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    rootfilename  = go.makeOutFile(samp,'upout_slimmedjets'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
+    npfilename    = go.makeOutFile(samp,'totalevents_slimmedjets'+region+'_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    pklfilename   = go.makeOutFile(samp,'selected_errors_slimmedjets'+region+'_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     rootOutFile   = up3.recreate(rootfilename,compression = None)
     npOutFile     = open(npfilename,'wb')
 
@@ -168,6 +171,8 @@ if __name__=='__main__':
     rootOutFile["h_dphi_zmet"]  = np.histogram(deltaphizmetdf,bins=100,range=(0,3.14159),weights=fdf['event_weight'])
     rootOutFile["h_dphi_hmet"]  = np.histogram(deltaphihmetdf,bins=100,range=(0,3.14159),weights=fdf['event_weight'])
     rootOutFile["h_dr_zh"]      = np.histogram(deltaRzhdf,bins=30,range=(0,6),weights=fdf['event_weight'])
+    rootOutFile["h_dr_lmuh"]      = np.histogram(deltaRlmuhdf,bins=30,range=(0,6),weights=fdf['event_weight'])
+    rootOutFile["h_dr_slmuh"]      = np.histogram(deltaRslmuhdf,bins=30,range=(0,6),weights=fdf['event_weight'])
 
     zpterrs      = boostUnc(fdf['ZCandidate_pt'],fdf['event_weight'],80,0,800)
     zetaerrs     = boostUnc(fdf['ZCandidate_eta'],fdf['event_weight'],100,-5,5)
@@ -191,6 +196,8 @@ if __name__=='__main__':
     dphizmeterrs   = boostUnc(deltaphizmetdf,fdf['event_weight'],100,0,3.14159)
     dphihmeterrs   = boostUnc(deltaphihmetdf,fdf['event_weight'],100,0,3.14159)
     drzherrs       = boostUnc(deltaRzhdf,fdf['event_weight'],30,0,6)
+    drlmuherrs     = boostUnc(deltaRlmuhdf,fdf['event_weight'],30,0,6)
+    drslmuherrs    = boostUnc(deltaRslmuhdf,fdf['event_weight'],30,0,6)
     
     unc_arrays = [zpterrs,
                   zetaerrs,
@@ -213,7 +220,10 @@ if __name__=='__main__':
                   dphizherrs,
                   dphizmeterrs,
                   dphihmeterrs,
-                  drzherrs
+                  drzherrs,
+                  drlmuherrs,
+                  drslmuherrs,
+
     ]
 
     unc_names = ['h_z_pt',
@@ -237,7 +247,9 @@ if __name__=='__main__':
                  'h_dphi_zh',
                  'h_dphi_zmet',
                  'h_dphi_hmet',
-                 "h_dr_zh"
+                 'h_dr_zh',
+                 'h_dr_lmuh',
+                 'h_dr_slmuh',
     ]
 
     max_length = len(max(unc_arrays,key = lambda ar : len(ar)))

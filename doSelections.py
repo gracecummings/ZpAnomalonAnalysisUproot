@@ -70,7 +70,7 @@ if __name__=='__main__':
 
     inputfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
     print("    Doing selections on:")
-    print(inputfiles)
+    print(inputfiles[:1])
     stype,year = go.sampleType(samp)
     print(stype)
     if sr and stype != 0:
@@ -95,12 +95,13 @@ if __name__=='__main__':
     
     #events = up3.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
     events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
+    #print(events)
     
     for b in events:
         #print(type(b))
         #print(b.keys())
         #print(b)
-        print("Doing SD mass lower cut of :" ,sdmcut)
+        #print("Doing SD mass lower cut of :" ,sdmcut)
         #do some cuts
         sddf   = b[b['hCandidate_sd'] > sdmcut]
         metdf  = sddf[sddf['METclean'] > metcut]
@@ -142,9 +143,9 @@ if __name__=='__main__':
     deltaRslmuhdf   = deltaR(fdf['sLMuCandidate_phi'],fdf['hCandidate_phi'],fdf['sLMuCandidate_eta'],fdf['hCandidate_eta'])
 
     #lets make some histograms.
-    rootfilename  = go.makeOutFile(samp,'upout_slimmedjets'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
-    npfilename    = go.makeOutFile(samp,'totalevents_slimmedjets'+region+'_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    pklfilename   = go.makeOutFile(samp,'selected_errors_slimmedjets'+region+'_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    rootfilename  = go.makeOutFile(samp,'upout_'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
+    npfilename    = go.makeOutFile(samp,'totalevents_'+region+'_'+btaggr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    pklfilename   = go.makeOutFile(samp,'selected_errors_'+region+'_'+btaggr,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     rootOutFile   = up3.recreate(rootfilename,compression = None)
     npOutFile     = open(npfilename,'wb')
 

@@ -6,7 +6,7 @@ if __name__=='__main__':
     #steps to run
     #assumes you have run the whole thing at the start of the day
     #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
-    steps = {"topiary":False,"selections":False,"uncs":True,"ratios":False,"opts":False,"cutflow":False}
+    steps = {"topiary":True,"selections":False,"uncs":False,"ratios":False,"opts":False,"cutflow":False}
     
     #cut list, Zpt, Hpt, met,btagger,btagwp
     cutlist = [#['0.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],

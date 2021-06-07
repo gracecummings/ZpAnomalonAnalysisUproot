@@ -462,57 +462,57 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	countzpass +=1 ;
       }
 
-      if (passh && passZ && passTrig && mumuchan) {
-	hCandidate = theh;
-	hCandidate_pt  = theh.Pt();
-	hCandidate_phi = theh.Phi();
-	hCandidate_eta = theh.Eta();
-	hCandidate_m   = theh.M();
-	hCandidate_sd  = hsd;
-	hCandidate_dmdhbbvqcd = hdmdhbbvqcd;
-	hCandidate_dmdzbbvqcd = hdmdzbbvqcd;
-	hCandidate_dmdzhbbvqcd = hdmdzhbbvqcd;
-	hCandidate_middb = hmiddb;
-	ZCandidate = theZ;
-	ZCandidate_pt  = theZ.Pt();
-	ZCandidate_phi = theZ.Phi();
-	ZCandidate_eta = theZ.Eta();
-	ZCandidate_m   = theZ.M();
-	LMuCandidate = leadmu;
-	LMuCandidate_pt  = leadmu.Pt();
-	LMuCandidate_phi = leadmu.Phi();
-	LMuCandidate_eta = leadmu.Eta();
-	LMuCandidate_m   = leadmu.M();
-	sLMuCandidate = subleadmu;
-	sLMuCandidate_pt  = subleadmu.Pt();
-	sLMuCandidate_phi = subleadmu.Phi();
-	sLMuCandidate_eta = subleadmu.Eta();
-	sLMuCandidate_m   = subleadmu.M();
-	ghCandidate_pt  = theGenH.Pt();
-	ghCandidate_phi = theGenH.Phi();
-	ghCandidate_eta = theGenH.Eta();
-	ghCandidate_m   = theGenH.M();
-	gzCandidate_pt  = theGenZ.Pt();
-	gzCandidate_phi = theGenZ.Phi();
-	gzCandidate_eta = theGenZ.Eta();
+      //if (passh && passZ && passTrig && mumuchan) {
+      //hCandidate = theh;
+      //hCandidate_pt  = theh.Pt();
+      //hCandidate_phi = theh.Phi();
+      //hCandidate_eta = theh.Eta();
+      //hCandidate_m   = theh.M();
+      //hCandidate_sd  = hsd;
+      //hCandidate_dmdhbbvqcd = hdmdhbbvqcd;
+      //hCandidate_dmdzbbvqcd = hdmdzbbvqcd;
+      //hCandidate_dmdzhbbvqcd = hdmdzhbbvqcd;
+      //hCandidate_middb = hmiddb;
+      //ZCandidate = theZ;
+      //ZCandidate_pt  = theZ.Pt();
+      //ZCandidate_phi = theZ.Phi();
+      //ZCandidate_eta = theZ.Eta();
+      //ZCandidate_m   = theZ.M();
+      //LMuCandidate = leadmu;
+      //LMuCandidate_pt  = leadmu.Pt();
+      //LMuCandidate_phi = leadmu.Phi();
+      //LMuCandidate_eta = leadmu.Eta();
+      //LMuCandidate_m   = leadmu.M();
+      //sLMuCandidate = subleadmu;
+      //sLMuCandidate_pt  = subleadmu.Pt();
+      //sLMuCandidate_phi = subleadmu.Phi();
+      //sLMuCandidate_eta = subleadmu.Eta();
+      //sLMuCandidate_m   = subleadmu.M();
+      ghCandidate_pt  = theGenH.Pt();
+      ghCandidate_phi = theGenH.Phi();
+      ghCandidate_eta = theGenH.Eta();
+      ghCandidate_m   = theGenH.M();
+      gzCandidate_pt  = theGenZ.Pt();
+      gzCandidate_phi = theGenZ.Phi();
+      gzCandidate_eta = theGenZ.Eta();
 	gzCandidate_m   = theGenZ.M();
 
-	evntw          = evntw_hold;
-	counthpass += 1;
-      }
+	//evntw          = evntw_hold;
+	//counthpass += 1;
+	//}
       
       //Fill the Tree
       if (Cut(ientry) < 0) continue;
-      if (passZ && passh && passTrig && sampleType !=0 && mumuchan) {
-	trimTree->Fill();
-	countpass += 1;
-	}
-      if (passZ && passh && passTrig && sampleType == 0 && passFil && mumuchan) {
-	trimTree->Fill();
-	countpass += 1;
-      }
+      //if (passZ && passh && passTrig && sampleType !=0 && mumuchan) {
+      trimTree->Fill();
+      countpass += 1;
+	//}
+	//if (passZ && passh && passTrig && sampleType == 0 && passFil && mumuchan) {
+	//trimTree->Fill();
+	//countpass += 1;
+	//}
 
-   }
+	}
 
    std::cout<<"Passing Trigger req: "<<counttrigpass<<std::endl;
    std::cout<<"Passing Z  req:      "<<countzpass<<std::endl;
@@ -530,5 +530,5 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    //std::cout<<"trimmed to "<< passEvents <<" events"<<std::endl;
    std::cout<<"Completed your topiary garden, hopefully your tastes have not changed."<<std::endl;
 
-   
+      
 }

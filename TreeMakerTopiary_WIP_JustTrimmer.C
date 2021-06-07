@@ -423,22 +423,22 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
       //unreclustered jets
       if (nfat > 0) {
-      for (unsigned long i =0; i < nfat; ++i) {
-      	fat = JetsAK8->at(i);
-        fsd = JetsAK8_softDropMass->at(i);
-        fid = JetsAK8_ID->at(i);
-        double masshdiff = std::abs(125.18 - fsd);
-        if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid && std::abs(fat.Eta()) < 2.4 && (fsd > 10)) {
-	  basehdiff = masshdiff;
-          theh = fat;
-          hsd = fsd;
-          hdmdhbbvqcd  = JetsAK8_DeepMassDecorrelTagHbbvsQCD->at(i);
-          hdmdzbbvqcd  = JetsAK8_DeepMassDecorrelTagZbbvsQCD->at(i);
-          hdmdzhbbvqcd = JetsAK8_DeepMassDecorrelTagZHbbvsQCD->at(i);
-          hmiddb = JetsAK8_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
-          passh = true;
-        }
-      }
+	passh = true;
+	for (unsigned long i =0; i < nfat; ++i) {
+	  fat = JetsAK8->at(i);
+	  fsd = JetsAK8_softDropMass->at(i);
+	  fid = JetsAK8_ID->at(i);
+	  double masshdiff = std::abs(125.18 - fsd);
+	  if ((masshdiff < basehdiff)) {
+	    basehdiff = masshdiff;
+	    theh = fat;
+	    //hsd = fsd;
+	    //hdmdhbbvqcd  = JetsAK8_DeepMassDecorrelTagHbbvsQCD->at(i);
+	    //hdmdzbbvqcd  = JetsAK8_DeepMassDecorrelTagZbbvsQCD->at(i);
+	    //hdmdzhbbvqcd = JetsAK8_DeepMassDecorrelTagZHbbvsQCD->at(i);
+	    //hmiddb = JetsAK8_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
+	  }
+	}
       }
 
       //MET

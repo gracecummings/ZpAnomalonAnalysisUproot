@@ -47,9 +47,9 @@ if __name__=='__main__':
     #commented out for the SD mass sideband plot making
     #bkguncs17  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
     #bkguncs18  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Autumn18.AllZpAnomalonBkgs_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
-    datuncs17  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    #datuncs17  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
 
-    datuncs18  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2018.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    #datuncs18  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2018.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
 
 
 
@@ -63,7 +63,7 @@ if __name__=='__main__':
         bkguncs      = (bkguncs17**2+bkguncs18**2)**(1/2)
         datfiles     = datfiles17+datfiles18
         dat_info     = [ROOT.TFile(dat) for dat in datfiles]
-        datuncs = (datuncs17**2+datuncs18**2)**(1/2)
+        #datuncs = (datuncs17**2+datuncs18**2)**(1/2)
         regiondescrip = reg+'_1718'
         keys = bkg_info17[0]['binlist'][0]['tfile'].GetListOfKeys()
     if year == 17:
@@ -140,19 +140,19 @@ if __name__=='__main__':
             gecorg.stackBkg(bkg_info18,hname,hsbkg,leg,max_plot,min_plot)
             
         #data hist
-        hsdat = dat_info[0].Get(hname)
-        hsdat.SetStats(0)
-        hsdat.SetMaximum(max_plot)
-        hsdat.SetMinimum(min_plot)
-        hsdat.SetMarkerStyle(8)
-        leg.AddEntry(hsdat,"Data")
-        for d,datf in enumerate(dat_info[1:]):
-            hdat = datf.Get(hname)
-            hdat.SetStats(0)
-            hdat.SetMaximum(max_plot)
-            hdat.SetMinimum(min_plot)
-            hsdat.Add(hdat)
-        hsdat.SetBinErrorOption(1)
+        #hsdat = dat_info[0].Get(hname)
+        #hsdat.SetStats(0)
+        #hsdat.SetMaximum(max_plot)
+        #hsdat.SetMinimum(min_plot)
+        #hsdat.SetMarkerStyle(8)
+        #leg.AddEntry(hsdat,"Data")
+        #for d,datf in enumerate(dat_info[1:]):
+        #    hdat = datf.Get(hname)
+        #    hdat.SetStats(0)
+        #    hdat.SetMaximum(max_plot)
+        #    hdat.SetMinimum(min_plot)
+        #    hsdat.Add(hdat)
+        #hsdat.SetBinErrorOption(1)
 
         
         #Make a multigraph
@@ -184,7 +184,7 @@ if __name__=='__main__':
         hsbkg.GetXaxis().SetTitleSize(0.05)
         hsbkg.GetYaxis().SetTitle("Events")
         hsbkg.GetYaxis().SetTitleSize(0.05)
-        hsdat.Draw("HISTSAMEPE")
+        #hsdat.Draw("HISTSAMEPE")
 
         #if 'h_h_sd' in hname:
         #    l0.Draw()
@@ -214,26 +214,26 @@ if __name__=='__main__':
         #Load in the uncertainties
         #uncf = np.load()
         
-        for ibin in range(hsumb.GetNbinsX()+1):#CHECK
-            bincen = hsumb.GetBinCenter(ibin)
-            bkgmc  = hsumb.GetBinContent(ibin)
-            data   = hsdat.GetBinContent(ibin)
-            #
-            binlist[ibin] = bincen
-            if ibin != 0:
-                hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
-                datunc = datuncs[hname][ibin-1]
-                if bkgmc != 0 and data != 0:
-                    ratiolist[ibin] = data/bkgmc
-                    #pulllist[ibin]  = (data-bkgmc)/datunc
-                    #rerrlist[ibin] = datunc/bkgmc
-                    rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
-                if bkgmc == 0:
-                    ratiolist[ibin] = -1
-                    rerrlist[ibin] = 0
-            else:
-                ratiolist[ibin] = -1
-                rerrlist[ibin] = 0
+        #for ibin in range(hsumb.GetNbinsX()+1):#CHECK
+        #    bincen = hsumb.GetBinCenter(ibin)
+        #    bkgmc  = hsumb.GetBinContent(ibin)
+        #    data   = hsdat.GetBinContent(ibin)
+        #    #
+        #    binlist[ibin] = bincen
+        #    if ibin != 0:
+        #        hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
+        #        datunc = datuncs[hname][ibin-1]
+        #        if bkgmc != 0 and data != 0:
+        #            ratiolist[ibin] = data/bkgmc
+        #            #pulllist[ibin]  = (data-bkgmc)/datunc
+        #            #rerrlist[ibin] = datunc/bkgmc
+        #            rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
+    #            if bkgmc == 0:
+     #               ratiolist[ibin] = -1
+      #              rerrlist[ibin] = 0
+       #     else:
+        #        ratiolist[ibin] = -1
+         #       rerrlist[ibin] = 0
         
         #remove underflow bin#hopefuly can get rid of this
         ratiolist = np.delete(ratiolist,0)

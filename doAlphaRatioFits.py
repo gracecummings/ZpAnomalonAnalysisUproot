@@ -62,7 +62,8 @@ if __name__=='__main__':
         
     
     #will replace with command line options
-    path    = 'analysis_output_ZpAnomalon/2021-04-28/'
+    #path    = 'analysis_output_ZpAnomalon/2021-04-28/'
+    path    = 'analysis_output_ZpAnomalon/2021-06-07_reclusteredJets/'
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
@@ -96,8 +97,8 @@ if __name__=='__main__':
     hsrvv = hsrzz.Clone()
     hsrvv.Add(hsrwz)
 
-    hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
-    hdatsbsub = hdatsb.Clone()
+    #hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
+    #hdatsbsub = hdatsb.Clone()
     
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")
@@ -133,7 +134,8 @@ if __name__=='__main__':
     #sbfit2.Draw("SAME")
     sbfit.Draw("SAME")
     hsbdy.Draw("SAME")
-
+    print("DY sideband integral: ",hsbdy.Integral())
+    
     l21 = ROOT.TLegend(0.55,0.65,0.9,0.8)
     l21.AddEntry(hsbdy,"DY Jets SB MC","ep")
     l21.AddEntry(sbfit,"2 Param Exp fit","l")
@@ -198,6 +200,7 @@ if __name__=='__main__':
     l22.SetBorderSize(0)
     l22.Draw()
     p22.Update()
+    print("TT sideband integral: ",hsbtt.Integral())
 
     #tc.cd()
     #p12.Draw()

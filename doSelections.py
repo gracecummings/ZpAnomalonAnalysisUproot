@@ -141,6 +141,7 @@ if __name__=='__main__':
     deltaRzhdf     = deltaR(fdf['ZCandidate_phi'],fdf['hCandidate_phi'],fdf['ZCandidate_eta'],fdf['hCandidate_eta'])
     deltaRlmuhdf   = deltaR(fdf['LMuCandidate_phi'],fdf['hCandidate_phi'],fdf['LMuCandidate_eta'],fdf['hCandidate_eta'])
     deltaRslmuhdf   = deltaR(fdf['sLMuCandidate_phi'],fdf['hCandidate_phi'],fdf['sLMuCandidate_eta'],fdf['hCandidate_eta'])
+    deltaRslmulmudf   = deltaR(fdf['sLMuCandidate_phi'],fdf['LMuCandidate_phi'],fdf['sLMuCandidate_eta'],fdf['LMuCandidate_eta'])
 
     #lets make some histograms.
     rootfilename  = go.makeOutFile(samp,'upout_'+region+'_'+btaggr,'.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))#need to update for btagger
@@ -174,6 +175,7 @@ if __name__=='__main__':
     rootOutFile["h_dr_zh"]      = np.histogram(deltaRzhdf,bins=30,range=(0,6),weights=fdf['event_weight'])
     rootOutFile["h_dr_lmuh"]      = np.histogram(deltaRlmuhdf,bins=30,range=(0,6),weights=fdf['event_weight'])
     rootOutFile["h_dr_slmuh"]      = np.histogram(deltaRslmuhdf,bins=30,range=(0,6),weights=fdf['event_weight'])
+    rootOutFile["h_dr_slmulmu"]      = np.histogram(deltaRslmulmudf,bins=30,range=(0,6),weights=fdf['event_weight'])
 
     zpterrs      = boostUnc(fdf['ZCandidate_pt'],fdf['event_weight'],80,0,800)
     zetaerrs     = boostUnc(fdf['ZCandidate_eta'],fdf['event_weight'],100,-5,5)
@@ -199,6 +201,7 @@ if __name__=='__main__':
     drzherrs       = boostUnc(deltaRzhdf,fdf['event_weight'],30,0,6)
     drlmuherrs     = boostUnc(deltaRlmuhdf,fdf['event_weight'],30,0,6)
     drslmuherrs    = boostUnc(deltaRslmuhdf,fdf['event_weight'],30,0,6)
+    drslmulmuerrs    = boostUnc(deltaRslmulmudf,fdf['event_weight'],30,0,6)
     
     unc_arrays = [zpterrs,
                   zetaerrs,
@@ -224,6 +227,7 @@ if __name__=='__main__':
                   drzherrs,
                   drlmuherrs,
                   drslmuherrs,
+                  drslmulmuerrs,
 
     ]
 
@@ -251,6 +255,7 @@ if __name__=='__main__':
                  'h_dr_zh',
                  'h_dr_lmuh',
                  'h_dr_slmuh',
+                 'h_dr_slmulmu',
     ]
 
     max_length = len(max(unc_arrays,key = lambda ar : len(ar)))

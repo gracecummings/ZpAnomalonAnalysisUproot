@@ -315,6 +315,7 @@ class backgrounds:
         bkg = self.bkgs[samp]
         xspairs = self.config.items(samp)
         bkgdfs  = []
+        holder = []
         
         for year in years:
             if year == 17:
@@ -328,6 +329,8 @@ class backgrounds:
                 files.sort(key = orderDY)
                 errs.sort(key = orderDY)
             for i,f in enumerate(files):
+                fparts = f.split("/")
+                name = fparts[-1]
                 tf = ROOT.TFile(f)
                 numevents = float(str(tf.Get('hnevents').GetString()))
                 xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
@@ -342,6 +345,9 @@ class backgrounds:
                 sqrddf = sdf**2
                 bkgdfs.append(sqrddf)
 
+                debugstring = name+" "+str(xs)+" "+str(scale)
+                holder.append(debugstring)
+
         uncsqdDYJetsdf = sum(bkgdfs)
         uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
 
@@ -352,7 +358,7 @@ class backgrounds:
                 binerr = uncDYJetsdf['h_zp_jigm'][ibin-1]
                 hist.SetBinError(ibin,binerr)
 
-        return hist
+        return hist,holder
 
     #Add something that does this nicely within this class
     #no craziness

@@ -36,6 +36,7 @@ if __name__=='__main__':
     
     #samples
     bkgupout17 = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,17)
+    print(bkgupout17)
     bkgupout18 = gecorg.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,18)
     bkgnames   = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     sigfiles   = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/Zp*_upout_'+reg+'*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')

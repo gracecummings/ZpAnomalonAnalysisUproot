@@ -31,11 +31,13 @@ badhist,badinfo = badbkgs.getAddedHist(empty1,"DYJetsToLL","sb","h_zp_jigm")
 print(len(goodinfo))
 print(len(badinfo))
 
-for i,inf in enumerate(goodinfo):
-    #print(badinfo[i])
-    ginfos = inf.split(" ")
-    binfos = badinfo[i].split(" ")
+print(goodhist.Integral())
+print(badhist.Integral())
+#for i,inf in enumerate(goodinfo):
+#    #print(badinfo[i])
+#    ginfos = inf.split(" ")
+#    binfos = badinfo[i].split(" ")#
 
-    print(ginfos[0],binfos[0])
+    #print(ginfos[0],binfos[0])
 
 

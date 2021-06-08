@@ -6,7 +6,7 @@ import ROOT
 if __name__=='__main__':
     
     goodpath  = 'analysis_output_ZpAnomalon/2021-04-28/'
-    badpath   = 'analysis_output_ZpAnomalon/2021-06-07_reclusteredJets'
+    badpath   = 'analysis_output_ZpAnomalon/2021-06-07_nonreclusteredJets'
 
     zptcut  = '150.0'
     hptcut  = '300.0'

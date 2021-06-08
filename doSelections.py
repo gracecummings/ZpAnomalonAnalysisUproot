@@ -103,6 +103,7 @@ if __name__=='__main__':
         #print(b)
         #print("Doing SD mass lower cut of :" ,sdmcut)
         #do some cuts
+        print("Number of events in chunk ",len(b))
         sddf   = b[b['hCandidate_sd'] > sdmcut]
         metdf  = sddf[sddf['METclean'] > metcut]
         zptdf  = metdf[metdf['ZCandidate_pt'] > zptcut]
@@ -115,7 +116,9 @@ if __name__=='__main__':
         lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
         highsb = btdf[btdf['hCandidate_sd'] >= 150.]
         sbdf   = pd.concat([lowsb,highsb])
+        print("In loop number of events in sb ",len(sbdf))
 
+    print("out of loop number of events in sb ",len(sbdf))
     #This will have to come out of the loop if true iteration is added
     region = "sideband"
     if stype != 0:

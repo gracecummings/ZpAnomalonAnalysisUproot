@@ -45,8 +45,8 @@ if __name__=='__main__':
     for i,inf in enumerate(goodinfo):
         #print(badinfo[i])
         ginfo = inf.split()[0].split("_13TeV")[0]
-        if i < (len(badinfo)-1):
-            binfo = badinfo[i].split()[0].split("_13TeV")[0]
+        #if i < (len(badinfo)-1):
+        binfo = badinfo[i].split()[0].split("_13TeV")[0]
 
         print(ginfo,binfo)
 

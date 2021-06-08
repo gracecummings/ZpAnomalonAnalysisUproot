@@ -6,7 +6,7 @@ if __name__=='__main__':
     #steps to run
     #assumes you have run the whole thing at the start of the day
     #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
-    steps = {"topiary":True,"selections":False,"uncs":False,"ratios":True,"opts":False,"cutflow":False}
+    steps = {"topiary":True,"selections":False,"uncs":False,"ratios":False,"opts":False,"cutflow":False}
     
     #cut list, Zpt, Hpt, met,btagger,btagwp
     cutlist = [#['0.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
@@ -65,9 +65,9 @@ if __name__=='__main__':
                   #['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  #['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  ['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-05-29','Run2018C-17Sep2018-v1.SingleMuon'],
                   #['2021-05-29','Run2018B-17Sep2018-v1.SingleMuon'],
                   #['2021-05-29','Run2018A-17Sep2018-v1.SingleMuon'],

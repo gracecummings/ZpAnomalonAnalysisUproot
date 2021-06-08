@@ -70,7 +70,7 @@ if __name__=='__main__':
                   #['2021-05-29','Run2018C-17Sep2018-v1.SingleMuon'],
                   #['2021-05-29','Run2018B-17Sep2018-v1.SingleMuon'],
                   #['2021-05-29','Run2018A-17Sep2018-v1.SingleMuon'],
-                  ['2021-06-07_reclusteredJets','Autumn18.DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-06-07_reclusteredJets','Autumn18.DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
                   #['2021-06-07_reclusteredJets','Autumn18.DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
                   #['2021-06-07_reclusteredJets','Autumn18.DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
                   #['2021-06-07_reclusteredJets','Autumn18.DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
@@ -89,7 +89,7 @@ if __name__=='__main__':
                   #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  ['2021-06-07_reclusteredJets','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-03-26','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-04-27','Run2018C-17Sep2018-v1.SingleMuon'],
@@ -132,7 +132,7 @@ if __name__=='__main__':
         if steps["ratios"]:
             #subprocess.run(["python","stackAll.py","-L",era[1],"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today())])
             #subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","totalr"])
-            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","signalr"])
+            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_reclusteredJets","-r","signalr"])
             subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_reclusteredJets","-r","sideband"])
             #subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_reclusteredJets","-r","signalr"])
 

@@ -4,6 +4,14 @@ import numpy as np
 import pandas as pd
 import glob
 
+def scaleFinder(pair):
+    #pair = [hsdmrec,hsdmori]
+    maxs = [x.GetMaximum() for x in pair]
+    maxidx  = maxs.index(max(maxs))
+    minidx  = maxs.index(min(maxs))
+    scale = maxs[maxidx]/maxs[minidx]
+    return scale,maxidx,max(maxs)
+    
 if __name__=='__main__':
 
     #will replace with command line options
@@ -64,14 +72,60 @@ if __name__=='__main__':
         hphiori  = tfori.Get('h_h_phiw')
         hetarec  = tfrec.Get('h_h_eta')
         hetaori  = tfori.Get('h_h_eta')
-        maxsd = max(hsdmrec.GetMaximum(),hsdmori.GetMaximum())
-        maxpt = max(hptrec.GetMaximum(),hptori.GetMaximum())
-        maxphi = max(hphirec.GetMaximum(),hphiori.GetMaximum())
-        maxeta = max(hetarec.GetMaximum(),hetaori.GetMaximum())
-        hsdmori.SetMaximum(maxsd+50)
-        hptori.SetMaximum(maxpt+50)
-        hphiori.SetMaximum(maxphi+50)
-        hetaori.SetMaximum(maxeta+50)
+
+        #Unscaled verions
+        #maxsd = max(hsdmrec.GetMaximum(),hsdmori.GetMaximum())
+        #maxpt = max(hptrec.GetMaximum(),hptori.GetMaximum())
+        #maxphi = max(hphirec.GetMaximum(),hphiori.GetMaximum())
+        #maxeta = max(hetarec.GetMaximum(),hetaori.GetMaximum())
+        #hsdmori.SetMaximum(maxsd+50)
+        #hptori.SetMaximum(maxpt+50)
+        #hphiori.SetMaximum(maxphi+50)
+        #hetaori.SetMaximum(maxeta+50)
+
+        hsdmrec.Scale(1/hsdmrec.Integral())
+        hptrec.Scale(1/hptrec.Integral())
+        hphirec.Scale(1/hphirec.Integral())
+        hetarec.Scale(1/hetarec.Integral())
+        hsdmori.Scale(1/hsdmori.Integral())
+        hptori.Scale(1/hptori.Integral())
+        hphiori.Scale(1/hphiori.Integral())
+        hetaori.Scale(1/hetaori.Integral())
+
+        #maxlambda = lambda x : x.GetMaximum()
+        sdpair = [hsdmrec,hsdmori]
+        sdmaxs  = [x.GetMaximum() for x in sdpair]
+        maxidx  = sdmaxs.index(max(sdmaxs))
+        minidx  = sdmaxs.index(min(sdmaxs))
+        scale = sdmaxs[maxidx]/sdmaxs[minidx]
+        sdpair[minidx].Scale(scale)
+
+        ptpair = [hptrec,hptori]
+        ptmaxs  = [x.GetMaximum() for x in ptpair]
+        maxidx  = ptmaxs.index(max(ptmaxs))
+        minidx  = ptmaxs.index(min(ptmaxs))
+        scale = ptmaxs[maxidx]/ptmaxs[minidx]
+        ptpair[minidx].Scale(scale)
+
+        phipair = [hphirec,hphiori]
+        phimaxs  = [x.GetMaximum() for x in phipair]
+        maxidx  = phimaxs.index(max(phimaxs))
+        minidx  = phimaxs.index(min(phimaxs))
+        scale = phimaxs[maxidx]/phimaxs[minidx]
+        phipair[minidx].Scale(scale)
+
+        etapair = [hetarec,hetaori]
+        etamaxs  = [x.GetMaximum() for x in etapair]
+        maxidx  = etamaxs.index(max(etamaxs))
+        minidx  = etamaxs.index(min(etamaxs))
+        scale = etamaxs[maxidx]/etamaxs[minidx]
+        etapair[minidx].Scale(scale)
+
+        hsdmori.SetMaximum(max(sdmaxs)+max(sdmaxs)*.25)
+        hptori.SetMaximum(max(ptmaxs)+max(ptmaxs)*.25)
+        hphiori.SetMaximum(max(phimaxs)+max(phimaxs)*.25)
+        hetaori.SetMaximum(max(etamaxs)+max(etamaxs)*.25)
+
         hsdmrec.SetLineColor(ROOT.kRed)
         hptrec.SetLineColor(ROOT.kRed)
         hphirec.SetLineColor(ROOT.kRed)

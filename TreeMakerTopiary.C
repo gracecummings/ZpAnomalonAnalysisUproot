@@ -409,15 +409,15 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //  fid = JetsAK8Clean_ID->at(i);
       //  double masshdiff = std::abs(125.18 - fsd);
       //  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid && std::abs(fat.Eta()) < 2.4 && (fsd > 10)) {
-      //  basehdiff = masshdiff;
-      // theh = fat;
-        //  hsd = fsd;
-      // hdmdhbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD->at(i);
-      //  hdmdzbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD->at(i);
-      //  hdmdzhbbvqcd = JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD->at(i);
-      //  hmiddb = JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
-      //  passh = true;
-      //}
+      //    basehdiff = masshdiff;
+      //    theh = fat;
+      //    hsd = fsd;
+      //    hdmdhbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD->at(i);
+      //    hdmdzbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD->at(i);
+      //    hdmdzhbbvqcd = JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD->at(i);
+      //    hmiddb = JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
+      //    passh = true;
+      //  }
       //}
       //}
 

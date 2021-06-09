@@ -26,36 +26,37 @@ if __name__=='__main__':
 
     #2021-06-07 for reclustering, leading muons, and gen info
     #topiary sample list: dateforfolder, samplename
-    samplelist = [['2021-06-07_nonreclusteredJets','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  #['2021-06-07_nonreclusteredJets','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
-                  #['2021-06-07_nonreclusteredJets','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
-                  #['2021-06-07_nonreclusteredJets','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
-                  #['2021-06-07_nonreclusteredJets','ZpAnomalonHZ_UFO-Zp2000-ND800-NS200'],
-                  #['2021-06-07_nonreclusteredJets','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
+    samplelist = [#['2021-06-08_reclusteredJets_skimlevel','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
+                  #['2021-06-08_reclusteredJets_skimlevel','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
+                  #['2021-06-08_reclusteredJets_skimlevel','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
+                  #['2021-06-08_reclusteredJets_skimlevel','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
+                  #['2021-06-08_reclusteredJets_skimlevel','ZpAnomalonHZ_UFO-Zp2000-ND800-NS200'],
+                  #['2021-06-08_reclusteredJets_skimlevel','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
                   #['2021-06-04','Run2017B-31Mar2018-v1.SingleMuon'],
                   #['2021-06-04','Run2017C-31Mar2018-v1.SingleMuon'],
                   #['2021-06-04','Run2017D-31Mar2018-v1.SingleMuon'],
                   #['2021-06-04','Run2017E-31Mar2018-v1.SingleMuon'],
                   #['2021-06-04','Run2017F-31Mar2018-v1.SingleMuon'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  ['2021-06-07_nonreclusteredJets','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  ['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  ['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  ['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  ['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   #['2021-05-29','Run2018C-17Sep2018-v1.SingleMuon'],
                   #['2021-05-29','Run2018B-17Sep2018-v1.SingleMuon'],
                   #['2021-05-29','Run2018A-17Sep2018-v1.SingleMuon'],
-                  ['2021-06-07_nonreclusteredJets','Autumn18.DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-06-07_nonreclusteredJets','Autumn18.DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-06-07_nonreclusteredJets','Autumn18.DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-06-07_nonreclusteredJets','Autumn18.DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-06-07_nonreclusteredJets','Autumn18.DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-06-07_nonreclusteredJets','Autumn18.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
-                  ['2021-06-07_nonreclusteredJets','Autumn18.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Autumn18.DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Autumn18.DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  ['2021-06-08_reclusteredJets_skimlevel','Autumn18.DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  ['2021-06-08_reclusteredJets_skimlevel','Autumn18.DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  ['2021-06-08_reclusteredJets_skimlevel','Autumn18.DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Autumn18.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
+                  #['2021-06-08_reclusteredJets_skimlevel','Autumn18.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV-madgraphMLM-pythia'],
                   #['2021-03-26','Run2017B-31Mar2018-v1.SingleMuon'],
                   #['2021-03-26','Run2017C-31Mar2018-v1.SingleMuon'],
                   #['2021-03-26','Run2017D-31Mar2018-v1.SingleMuon'],
@@ -73,7 +74,7 @@ if __name__=='__main__':
         if steps["selections"]:
             for samp in samplelist:
                 subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0]])
-                #subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-sr","True"])
+                subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-sr","True"])
                 #subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","0.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-c","True"])
 
         for era in eras:
@@ -81,18 +82,18 @@ if __name__=='__main__':
             if steps["uncs"]:
                 #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0],"-r","totalr"])
                 #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0],"-r","sideband"])
-                subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_nonreclusteredJets","-y",era[0],"-r","sideband"])
-                subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_nonreclusteredJets","-y",era[0],"-r","signalr"])
-                #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_nonnonreclusteredJets","-y",era[0],"-r","sideband"])
-                #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_nonnonreclusteredJets","-y",era[0],"-r","signalr"])
+                subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-08_reclusteredJets_skimlevel","-y",era[0],"-r","sideband"])
+                subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-08_reclusteredJets_skimlevel","-y",era[0],"-r","signalr"])
+                #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-08_nonreclusteredJets_skimlevel","-y",era[0],"-r","sideband"])
+                #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-08_nonreclusteredJets_skimlevel","-y",era[0],"-r","signalr"])
                 #subprocess.run(["python","doStackedUncertainty.py","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0],"-r","signalr"])
 
         #stack all  
         if steps["ratios"]:
             #subprocess.run(["python","stackAll.py","-L",era[1],"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today())])
             #subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","totalr"])
-            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_nonreclusteredJets","-r","signalr"])
-            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_nonreclusteredJets","-r","sideband"])
+            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-08_reclusteredJets_skimlevel","-r","signalr"])
+            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-08_reclusteredJets_skimlevel","-r","sideband"])
             #subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date","2021-06-07_reclusteredJets","-r","signalr"])
 
         #Optimization Plots

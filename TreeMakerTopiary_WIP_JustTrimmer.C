@@ -386,8 +386,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //std::cout<<"   The ZCand pt is       : "<<theZ.Pt()<<std::endl;
       
       //Higgs Candidate Build
-      unsigned long nfat = JetsAK8Clean->size();
-      //unsigned long nfat = JetsAK8->size();
+      //unsigned long nfat = JetsAK8Clean->size();
+      unsigned long nfat = JetsAK8->size();
       TLorentzVector theh;
       theh.SetPtEtaPhiM(0.0,0.0,0.0,0.0);;
       TLorentzVector fat;
@@ -402,45 +402,45 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool   fid = 0;
 
       //reclustered jets
-      if (nfat > 0) {
-	passh = true;
-      for (unsigned long i =0; i < nfat; ++i) {
-        fat = JetsAK8Clean->at(i);
-        fsd = JetsAK8Clean_softDropMass->at(i);
-        fid = JetsAK8Clean_ID->at(i);
-        double masshdiff = std::abs(125.18 - fsd);
-        if ((masshdiff < basehdiff)) {
-          basehdiff = masshdiff;
-          theh = fat;
-          hsd = fsd;
-          hdmdhbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD->at(i);
-          hdmdzbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD->at(i);
-          hdmdzhbbvqcd = JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD->at(i);
-          hmiddb = JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
-          passh = true;
-        }
-      }
-      }
-
-      //unreclustered jets
       //if (nfat > 0) {
       //passh = true;
       //for (unsigned long i =0; i < nfat; ++i) {
-      //  fat = JetsAK8->at(i);
-      //  fsd = JetsAK8_softDropMass->at(i);
-      //  fid = JetsAK8_ID->at(i);
-      //  double masshdiff = std::abs(125.18 - fsd);
-      //  if ((masshdiff < basehdiff)) {
-      //basehdiff = masshdiff;
-      //    theh = fat;
-	    //hsd = fsd;
-	    //hdmdhbbvqcd  = JetsAK8_DeepMassDecorrelTagHbbvsQCD->at(i);
-	    //hdmdzbbvqcd  = JetsAK8_DeepMassDecorrelTagZbbvsQCD->at(i);
-	    //hdmdzhbbvqcd = JetsAK8_DeepMassDecorrelTagZHbbvsQCD->at(i);
-	    //hmiddb = JetsAK8_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
-      //  }
+      //fat = JetsAK8Clean->at(i);
+      //fsd = JetsAK8Clean_softDropMass->at(i);
+      //fid = JetsAK8Clean_ID->at(i);
+      //double masshdiff = std::abs(125.18 - fsd);
+      //if ((masshdiff < basehdiff)) {
+      //  basehdiff = masshdiff;
+      //  theh = fat;
+      //  hsd = fsd;
+      //  hdmdhbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD->at(i);
+      //  hdmdzbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD->at(i);
+      //  hdmdzhbbvqcd = JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD->at(i);
+      //  hmiddb = JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
+      //  passh = true;
       //}
       //}
+      //}
+
+      //unreclustered jets
+      if (nfat > 0) {
+      passh = true;
+      for (unsigned long i =0; i < nfat; ++i) {
+        fat = JetsAK8->at(i);
+        fsd = JetsAK8_softDropMass->at(i);
+        fid = JetsAK8_ID->at(i);
+        double masshdiff = std::abs(125.18 - fsd);
+        if ((masshdiff < basehdiff)) {
+	  basehdiff = masshdiff;
+          theh = fat;
+	    hsd = fsd;
+	    hdmdhbbvqcd  = JetsAK8_DeepMassDecorrelTagHbbvsQCD->at(i);
+	    hdmdzbbvqcd  = JetsAK8_DeepMassDecorrelTagZbbvsQCD->at(i);
+	    hdmdzhbbvqcd = JetsAK8_DeepMassDecorrelTagZHbbvsQCD->at(i);
+	    hmiddb = JetsAK8_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
+        }
+      }
+      }
 
       //MET
       double ptmiss     = fChain->GetLeaf("METclean")->GetValue(0);

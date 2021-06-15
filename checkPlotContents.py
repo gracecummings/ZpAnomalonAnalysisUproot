@@ -15,19 +15,28 @@ def scaleFinder(pair):
 if __name__=='__main__':
 
     #will replace with command line options
-    pathrec    = 'analysis_output_ZpAnomalon/2021-06-08_reclusteredJets_skimlevel/'
-    #pathrec    = 'analysis_output_ZpAnomalon/2021-05-31_totalr_reclustering/'
-    pathori    = 'analysis_output_ZpAnomalon/2021-06-08_nonreclusteredJets_skimlevel/'
-    #pathori    = 'analysis_output_ZpAnomalon/2021-05-31_fullregion_noreclustering/'#no reclustering totalr
-    pathgen    = 'analysis_output_ZpAnomalon/2021-06-07_genLevelInfo/'
-    #pathrec = 'analysis_output_ZpAnomalon/2021-06-01_totalr_reclustered_0sdm_0btag/'
-    #pathori = 'analysis_output_ZpAnomalon/2021-06-01_totalr_orignal_0sdm_0btag/'
-    
-    zptcut  = '150.0'
-    hptcut  = '0.0'
-    metcut  = '0.0'
-    btagwp  = '0.8'
+    #pathrec    = 'analysis_output_ZpAnomalon/2021-06-08_reclusteredJets_skimlevel/'
+    #pathori    = 'analysis_output_ZpAnomalon/2021-06-08_nonreclusteredJets_skimlevel/'
+    pathrec    = 'analysis_output_ZpAnomalon/2021-06-07_reclusteredJets/'
+    pathori    = 'analysis_output_ZpAnomalon/2021-06-07_nonreclusteredJets/'
+    #pathrec    = 'analysis_output_ZpAnomalon/2021-06-10_reclusteredJets_skimlevel_dr/'
+    #pathori    = 'analysis_output_ZpAnomalon/2021-06-10_nonreclusteredJets_skimlevel_dr/'
+    #pathgen    = 'analysis_output_ZpAnomalon/2021-06-07_genLevelInfo/'
 
+    #pathori = 'analysis_output_ZpAnomalon/2021-06-09/nonrecluster_skimlevel_fullregion/'
+    #pathrec = 'analysis_output_ZpAnomalon/2021-06-09/recluster_skimlevel_fullregion/'
+
+    #skims
+    #zptcut  = '150.0'
+    #hptcut  = '0.0'
+    #metcut  = '0.0'
+    #btagwp  = '0.8'
+
+    #Preselections
+    zptcut  = '150.0'
+    hptcut  = '300.0'
+    metcut  = '200.0'
+    btagwp  = '0.8'
 
     #bkgs = go.backgrounds(path,zptcut,hptcut,metcut,btagwp)
     sigsrec = go.signal(pathrec,zptcut,hptcut,metcut,btagwp,10,101.27)
@@ -56,75 +65,79 @@ if __name__=='__main__':
     #print("mZp   mnd   mns   zpnddiff     ndnsdiff    overlap    nonoverlap    overlapeff    nonovereff")
     #print(pmap)
 
-    for i,sig in enumerate(sigsrec.sigsr):
+    #print(sigsrec.sigsr)
+    for i,sig in enumerate(sigsrec.sigsb):
     #for i,sig in enumerate(sigsrec.sigfl):
         print(sig)
-        print(sigsori.sigsr[i])
+        #print(sigsori.sigsb[i])
         mzp,mnd,mns = go.massPoints(sig.replace(pathrec+"ZpAnomalonHZ_UFO-",""))
         tfrec = ROOT.TFile(sig)
-        tfori = ROOT.TFile(sigsori.sigsr[i])####
+        tfori = ROOT.TFile(sigsori.sigsb[i])####
         #tfori = ROOT.TFile(sigsori.sigfl[i])####
-        hsdmrec = tfrec.Get('h_h_sd')
-        hsdmori = tfori.Get('h_h_sd')
-        hptrec  = tfrec.Get('h_h_pt')
-        hptori  = tfori.Get('h_h_pt')
-        hphirec  = tfrec.Get('h_h_phiw')
-        hphiori  = tfori.Get('h_h_phiw')
-        hetarec  = tfrec.Get('h_h_eta')
-        hetaori  = tfori.Get('h_h_eta')
+        hsdmrec = tfrec.Get('h_h_sd')#_lowdr')
+        hsdmori = tfori.Get('h_h_sd')#_lowdr')
+        hptrec  = tfrec.Get('h_h_pt')#_lowdr')
+        hptori  = tfori.Get('h_h_pt')#_lowdr')
+        hphirec  = tfrec.Get('h_h_phiw')#_lowdr')
+        hphiori  = tfori.Get('h_h_phiw')#_lowdr')
+        hetarec  = tfrec.Get('h_h_eta')#_lowdrslmu')
+        hetaori  = tfori.Get('h_h_eta')#_lowdrslmu')
 
+        print(hsdmrec.Integral())
+        print(hsdmori.Integral())
+        
         #Unscaled verions
-        #maxsd = max(hsdmrec.GetMaximum(),hsdmori.GetMaximum())
-        #maxpt = max(hptrec.GetMaximum(),hptori.GetMaximum())
-        #maxphi = max(hphirec.GetMaximum(),hphiori.GetMaximum())
-        #maxeta = max(hetarec.GetMaximum(),hetaori.GetMaximum())
-        #hsdmori.SetMaximum(maxsd+50)
-        #hptori.SetMaximum(maxpt+50)
-        #hphiori.SetMaximum(maxphi+50)
-        #hetaori.SetMaximum(maxeta+50)
+        maxsd = max(hsdmrec.GetMaximum(),hsdmori.GetMaximum())
+        maxpt = max(hptrec.GetMaximum(),hptori.GetMaximum())
+        maxphi = max(hphirec.GetMaximum(),hphiori.GetMaximum())
+        maxeta = max(hetarec.GetMaximum(),hetaori.GetMaximum())
+        hsdmori.SetMaximum(maxsd+50)
+        hptori.SetMaximum(maxpt+50)
+        hphiori.SetMaximum(maxphi+50)
+        hetaori.SetMaximum(maxeta+50)
 
-        hsdmrec.Scale(1/hsdmrec.Integral())
-        hptrec.Scale(1/hptrec.Integral())
-        hphirec.Scale(1/hphirec.Integral())
-        hetarec.Scale(1/hetarec.Integral())
-        hsdmori.Scale(1/hsdmori.Integral())
-        hptori.Scale(1/hptori.Integral())
-        hphiori.Scale(1/hphiori.Integral())
-        hetaori.Scale(1/hetaori.Integral())
+        ##hsdmrec.Scale(1/hsdmrec.Integral())
+        ##hptrec.Scale(1/hptrec.Integral())
+        ##hphirec.Scale(1/hphirec.Integral())
+        ##hetarec.Scale(1/hetarec.Integral())
+        ##hsdmori.Scale(1/hsdmori.Integral())
+        ##hptori.Scale(1/hptori.Integral())
+        ##hphiori.Scale(1/hphiori.Integral())
+        ##hetaori.Scale(1/hetaori.Integral())
 
         #maxlambda = lambda x : x.GetMaximum()
-        sdpair = [hsdmrec,hsdmori]
-        sdmaxs  = [x.GetMaximum() for x in sdpair]
-        maxidx  = sdmaxs.index(max(sdmaxs))
-        minidx  = sdmaxs.index(min(sdmaxs))
-        scale = sdmaxs[maxidx]/sdmaxs[minidx]
-        sdpair[minidx].Scale(scale)
+        ##sdpair = [hsdmrec,hsdmori]
+        ##sdmaxs  = [x.GetMaximum() for x in sdpair]
+        #maxidx  = sdmaxs.index(max(sdmaxs))
+        #minidx  = sdmaxs.index(min(sdmaxs))
+        #scale = sdmaxs[maxidx]/sdmaxs[minidx]
+        #sdpair[minidx].Scale(scale)
 
-        ptpair = [hptrec,hptori]
-        ptmaxs  = [x.GetMaximum() for x in ptpair]
-        maxidx  = ptmaxs.index(max(ptmaxs))
-        minidx  = ptmaxs.index(min(ptmaxs))
-        scale = ptmaxs[maxidx]/ptmaxs[minidx]
-        ptpair[minidx].Scale(scale)
+        ##ptpair = [hptrec,hptori]
+        ##ptmaxs  = [x.GetMaximum() for x in ptpair]
+        #maxidx  = ptmaxs.index(max(ptmaxs))
+        #minidx  = ptmaxs.index(min(ptmaxs))
+        #scale = ptmaxs[maxidx]/ptmaxs[minidx]
+        #ptpair[minidx].Scale(scale)
 
-        phipair = [hphirec,hphiori]
-        phimaxs  = [x.GetMaximum() for x in phipair]
-        maxidx  = phimaxs.index(max(phimaxs))
-        minidx  = phimaxs.index(min(phimaxs))
-        scale = phimaxs[maxidx]/phimaxs[minidx]
-        phipair[minidx].Scale(scale)
+        ##phipair = [hphirec,hphiori]
+        ##phimaxs  = [x.GetMaximum() for x in phipair]
+        #maxidx  = phimaxs.index(max(phimaxs))
+        #minidx  = phimaxs.index(min(phimaxs))
+        #scale = phimaxs[maxidx]/phimaxs[minidx]
+        #phipair[minidx].Scale(scale)
 
-        etapair = [hetarec,hetaori]
-        etamaxs  = [x.GetMaximum() for x in etapair]
-        maxidx  = etamaxs.index(max(etamaxs))
-        minidx  = etamaxs.index(min(etamaxs))
-        scale = etamaxs[maxidx]/etamaxs[minidx]
-        etapair[minidx].Scale(scale)
+        ##etapair = [hetarec,hetaori]
+        ##etamaxs  = [x.GetMaximum() for x in etapair]
+        #maxidx  = etamaxs.index(max(etamaxs))
+        #minidx  = etamaxs.index(min(etamaxs))
+        #scale = etamaxs[maxidx]/etamaxs[minidx]
+        #etapair[minidx].Scale(scale)
 
-        hsdmori.SetMaximum(max(sdmaxs)+max(sdmaxs)*.25)
-        hptori.SetMaximum(max(ptmaxs)+max(ptmaxs)*.25)
-        hphiori.SetMaximum(max(phimaxs)+max(phimaxs)*.25)
-        hetaori.SetMaximum(max(etamaxs)+max(etamaxs)*.25)
+        ##hsdmori.SetMaximum(max(sdmaxs)+max(sdmaxs)*.25)
+        ##hptori.SetMaximum(max(ptmaxs)+max(ptmaxs)*.25)
+        ##hphiori.SetMaximum(max(phimaxs)+max(phimaxs)*.25)
+        ##hetaori.SetMaximum(max(etamaxs)+max(etamaxs)*.25)
 
         hsdmrec.SetLineColor(ROOT.kRed)
         hptrec.SetLineColor(ROOT.kRed)
@@ -191,6 +204,6 @@ if __name__=='__main__':
         tc.cd()
         tc.Update()#
 
-        pngname = go.makeOutFile("Zp"+str(mzp)+"_ND"+str(mnd)+"_NS"+str(mns),"recluscomp_totalr",'.png',zptcut,hptcut,metcut,btagwp)
+        pngname = go.makeOutFile("Zp"+str(mzp)+"_ND"+str(mnd)+"_NS"+str(mns),"recluscomp_sideband",'.png',zptcut,hptcut,metcut,btagwp)
         tc.SaveAs(pngname)
         

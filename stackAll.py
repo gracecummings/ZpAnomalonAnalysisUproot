@@ -92,8 +92,8 @@ if __name__=='__main__':
     #some beauty stuff
     #max_plot = 40.
     #min_plot = 0.
-    max_plot = 120.
-    min_plot = 0
+    max_plot = 100000000.
+    min_plot = 0.1
     titles = {
         "h_z_pt":"Z p_{T}",
         "h_z_eta":"\eta_{Z}",
@@ -166,7 +166,7 @@ if __name__=='__main__':
         #Prep the pads
         tc = ROOT.TCanvas("tc",hname,600,800)
         p1 = ROOT.TPad("p1","stack_"+hname,0,0.3,1.0,1.0)
-        #p1.SetLogy()
+        p1.SetLogy()
         #p1.SetBottomMargin(0)
         p1.SetLeftMargin(0.15)
         p1.SetRightMargin(0.05)

@@ -30,6 +30,21 @@ if __name__=="__main__":
         inputs  = glob.glob("../dataHandling/20"+year+"/"+samp+"*.root")
         
         for f in inputs:
+            #print(f)
+            #if "_chunk108__" in f:
+            #    continue
+            #if "_chunk100_" in f:
+            #    continue
+            #if "chunk478" in f:
+            #    continue
+            #if "chunk75" in f:
+            #    continue
+            #if "chunk483" in f:
+            #    continue
+            #if "chunk375" in f:
+            #    continue
+            #if "chunk39" in f:
+            #    continue
             inChain.Add(f)
             tf = ROOT.TFile.Open(f)
             origevnts += tf.Get("hnevents").GetBinContent(1)
@@ -38,7 +53,7 @@ if __name__=="__main__":
         inChain.Add("../dataHandling/20"+year+"/"+samp+"*.root")
         origevnts = inChain.GetEntries()
 
-    outFile = go.makeOutFile(samp,'topiary','.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
+    outFile = go.makeOutFile(samp,'topiary_mumu','.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
     print( "Making topiary of ",samp)
     print("     Sample type ",samptype)
     print("     Sample Year ",year)
@@ -48,7 +63,7 @@ if __name__=="__main__":
 
 
     ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")
-    #ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","kfc")
+    ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","kfc")
     ROOT.gSystem.Load('TreeMakerTopiary_C')
     topiary = ROOT.TreeMakerTopiary(inChain,samptype,int(year))
     topiary.Loop(outFile,origevnts,samptype,int(year))

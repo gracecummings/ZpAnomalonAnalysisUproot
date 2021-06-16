@@ -15,12 +15,15 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("*",0);
    fChain->SetBranchStatus("TriggerPass",1);
    fChain->SetBranchStatus("JetsAK8Clean*",1);
-   fChain->SetBranchStatus("JetsAK8*",1);
+   //fChain->SetBranchStatus("JetsAK8*",1);
    fChain->SetBranchStatus("Muons*",1);
    fChain->SetBranchStatus("METclean*",1);
    fChain->SetBranchStatus("METPhiclean",1);
    fChain->SetBranchStatus("SelectedMuons*",1);
-   fChain->SetBranchStatus("ZCandidates*",1);
+   fChain->SetBranchStatus("ZCandidates",1);
+   fChain->SetBranchStatus("ZCandidatesMuMu",1);
+   fChain->SetBranchStatus("ZCandidatesEE",1);
+   fChain->SetBranchStatus("ZCandidatesEU",1);
    fChain->SetBranchStatus("SelectedElectrons*",1);
    fChain->SetBranchStatus("eeBadScFilter",1);
    fChain->SetBranchStatus("GenParticles*",1);
@@ -89,7 +92,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double mEstNS;
    double  evntw;
 
-      //Define the skimmed skim  output file and tree
+   //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
    TTree* trimTree = fChain->CloneTree(0);
    TH1F*  hnskimed = new TH1F("hnskimed","number of events at skim level",1,0,1);
@@ -206,6 +209,10 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    int counthpass    = 0;
    int countmetpass  = 0;
    int countpass     = 0;
+   int cmixmumuemu   = 0;
+   int cmixeeemu     = 0;
+   int cmixeemumu    = 0;
+   int cemusolo      = 0;
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -226,7 +233,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       }
 
       //debug
-      //if (jentry == 20) {
+      //if (jentry == 100) {
       //break;
       //}
 
@@ -323,30 +330,34 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //gen particle addition. Should update with above
       TLorentzVector theGenZ;
       TLorentzVector theGenH;
-      unsigned long ngen = GenParticles->size();
       if (sampleType != 0) {//Not Data
-	int gpid;
-	for (unsigned long i = 0; i < ngen; ++i) {
-	  int gpid = GenParticles_PdgId->at(i);
-	  //std::cout<<"PID "<<gpid<<std::endl;
-	  if (gpid == 23) {
-	    theGenZ = GenParticles->at(i);
-	  }
-	  if (gpid == 25) {
-	    theGenH = GenParticles->at(i);
+	unsigned long ngen = GenParticles->size();
+	if (sampleType != 0) {//Not Data
+	  int gpid;
+	  for (unsigned long i = 0; i < ngen; ++i) {
+	    int gpid = GenParticles_PdgId->at(i);
+	    //std::cout<<"PID "<<gpid<<std::endl;
+	    if (gpid == 23) {
+	      theGenZ = GenParticles->at(i);
+	    }
+	    if (gpid == 25) {
+	      theGenH = GenParticles->at(i);
+	    }
 	  }
 	}
       }
-	  
+      
       //Z exploration
       unsigned int nselmu = SelectedMuons->size();
       unsigned int nselel = SelectedElectrons->size();
+      unsigned int nZmumu = ZCandidatesMuMu->size();
+      unsigned int nZee = ZCandidatesEE->size();
+      unsigned int nZeu = ZCandidatesEU->size();
       TLorentzVector leadmu;
       TLorentzVector subleadmu;
       double muptmax = 0;
-      if (nselmu > 0  && nselel == 0) {
+      if (nselmu > 0  && nselel == 0) {//Only a dimuon Z in the event
 	mumuchan = true;
-	//std::cout<<"The number of muons stored is "<<nselmu<<std::endl;
 	std::vector<TLorentzVector>::iterator muit;
 	for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
 	  if (muit->Pt() > muptmax) {
@@ -359,6 +370,31 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    
 	}
       }
+      if (nZmumu > 0 && nZee > 0) {
+	cmixeemumu += 1;
+	std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(ee)!"<<std::endl;
+	std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+      if (nZmumu > 0 && nZeu > 0) {
+	cmixmumuemu += 1;
+	//std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(emu)!"<<std::endl;
+	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	//std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+      if (nZee > 0 && nZeu > 0) {
+	cmixeeemu += 1;
+	//std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
+	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	//std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+      if (nZee ==  0 && nZmumu ==  0 && nZeu > 0) {
+	cemusolo += 1;
+	//std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
+	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	//std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+
       //std::cout<<"   The leading muon pt is: "<<leadmu.Pt()<<std::endl;
       //std::cout<<"   The subldig muon pt is: "<<subleadmu.Pt()<<std::endl;
       //std::cout<<"   The dimuon pt is      : "<<(leadmu+subleadmu).Pt()<<std::endl;
@@ -386,8 +422,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //std::cout<<"   The ZCand pt is       : "<<theZ.Pt()<<std::endl;
       
       //Higgs Candidate Build
-      //unsigned long nfat = JetsAK8Clean->size();
-      unsigned long nfat = JetsAK8->size();
+      unsigned long nfat = JetsAK8Clean->size();
+      //unsigned long nfat = JetsAK8->size();
       TLorentzVector theh;
       theh.SetPtEtaPhiM(0.0,0.0,0.0,0.0);;
       TLorentzVector fat;
@@ -402,44 +438,44 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool   fid = 0;
 
       //reclustered jets
-      //if (nfat > 0) {
-      //for (unsigned long i =0; i < nfat; ++i) {
-      //  fat = JetsAK8Clean->at(i);
-      //  fsd = JetsAK8Clean_softDropMass->at(i);
-      //  fid = JetsAK8Clean_ID->at(i);
-      //  double masshdiff = std::abs(125.18 - fsd);
-      //  if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid && std::abs(fat.Eta()) < 2.4 && (fsd > 10)) {
-      //    basehdiff = masshdiff;
-      //    theh = fat;
-      //    hsd = fsd;
-      //    hdmdhbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD->at(i);
-      //    hdmdzbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD->at(i);
-      //    hdmdzhbbvqcd = JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD->at(i);
-      //    hmiddb = JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
-      //    passh = true;
-      //  }
-      //}
-      //}
-
-      //unreclustered jets
       if (nfat > 0) {
       for (unsigned long i =0; i < nfat; ++i) {
-      	fat = JetsAK8->at(i);
-        fsd = JetsAK8_softDropMass->at(i);
-        fid = JetsAK8_ID->at(i);
+        fat = JetsAK8Clean->at(i);
+        fsd = JetsAK8Clean_softDropMass->at(i);
+        fid = JetsAK8Clean_ID->at(i);
         double masshdiff = std::abs(125.18 - fsd);
         if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid && std::abs(fat.Eta()) < 2.4 && (fsd > 10)) {
-	  basehdiff = masshdiff;
+          basehdiff = masshdiff;
           theh = fat;
           hsd = fsd;
-          hdmdhbbvqcd  = JetsAK8_DeepMassDecorrelTagHbbvsQCD->at(i);
-          hdmdzbbvqcd  = JetsAK8_DeepMassDecorrelTagZbbvsQCD->at(i);
-          hdmdzhbbvqcd = JetsAK8_DeepMassDecorrelTagZHbbvsQCD->at(i);
-          hmiddb = JetsAK8_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
+          hdmdhbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagHbbvsQCD->at(i);
+          hdmdzbbvqcd  = JetsAK8Clean_DeepMassDecorrelTagZbbvsQCD->at(i);
+          hdmdzhbbvqcd = JetsAK8Clean_DeepMassDecorrelTagZHbbvsQCD->at(i);
+          hmiddb = JetsAK8Clean_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
           passh = true;
         }
       }
       }
+
+      //unreclustered jets
+      //if (nfat > 0) {
+      //for (unsigned long i =0; i < nfat; ++i) {
+      //fat = JetsAK8->at(i);
+      //fsd = JetsAK8_softDropMass->at(i);
+      //fid = JetsAK8_ID->at(i);
+      //double masshdiff = std::abs(125.18 - fsd);
+      //if ((masshdiff < basehdiff) && (fat.Pt() > hptcut) && fid && std::abs(fat.Eta()) < 2.4 && (fsd > 10)) {
+      //  basehdiff = masshdiff;
+      //  theh = fat;
+      //  hsd = fsd;
+      //  hdmdhbbvqcd  = JetsAK8_DeepMassDecorrelTagHbbvsQCD->at(i);
+      //  hdmdzbbvqcd  = JetsAK8_DeepMassDecorrelTagZbbvsQCD->at(i);
+      //  hdmdzhbbvqcd = JetsAK8_DeepMassDecorrelTagZHbbvsQCD->at(i);
+      //  hmiddb = JetsAK8_pfMassIndependentDeepDoubleBvLJetTagsProbHbb->at(i);
+      //  passh = true;
+      //}
+      //}
+      //}
 
       //MET
       double ptmiss     = fChain->GetLeaf("METclean")->GetValue(0);
@@ -518,7 +554,10 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    std::cout<<"Passing Z  req:      "<<countzpass<<std::endl;
    std::cout<<"Passing h  req:      "<<counthpass<<std::endl;
    std::cout<<"Passing    req:      "<<countpass<<std::endl;
-
+   std::cout<<"Number of events with a Z(mumu) and a Z(emu): "<<cmixmumuemu<<std::endl;
+   std::cout<<"  Number of events with a Z(ee) and a Z(emu): "<<cmixeeemu<<std::endl;
+   std::cout<<" Number of events with a Z(mumu) and a Z(ee): "<<cmixeemumu<<std::endl;
+   std::cout<<"         Number of events with a Z(emu) only: "<<cemusolo<<std::endl;
 
    htrigpass->SetBinContent(1,counttrigpass);
    hZpass->SetBinContent(1,countzpass);

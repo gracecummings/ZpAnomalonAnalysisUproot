@@ -26,12 +26,9 @@ if __name__=='__main__':
 
     #2021-05-29 for no reclustering topiary
     #topiary sample list: dateforfolder, samplename
-    samplelist = [#['2021-05-29','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
-                  #['2021-05-29','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  #['2021-05-29','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  ['2021-03-26','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
-                  ['2021-03-26','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
-                  ['2021-03-26','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
+    samplelist = [['','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
+                  ['','Fall17.WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
+                  ['','Fall17.ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8'],
                   #['2021-05-29','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
                   ['2021-03-26','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
                   #['2021-05-29','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],

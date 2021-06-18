@@ -131,12 +131,12 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag="yes"):
         if bkg_channel == "DYJetsToLL":
             #orders smallest HT to largest
             bkg.sort(key = orderDY)
+        elif bkg_channel == "TT":
+            #sorts in alphabetical order 
+            bkg.sort()                                                     
         else:
             if flag == "no":
                 break
-        #elif bkg_channel == "TT":
-            #orders smallest # events (xs) to largest
-        #    bkg.sort(key = orderFall17TT)                                                     
         #loop through each process bin or categrory
         for s,bkgbin in enumerate(bkg):
             bkgbin_dict = {}
@@ -328,6 +328,9 @@ class backgrounds:
             if "DYJetsToLL" in samp:
                 files.sort(key = orderDY)
                 errs.sort(key = orderDY)
+            if "TTTo" in samp:
+                files.sort()
+                errs.sort()
             for i,f in enumerate(files):
                 fparts = f.split("/")
                 name = fparts[-1]

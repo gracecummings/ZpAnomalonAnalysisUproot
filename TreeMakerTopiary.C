@@ -370,6 +370,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    
 	}
       }
+
+      ///*
       if (nZmumu > 0 && nZee > 0) {
 	cmixeemumu += 1;
 	std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(ee)!"<<std::endl;
@@ -398,6 +400,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //std::cout<<"   The leading muon pt is: "<<leadmu.Pt()<<std::endl;
       //std::cout<<"   The subldig muon pt is: "<<subleadmu.Pt()<<std::endl;
       //std::cout<<"   The dimuon pt is      : "<<(leadmu+subleadmu).Pt()<<std::endl;
+      
+      //*/
       
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
@@ -554,11 +558,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    std::cout<<"Passing Z  req:      "<<countzpass<<std::endl;
    std::cout<<"Passing h  req:      "<<counthpass<<std::endl;
    std::cout<<"Passing    req:      "<<countpass<<std::endl;
+
+   ///*
    std::cout<<"Number of events with a Z(mumu) and a Z(emu): "<<cmixmumuemu<<std::endl;
    std::cout<<"  Number of events with a Z(ee) and a Z(emu): "<<cmixeeemu<<std::endl;
    std::cout<<" Number of events with a Z(mumu) and a Z(ee): "<<cmixeemumu<<std::endl;
    std::cout<<"         Number of events with a Z(emu) only: "<<cemusolo<<std::endl;
-
+   //*/
+   
    htrigpass->SetBinContent(1,counttrigpass);
    hZpass->SetBinContent(1,countzpass);
    hHpass->SetBinContent(1,counthpass);

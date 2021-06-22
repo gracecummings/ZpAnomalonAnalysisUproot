@@ -62,7 +62,7 @@ if __name__=='__main__':
         
     
     #will replace with command line options
-    path    = 'analysis_output_ZpAnomalon/2021-04-28/'
+    path    = 'analysis_output_ZpAnomalon/2021-05-27/'
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
@@ -112,11 +112,14 @@ if __name__=='__main__':
     p21.Draw()
     p21.cd()
     hsbdy2 = hsbdy.Clone()
-    sbfit = ROOT.expFit(hsbdy,"sbl","QR0+",1500,5000)
+
+    print("TTTTTTTTTTTTTTTTTTTTTTTT")
+    sbfit = ROOT.expFit(hsbdy,"sbl","R0+",1500,5000)
     #sbfit2 = ROOT.expNFit(hsbdy2,"sbl","QR0+",1500,5000)
     #needs to be played with to get the plotting order right
     #needs better errors
-    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+",2,1500,5000)
+    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","R0+",2,1500,5000)
+    print("TTTTTTTTTTTTTTTTTTTTTTTT")
     plotMzp(p21,hsbdy)
     CMS_lumi.CMS_lumi(p21,4,13)
     p21.Update()
@@ -183,7 +186,7 @@ if __name__=='__main__':
     setLogAxis(p22,islog)
     plotMzp(p22,hsbtt,islog)
     sbttfit = ROOT.expFit(hsbtt,"sbl","QR0+")
-    sbttunc = ROOT.expFitErrBands(hsbtt,"sbl","QR0+",1)
+    sbttunc = ROOT.expFitErrBands(hsbtt,"sbl","QR0+",1,1000,3000)
     sbttunc.SetFillColor(2)
     sbttunc.SetMarkerSize(0)
     CMS_lumi.CMS_lumi(p22,4,13)

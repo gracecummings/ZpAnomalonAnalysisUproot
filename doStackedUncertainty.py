@@ -37,7 +37,7 @@ if __name__=='__main__':
         datprefix = 'Run2017'
         lumi = 41.53
     if year == 18:
-        fp = open('xsects_2018.ini')
+        fp = open('xsects_2017.ini')#2017 has only verfied xs
         mcprefix  = 'Autumn18'
         datprefix = 'Run2018'
         lumi = 59.74
@@ -49,6 +49,9 @@ if __name__=='__main__':
         if name == "DYJetsToLL":
             bkgcounts[n].sort(key=go.orderDY)
             bkgerrfs[n].sort(key=go.orderDY)
+        elif name == "TT":
+            bkgcounts[n].sort()
+            bkgerrfs[n].sort()
         bkgxspairs = config.items(name)
         bkgdfs[name] = []
         for b,bkgbin in enumerate(bkgerrfs[n]):

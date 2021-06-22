@@ -354,6 +354,7 @@ class backgrounds:
         uncsqdDYJetsdf = sum(bkgdfs)
         uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
 
+        
         for ibin in range(hist.GetNbinsX()+1):
             if ibin == 0:
                 continue
@@ -444,7 +445,6 @@ class run2:
                 hist.SetBinError(ibin,binerr)
 
         return hist
-
 
 class signal:
     def __init__(self,path,zptcut,hptcut,metcut,btagwp,xs,lumi):

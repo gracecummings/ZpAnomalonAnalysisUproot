@@ -6,15 +6,14 @@ if __name__=='__main__':
     #steps to run
     #assumes you have run the whole thing at the start of the day
     #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
-    steps = {"topiary":False,"selections":True,"uncs":False,"ratios":False,"opts":False,"cutflow":False}
+    steps = {"topiary":True,"selections":False,"uncs":False,"ratios":False,"opts":False,"cutflow":False}
     
     #cut list, Zpt, Hpt, met,btagger,btagwp
     cutlist = [#['0.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
                #['150.0','300.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
                #['0.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
-               #['150.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],##usual
-               ['150.0','0.0','0.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],#for naming in skims case
-               ]
+               ['150.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
+    ]
 
     lumi = "41.53"
 

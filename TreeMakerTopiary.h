@@ -245,9 +245,6 @@ public :
    vector<int>     *TriggerPrescales;
    vector<int>     *TriggerVersion;
    vector<TLorentzVector> *ZCandidates;
-   vector<TLorentzVector> *ZCandidatesMuMu;
-   vector<TLorentzVector> *ZCandidatesEE;
-   vector<TLorentzVector> *ZCandidatesEU;
 
    // List of branches
    TBranch        *b_RunNum;   //!
@@ -470,9 +467,6 @@ public :
    TBranch        *b_TriggerPrescales;   //!
    TBranch        *b_TriggerVersion;   //!
    TBranch        *b_ZCandidates;   //!
-   TBranch        *b_ZCandidatesMuMu;   //!
-   TBranch        *b_ZCandidatesEE;   //!
-   TBranch        *b_ZCandidatesEU;   //!
 
    //MC Only Variables
    vector<TLorentzVector> *GenElectrons;
@@ -813,10 +807,6 @@ void TreeMakerTopiary::Init(TTree *tree, int sampt, int year)
    TriggerPrescales = 0;
    TriggerVersion = 0;
    ZCandidates = 0;
-   ZCandidatesMuMu = 0;
-   ZCandidatesEE = 0;
-   ZCandidatesEU= 0;
-   
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -1039,9 +1029,6 @@ void TreeMakerTopiary::Init(TTree *tree, int sampt, int year)
    fChain->SetBranchAddress("TriggerPrescales", &TriggerPrescales, &b_TriggerPrescales);
    fChain->SetBranchAddress("TriggerVersion", &TriggerVersion, &b_TriggerVersion);
    fChain->SetBranchAddress("ZCandidates", &ZCandidates, &b_ZCandidates);
-   fChain->SetBranchAddress("ZCandidatesMuMu", &ZCandidatesMuMu, &b_ZCandidatesMuMu);
-   fChain->SetBranchAddress("ZCandidatesEE", &ZCandidatesEE, &b_ZCandidatesEE);
-   fChain->SetBranchAddress("ZCandidatesEU", &ZCandidatesEU, &b_ZCandidatesEU);
 
    if (sampt == 0) {
      fChain->SetBranchAddress("HLTMuonObjects", &HLTMuonObjects, &b_HLTMuonObjects);

@@ -44,7 +44,9 @@ if __name__=='__main__':
     
     bkguncs17  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
     bkguncs18  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Autumn18.AllZpAnomalonBkgs_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
-
+    #commented out for the SD mass sideband plot making
+    #bkguncs17  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
+    #bkguncs18  = pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Autumn18.AllZpAnomalonBkgs_unc_sideband_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
     datuncs17  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2017.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
 
     datuncs18  =pd.read_pickle('analysis_output_ZpAnomalon/'+args.date+'/Run2018.AllZpAnomalonData_unc_'+reg+'_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.pkl')
@@ -63,7 +65,6 @@ if __name__=='__main__':
         dat_info     = [ROOT.TFile(dat) for dat in datfiles]
         datuncs = (datuncs17**2+datuncs18**2)**(1/2)
         regiondescrip = reg+'_1718'
-        #print(bkg_info17[0]['binlist'][0]['tfile'])
         keys = bkg_info17[0]['binlist'][0]['tfile'].GetListOfKeys()
     if year == 17:
             lumi = 41.53
@@ -83,16 +84,15 @@ if __name__=='__main__':
             bkguncs = bkguncs18
             regiondescrip = reg+'_18'
             keys = bkg_info18[0]['binlist'][0]['tfile'].GetListOfKeys()
-            
 
     #Prep signals
     sig_colors = gecorg.colsFromPalette(sigfiles,ROOT.kCMYK)
     sig_info   = gecorg.prepSig(sigfiles,sig_colors,sig_xsec,lumi)
 
     #some beauty stuff
-    max_plot = 60.
+    max_plot = 50.
     min_plot = 0.
-    #max_plot = 100000000.
+    #max_plot = 500.
     #min_plot = 0.1
     titles = {
         "h_z_pt":"Z p_{T}",
@@ -114,26 +114,21 @@ if __name__=='__main__':
         "h_ns_jigm":"Jigsaw Mass Estimator NS",
         "h_weights":"event weights",
         "h_btag":"btag operating point",
-        "h_dphi_zh":"\Delta\phi_{ZH}",
-        "h_dphi_zmet":"\Delta\phi_{ZMET}",
-        "h_dphi_hmet":"\Delta\phi_{HMET}",
-        "h_dr_zh":"\Delta R(ZH)",
-        "h_dr_lmuh":"\Delta R(lmu,H)",
-        "h_dr_slmuh":"\Delta R(slmu,H)",
-        "h_dr_slmulmu":"\Delta R(slmu,lmu)",
+        "h_dphi_zh":"\delta \phi_{ZH}",
+        "h_dphi_zmet":"\delta \phi_{ZMET}",
+        "h_dphi_hmet":"\delta \phi_{HMET}"
     }
 
 
     #Make the stacks
     for i,key in enumerate(keys):
         hname = key.GetName()
-        #print(hname)
         if 'hnevents' in hname:
-            continue
+            break
         if 'h_weights' in hname:
-            continue
+            break
         
-        leg = ROOT.TLegend(0.50,0.50,0.88,0.88)
+        leg = ROOT.TLegend(0.55,0.55,0.88,0.88)
 
         #bkg stack
         hsbkg = ROOT.THStack('hsbkg','')
@@ -165,12 +160,12 @@ if __name__=='__main__':
                 
         #Prep the pads
         tc = ROOT.TCanvas("tc",hname,600,800)
-        p1 = ROOT.TPad("p1","stack_"+hname,0,0.3,1.0,1.0)
+        p1 = ROOT.TPad("p1","stack_"+hname,0,0.4,1.0,1.0)
         #p1.SetLogy()
         #p1.SetBottomMargin(0)
         p1.SetLeftMargin(0.15)
         p1.SetRightMargin(0.05)
-        p2 = ROOT.TPad("p2","signif_"+hname,0,0.0,1.0,0.3)
+        p2 = ROOT.TPad("p2","signif_"+hname,0,0.0,1.0,0.4)
         #p2.SetTopMargin(0)
         p2.SetRightMargin(.05)
         p2.SetLeftMargin(0.15)
@@ -187,7 +182,6 @@ if __name__=='__main__':
         hsbkg.Draw("HIST")#add PFC for palette drawing
         hsbkg.GetXaxis().SetTitle(titles[hname])
         hsbkg.GetXaxis().SetTitleSize(0.05)
-        hsbkg.GetXaxis().SetTitleOffset(0.85)
         hsbkg.GetYaxis().SetTitle("Events")
         hsbkg.GetYaxis().SetTitleSize(0.05)
         hsdat.Draw("HISTSAMEPE")
@@ -224,14 +218,15 @@ if __name__=='__main__':
             bincen = hsumb.GetBinCenter(ibin)
             bkgmc  = hsumb.GetBinContent(ibin)
             data   = hsdat.GetBinContent(ibin)
+            #
             binlist[ibin] = bincen
             if ibin != 0:
                 hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
                 datunc = datuncs[hname][ibin-1]
                 if bkgmc != 0 and data != 0:
                     ratiolist[ibin] = data/bkgmc
-             #       #pulllist[ibin]  = (data-bkgmc)/datunc
-             #       #rerrlist[ibin] = datunc/bkgmc
+                    #pulllist[ibin]  = (data-bkgmc)/datunc
+                    #rerrlist[ibin] = datunc/bkgmc
                     rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
                 if bkgmc == 0:
                     ratiolist[ibin] = -1

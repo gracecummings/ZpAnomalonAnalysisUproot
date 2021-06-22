@@ -37,21 +37,16 @@ if __name__=='__main__':
     btagwp        = args.btagwp
     reg           = args.region
 
-
     bkgupout17 = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,17)
-    bkgupout17sr = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_signalr',zptcut,hptcut,metcut,btagwp,17)
     bkgtopia17 = go.gatherBkg('analysis_output_ZpAnomalon/2021-03-26','topiary',0.0,250.0,0.0,0.0,17)
     bkgupout18 = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_'+reg,zptcut,hptcut,metcut,btagwp,18)
-    bkgupout18sr = go.gatherBkg('analysis_output_ZpAnomalon/'+args.date,'upout_signalr',zptcut,hptcut,metcut,btagwp,18)
-    bkgtopia18 = go.gatherBkg('analysis_output_ZpAnomalon/2021-04-27','topiary',0.0,250.0,0.0,0.0,18)
+    bkgtopia18 = go.gatherBkg('analysis_output_ZpAnomalon/2021-03-28','topiary',0.0,250.0,0.0,0.0,18)
     #bkguncs  = np.load('analysis_output_ZpAnomalon/'+args.date+'/Fall17.AllZpAnomalonBkgs_unc_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.npz')
     
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
     bkginfo17  = go.prepBkg(bkgupout17,bkgnames,bkgcols,'xsects_2017.ini',41.53,"yes")#gathers xs scales
     bkginfo18  = go.prepBkg(bkgupout18,bkgnames,bkgcols,'xsects_2017.ini',59.74,"yes")
-    bkginfo17sr  = go.prepBkg(bkgupout17sr,bkgnames,bkgcols,'xsects_2017.ini',41.53,"yes")#gathers xs scales
-    bkginfo18sr  = go.prepBkg(bkgupout18sr,bkgnames,bkgcols,'xsects_2017.ini',59.74,"yes")
 
     skimstr  = "Events with \( > 0\) fat jets and \( Z(\ell^{+}\ell^{-}) cand \)"
     trigstr  = "Events Pass trigger"
@@ -62,12 +57,11 @@ if __name__=='__main__':
     hptstr = "Events Passing Fat Jet \(p_{T} > "+str(hptcut)+"\)"
     btgstr = "Events Passing {0} btag WP".format(str(btagwp))
     sbstr  = "Events in side band"
-    srstr  = "Events in signal region"
     
     
-    cfdict = {metstr:{},zptstr:{},hptstr:{},btgstr:{},sbstr:{},skimstr:{},trigstr:{},zrecostr:{},hrecostr:{},srstr:{}}
-    cf17dict = {metstr:{},zptstr:{},hptstr:{},btgstr:{},sbstr:{},skimstr:{},trigstr:{},zrecostr:{},hrecostr:{},srstr:{}}
-    cf18dict = {metstr:{},zptstr:{},hptstr:{},btgstr:{},sbstr:{},skimstr:{},trigstr:{},zrecostr:{},hrecostr:{},srstr:{}}
+    cfdict = {metstr:{},zptstr:{},hptstr:{},btgstr:{},sbstr:{},skimstr:{},trigstr:{},zrecostr:{},hrecostr:{}}
+    cf17dict = {metstr:{},zptstr:{},hptstr:{},btgstr:{},sbstr:{},skimstr:{},trigstr:{},zrecostr:{},hrecostr:{}}
+    cf18dict = {metstr:{},zptstr:{},hptstr:{},btgstr:{},sbstr:{},skimstr:{},trigstr:{},zrecostr:{},hrecostr:{}}
     
     totorig = 0
     totskim = 0
@@ -79,7 +73,6 @@ if __name__=='__main__':
     totyhpt = 0
     totybtg = 0
     totysb  = 0
-    totysr  = 0
     
     totorig17 = 0
     totskim17 = 0
@@ -91,7 +84,6 @@ if __name__=='__main__':
     totyhpt17 = 0
     totybtg17 = 0
     totysb17  = 0
-    totysr17  = 0
     
     totorig18 = 0
     totskim18 = 0
@@ -103,14 +95,11 @@ if __name__=='__main__':
     totyhpt18 = 0
     totybtg18 = 0
     totysb18  = 0
-    totysr18  = 0
-    
+
     for bkg in bkginfo17:
         toplist17 = []
         toplist18 = []
         uplist18  = []
-        srup18    = []
-        srup17    = []
         for top in bkgtopia17:
             if bkg["name"] in top[0]:
                 toplist17 = top
@@ -120,12 +109,6 @@ if __name__=='__main__':
         for up in bkginfo18:
             if bkg["name"] == up["name"]:
                 uplist18 = up
-        for up in bkginfo18sr:
-            if bkg["name"] == up["name"]:
-                srup18 = up
-        for up in bkginfo17sr:
-            if bkg["name"] == up["name"]:
-                srup17 = up
 
         origevnts = 0
         yieldskim = 0
@@ -161,14 +144,10 @@ if __name__=='__main__':
         yieldbtag18 = 0
         yieldsb18   = 0
 
-        sryield18 = 0
-        sryield17 = 0
         for b,bkgbin in enumerate(bkg["binlist"]):
             reltop17 = 'str'
             reltop18 = 'str'
             relup18  = {}
-            relsrup18 = {}
-            relsrup17 = {}
             for bkgtopia in toplist17:
                 if bkgbin["binname"] in bkgtopia:
                     reltop17 = bkgtopia
@@ -178,12 +157,6 @@ if __name__=='__main__':
             for bkgbin18 in uplist18["binlist"]:
                 if bkgbin["binname"] in bkgbin18["binname"]:
                     relup18 = bkgbin18
-            for sr18 in srup18["binlist"]:
-                if bkgbin["binname"] in sr18["binname"]:
-                    relsrup18 = sr18
-            for sr17 in srup17["binlist"]:
-                if bkgbin["binname"] in sr17["binname"]:
-                    relsrup17 = sr17
             
             topiary       = ROOT.TFile(reltop17)        
             scale         = bkgbin["scale"]
@@ -199,9 +172,6 @@ if __name__=='__main__':
             evntspasshrec17 = topiary.Get('hHpass').GetBinContent(1)*scale
 
             etot18,eskim18,etrig18,ezrec18,ehrec18,emet18,ezpt18,ehpt18,ebtag18,esb18 = gatherYields(reltop18,relup18)
-
-            sryield18 += float(str(relsrup18["tfile"].Get('hnevents_sr').GetString()))*scale
-            sryield17 += float(str(relsrup17["tfile"].Get('hnevents_sr').GetString()))*scale
 
             origevnts += (evntstot17+etot18)
             yieldskim += (evntsinskim17+eskim18)
@@ -247,8 +217,7 @@ if __name__=='__main__':
         totyhpt += yieldhpt
         totybtg += yieldbtag
         totysb  += yieldsb
-        totysr  += (sryield17+sryield18)
-        
+
         totorig17 += origevnts17
         totskim17 += yieldskim17
         tottrig17 += yieldtrig17
@@ -259,7 +228,6 @@ if __name__=='__main__':
         totyhpt17 += yieldhpt17
         totybtg17 += yieldbtag17
         totysb17  += yieldsb17
-        totysr17   += sryield17
 
         totorig18 += origevnts18
         totskim18 += yieldskim18
@@ -271,8 +239,7 @@ if __name__=='__main__':
         totyhpt18 += yieldhpt18
         totybtg18 += yieldbtag18
         totysb18  += yieldsb18
-        totysr18  += sryield18
-        
+
         cfdict[skimstr][bkg["name"]] = round(yieldskim,2)
         cfdict[trigstr][bkg["name"]] = round(yieldtrig,2)
         cfdict[zrecostr][bkg["name"]] = round(yieldzrec,2)
@@ -282,7 +249,6 @@ if __name__=='__main__':
         cfdict[hptstr][bkg["name"]] = round(yieldhpt,2)
         cfdict[btgstr][bkg["name"]] = round(yieldbtag,2)
         cfdict[sbstr][bkg["name"]] = round(yieldsb,2)
-        cfdict[srstr][bkg["name"]] = round((sryield17+sryield18),2)
 
         cf17dict[skimstr][bkg["name"]] = round(yieldskim17,2)
         cf17dict[trigstr][bkg["name"]] = round(yieldtrig17,2)
@@ -293,7 +259,6 @@ if __name__=='__main__':
         cf17dict[hptstr][bkg["name"]] = round(yieldhpt17,2)
         cf17dict[btgstr][bkg["name"]] = round(yieldbtag17,2)
         cf17dict[sbstr][bkg["name"]] = round(yieldsb17,2)
-        cf17dict[srstr][bkg["name"]] = round(sryield17,2)
 
         cf18dict[skimstr][bkg["name"]] = round(yieldskim18,2)
         cf18dict[trigstr][bkg["name"]] = round(yieldtrig18,2)
@@ -304,7 +269,6 @@ if __name__=='__main__':
         cf18dict[hptstr][bkg["name"]] = round(yieldhpt18,2)
         cf18dict[btgstr][bkg["name"]] = round(yieldbtag18,2)
         cf18dict[sbstr][bkg["name"]] = round(yieldsb18,2)
-        cf18dict[srstr][bkg["name"]] = round(sryield18,2)
 
 
 
@@ -317,7 +281,6 @@ if __name__=='__main__':
     cfdict[hptstr]["totbkg"] = round(totyhpt,2)
     cfdict[btgstr]["totbkg"] = round(totybtg,2)
     cfdict[sbstr]["totbkg"]  = round(totysb,2)
-    cfdict[srstr]["totbkg"]  = round(totysr,2)
 
     cf17dict[skimstr]["totbkg"] = round(totskim17,2)
     cf17dict[trigstr]["totbkg"] = round(tottrig17,2)
@@ -328,7 +291,6 @@ if __name__=='__main__':
     cf17dict[hptstr]["totbkg"] = round(totyhpt17,2)
     cf17dict[btgstr]["totbkg"] = round(totybtg17,2)
     cf17dict[sbstr]["totbkg"]  = round(totysb17,2)
-    cf17dict[srstr]["totbkg"]  = round(totysr17,2)
 
     cf18dict[skimstr]["totbkg"] = round(totskim18,2)
     cf18dict[trigstr]["totbkg"] = round(tottrig18,2)
@@ -339,7 +301,7 @@ if __name__=='__main__':
     cf18dict[hptstr]["totbkg"] = round(totyhpt18,2)
     cf18dict[btgstr]["totbkg"] = round(totybtg18,2)
     cf18dict[sbstr]["totbkg"]  = round(totysb18,2)
-    cf18dict[srstr]["totbkg"]  = round(totysr18,2)
+
     #gets cuts in order of loosest to tightest based on yield
     cutordered = sorted(cfdict,key= lambda x : -1*cfdict[x]["totbkg"])
 
@@ -362,7 +324,7 @@ if __name__=='__main__':
         cftab.write('\\')
         cftab.write('\n')
     cftab.write("\hline\n")
-    cftab.write("Events in signal region & "+str(cfdict[srstr]['ZZTo2L2Q'])+' & '+str(cfdict[srstr]['WZTo2L2Q'])+' & '+str(cfdict[srstr]['TT'])+' & '+str(cfdict[srstr]['DYJetsToLL'])+' & '+str(cfdict[srstr]['totbkg'])+' \\')
+    cftab.write("Events in signal region & "+str(round(cfdict[btgstr]['ZZTo2L2Q']-cfdict[sbstr]['ZZTo2L2Q'],2))+' & '+str(round(cfdict[btgstr]['WZTo2L2Q']-cfdict[sbstr]['WZTo2L2Q'],2))+' & '+str(round(cfdict[btgstr]['TT']-cfdict[sbstr]['TT'],2))+' & '+str(round(cfdict[btgstr]['DYJetsToLL']-cfdict[sbstr]['DYJetsToLL'],2))+' & '+str(round(cfdict[btgstr]['totbkg']-cfdict[sbstr]['totbkg'],2))+' \\')
     cftab.write('\\')
     cftab.write('\n')
     cftab.write("\end{tabular}\n")

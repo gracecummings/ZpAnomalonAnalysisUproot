@@ -350,9 +350,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //Z exploration
       unsigned int nselmu = SelectedMuons->size();
       unsigned int nselel = SelectedElectrons->size();
-      //unsigned int nZmumu = ZCandidatesMuMu->size();
-      //unsigned int nZee = ZCandidatesEE->size();
-      //unsigned int nZeu = ZCandidatesEU->size();
+      unsigned int nZmumu = ZCandidatesMuMu->size();
+      unsigned int nZee = ZCandidatesEE->size();
+      unsigned int nZeu = ZCandidatesEU->size();
       TLorentzVector leadmu;
       TLorentzVector subleadmu;
       double muptmax = 0;
@@ -371,7 +371,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	}
       }
 
-      /*
+      
       if (nZmumu > 0 && nZee > 0) {
 	cmixeemumu += 1;
 	std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(ee)!"<<std::endl;
@@ -401,7 +401,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //std::cout<<"   The subldig muon pt is: "<<subleadmu.Pt()<<std::endl;
       //std::cout<<"   The dimuon pt is      : "<<(leadmu+subleadmu).Pt()<<std::endl;
       
-      */
+      
       
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();

@@ -6,6 +6,9 @@ import configparser
 import pandas as pd
 from datetime import date
 
+
+#added to get a new commit
+
 def sampleType(sampstring):
     #Make numerical code for type of sample
     if "Run" in sampstring:

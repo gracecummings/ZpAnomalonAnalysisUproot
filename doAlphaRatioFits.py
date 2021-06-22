@@ -62,7 +62,7 @@ if __name__=='__main__':
         
     
     #will replace with command line options
-    path    = 'analysis_output_ZpAnomalon/2021-04-28/'
+    path    = 'analysis_output_ZpAnomalon/2021-06-22_alphaMethStuff/'
     zptcut  = '150.0'
     hptcut  = '300.0'
     metcut  = '200.0'
@@ -74,6 +74,7 @@ if __name__=='__main__':
     tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
     empty = tf1.Get('h_zp_jigm')
     empty.Reset("ICESM")#creates an empty hist with same structure
+    print(type(empty))
     empty2 = empty.Clone()
     empty3 = empty.Clone()
     empty4 = empty.Clone()
@@ -82,8 +83,12 @@ if __name__=='__main__':
     empty7 = empty.Clone()
     empty8 = empty.Clone()
     empty9 = empty.Clone()
+
+    print(bkgs.bkgs["ZZTo2L2Q"][18]["sb"])
+    print(bkgs.bkgs["ZZTo2L2Q"][17]["sb"])
     
     hsbdy = bkgs.getAddedHist(empty,"DYJetsToLL","sb","h_zp_jigm")
+    print(type(hsbdy))
     hsrdy = bkgs.getAddedHist(empty2,"DYJetsToLL","sr","h_zp_jigm")
     hsbtt = bkgs.getAddedHist(empty3,"TT","sb","h_zp_jigm")
     hsrtt = bkgs.getAddedHist(empty6,"TT","sr","h_zp_jigm")
@@ -91,10 +96,10 @@ if __name__=='__main__':
     hsrzz = bkgs.getAddedHist(empty7,"ZZTo2L2Q","sr","h_zp_jigm")
     hsbwz = bkgs.getAddedHist(empty5,"WZTo2L2Q","sb","h_zp_jigm")
     hsrwz = bkgs.getAddedHist(empty8,"WZTo2L2Q","sr","h_zp_jigm")
-    hsbvv = hsbzz.Clone()
-    hsbvv.Add(hsbwz)
-    hsrvv = hsrzz.Clone()
-    hsrvv.Add(hsrwz)
+    #hsbvv = hsbzz.Clone()
+    #hsbvv.Add(hsbwz)
+    #hsrvv = hsrzz.Clone()
+    #hsrvv.Add(hsrwz)
 
     hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
     hdatsbsub = hdatsb.Clone()

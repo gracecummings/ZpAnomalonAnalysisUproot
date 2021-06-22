@@ -9,6 +9,7 @@
 #include "TVirtualFitter.h"
 #include <iostream>
 #include <cstring>
+#include <cmath>
 
 Double_t landauModel(Double_t *X, Double_t *par){
   double x =X[0];  // get ring of pointer/array notation
@@ -158,12 +159,16 @@ double GetError(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixD 
 TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
   const Int_t nPars=2;
   Double_t pars[nPars], grad[nPars];
+  int nbins  = hist->GetNbinsX();
   int binmax = hist->GetMaximumBin();
   double max = hist->GetXaxis()->GetBinCenter(binmax);
   double amp = hist->GetMaximum();
   double_t lambda = guessDecayConstant(hist,amp);
-  
-  TH1D *errhist = new TH1D("errhist","Histogram with 2 sigma band for fit",100,500,5000);
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+
+  TH1D *errhist = new TH1D("errhist","Histogram with 2 sigma band for fit",nbins,histlowed,histhied);
   TF1 *expfit = new TF1(name,expModel,lowr,highr,nPars);
 
   expfit->SetParameter(0,TMath::Log(amp));
@@ -171,14 +176,30 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,i
   hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
   fitout->GetParameters(pars);
+
   ROOT::Math::WrappedTF1 wfit(*fitout);
 
+  //std::cout<<"Bin Width "<<binwidth<<std::endl;
+  //std::cout<<"Bin number "<<hist->GetNbinsX()<<std::endl;
+  //std::cout<<"First bin low edge "<<hist->GetBinLowEdge(1)<<std::endl;
+  //std::cout<<"Last  bin low edge "<<hist->GetBinLowEdge(hist->GetNbinsX())+binwidth<<std::endl;
+
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if ((fitplace - fitplacer) < 0.5) {
+      fitstartbin = fitplacer+1;
+    }
+  else {
+    fitstartbin = fitplacer;
+  }
+    
   // Get the Covariance matrix
   TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
   assert (nPars == fitter->GetNumberFreeParameters());
   TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
-  int finalbin = (highr-500)/45;
-  for (int ib=23;ib<=finalbin;ib++){
+  int finalbin = (highr-histlowed)/binwidth;
+  for (int ib = fitstartbin;ib<=finalbin;ib++){
     double x = hist->GetBinCenter(ib);
     double sigma = GetError(wfit,x,pars,*COV,nPars);
     errhist->SetBinContent(ib,(*fitout)(x));
@@ -186,16 +207,14 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,i
   }
 
   //debug errors to show values are the same
-  //for (int ib=23;ib<=56;ib++){
-  //  double x = hist->GetBinCenter(ib);
-  //  double fitval = (*fitout)(x);
-  //  double sigma = GetError(wfit,x,pars,*COV,nPars);
-  //  std::cout<<"sigma on the fit point is "<<sigma<<std::endl;
-  //  std::cout<<"             fit point is "<<fitval<<std::endl;
-  // std::cout<<"          err hist val is "<<errhist->GetBinContent(ib)<<std::endl;
-  //  std::cout<<"          err hist err is "<<errhist->GetBinError(ib)<<std::endl;
-  //  std::cout<<"           up hist val is "<<errup->GetBinContent(ib)<<std::endl;
-  // std::cout<<"         up hist swing is "<<errup->GetBinContent(ib)-fitval<<std::endl;
+  //for (int ib=12;ib<=finalbin;ib++){
+  //double x = hist->GetBinCenter(ib);
+  // double fitval = (*fitout)(x);
+  //double sigma = GetError(wfit,x,pars,*COV,nPars);
+  //std::cout<<"sigma on the fit point is "<<2*sigma<<std::endl;
+  //std::cout<<"             fit point is "<<fitval<<std::endl;
+  //std::cout<<"          err hist val is "<<errhist->GetBinContent(ib)<<std::endl;
+  //std::cout<<"          err hist err is "<<errhist->GetBinError(ib)<<std::endl;
   //}
 
   return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error

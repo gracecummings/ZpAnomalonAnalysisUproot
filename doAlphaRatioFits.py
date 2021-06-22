@@ -83,11 +83,7 @@ if __name__=='__main__':
     empty8 = empty.Clone()
     empty9 = empty.Clone()
 
-    #print(bkgs.bkgs["ZZTo2L2Q"][18]["sb"])
-    #print(bkgs.bkgs["ZZTo2L2Q"][17]["sb"])
-    
     hsbdy = bkgs.getAddedHist(empty,"DYJetsToLL","sb","h_zp_jigm")
-    print(type(hsbdy))
     hsrdy = bkgs.getAddedHist(empty2,"DYJetsToLL","sr","h_zp_jigm")
     hsbtt = bkgs.getAddedHist(empty3,"TT","sb","h_zp_jigm")
     hsrtt = bkgs.getAddedHist(empty6,"TT","sr","h_zp_jigm")
@@ -95,7 +91,6 @@ if __name__=='__main__':
     hsrzz = bkgs.getAddedHist(empty7,"ZZTo2L2Q","sr","h_zp_jigm")
     hsbwz = bkgs.getAddedHist(empty5,"WZTo2L2Q","sb","h_zp_jigm")
     hsrwz = bkgs.getAddedHist(empty8,"WZTo2L2Q","sr","h_zp_jigm")
-    print(type(hsbzz))
     hsbvv = hsbzz.Clone()
     hsbvv.Add(hsbwz)
     hsrvv = hsrzz.Clone()
@@ -116,12 +111,9 @@ if __name__=='__main__':
     tc.cd()
     p21.Draw()
     p21.cd()
-    hsbdy2 = hsbdy.Clone()
-    sbfit = ROOT.expFit(hsbdy,"sbl","QR0+",1500,5000)
-    #sbfit2 = ROOT.expNFit(hsbdy2,"sbl","QR0+",1500,5000)
-    #needs to be played with to get the plotting order right
-    #needs better errors
-    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","QR0+",2,1500,5000)
+    #hsbdy2 = hsbdy.Clone()
+    sbfit = ROOT.expFit(hsbdy,"sbl","R0+",1500,5000)
+    uncbands = ROOT.expFitErrBands(hsbdy,"sbl","R0+",2,1500,5000)
     plotMzp(p21,hsbdy)
     CMS_lumi.CMS_lumi(p21,4,13)
     p21.Update()
@@ -131,11 +123,8 @@ if __name__=='__main__':
     uncbands.SetMarkerSize(0)
     sbfit.SetMarkerStyle(8)
     sbfit.SetMarkerSize(0)
-    #sbfit2.SetLineColor(ROOT.kMagenta)
-    #sbfit2.SetMarkerStyle(8)
-    #sbfit2.SetMarkerSize(0)
     uncbands.Draw("e4same")#err bands are 2 sigma bands
-    #sbfit2.Draw("SAME")
+    #uncbands.Draw()#err bands are 2 sigma bands
     sbfit.Draw("SAME")
     hsbdy.Draw("SAME")
 
@@ -157,10 +146,10 @@ if __name__=='__main__':
     p11.Draw()
     p11.cd()
     plotMzp(p11,hsrdy)
-    srdyunc = ROOT.expFitErrBands(hsrdy,"sbl","QR0+",2,1500,4000)
+    srdyunc = ROOT.expFitErrBands(hsrdy,"sbl","R0+",2,1500,4000)
     srdyunc.SetFillColor(2)
     srdyunc.SetMarkerSize(0)
-    srfit = ROOT.expFit(hsrdy,"srl","QR0+",1500,4000)#be aware, diff range from err and sb
+    srfit = ROOT.expFit(hsrdy,"srl","R0+",1500,4000)#be aware, diff range from err and sb
     CMS_lumi.CMS_lumi(p11,4,13)
     srdyunc.Draw("e4,same,c")
     srfit.Draw("same")
@@ -229,7 +218,7 @@ if __name__=='__main__':
     tc.cd()
     p12.Draw()
     p12.cd()
-    sbdatfit = ROOT.expFit(hdatsb,"sbl","R0+",1500,5000)
+    sbdatfit = ROOT.expFit(hdatsb,"sbl","QR0+",1500,5000)
     sbdatunc = ROOT.expFitErrBands(hdatsb,"sbl","QR0+",2,1500,5000)
     sbdatunc.SetFillColor(2)
     sbdatunc.SetMarkerSize(0)
@@ -348,7 +337,7 @@ if __name__=='__main__':
     tc2.cd()
     pd112.Draw()
     pd112.cd()
-    sbdatsubfit = ROOT.expFit(hdatsbsub,"sbl","R0+",1500,2500)
+    sbdatsubfit = ROOT.expFit(hdatsbsub,"sbl","QR0+",1500,2500)
     sbdatsubunc = ROOT.expFitErrBands(hdatsbsub,"sbl","QR0+",2,1500,2500)
     sbdatsubunc.SetFillColor(2)
     sbdatsubunc.SetMarkerSize(0)

@@ -86,35 +86,23 @@ if __name__=='__main__':
                 b'event_weight',
     ]
 
-    
-    #events = up3.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
-    events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
+   
+    #events = up3.pandas.iterate(inputfiles[:1],'PreSelection;1',branches=branches)
+    tree = up3.open(inputfiles[0])['PreSelection;1']
+    events = tree.pandas.df(branches=branches)
 
+    sddf   = events[events['hCandidate_sd'] > sdmcut]
+    metdf  = sddf[sddf['METclean'] > metcut]
+    zptdf  = metdf[metdf['ZCandidate_pt'] > zptcut]
+    hptdf  = zptdf[zptdf['hCandidate_pt'] > hptcut]
+    btdf   = hptdf[hptdf['hCandidate_'+btaggr] > float(btagwp)]
+    srup   = btdf[btdf['hCandidate_sd'] > 70.]
+    bldf   = srup[srup['hCandidate_sd'] < 150.]#full blinded region
+    srdf   = bldf[bldf['hCandidate_sd'] > 110.]#Higgs Peak
+    lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
+    highsb = btdf[btdf['hCandidate_sd'] >= 150.]
+    sbdf   = pd.concat([lowsb,highsb])
 
-    #print(events['event_weight'])
-    
-    #print(jets.ls))
-    
-    for b in events:
-        #print(type(b))
-        #print(b.keys())
-        #print(b)
-        print("Doing SD mass lower cut of :" ,sdmcut)
-        #do some cuts
-        sddf   = b[b['hCandidate_sd'] > sdmcut]
-        metdf  = sddf[sddf['METclean'] > metcut]
-        zptdf  = metdf[metdf['ZCandidate_pt'] > zptcut]
-        hptdf  = zptdf[zptdf['hCandidate_pt'] > hptcut]
-        btdf   = hptdf[hptdf['hCandidate_'+btaggr] > float(btagwp)]
-        
-        srup   = btdf[btdf['hCandidate_sd'] > 70.]
-        bldf   = srup[srup['hCandidate_sd'] < 150.]#full blinded region
-        srdf   = bldf[bldf['hCandidate_sd'] > 110.]#Higgs Peak
-        lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
-        highsb = btdf[btdf['hCandidate_sd'] >= 150.]
-        sbdf   = pd.concat([lowsb,highsb])
-
-    #This will have to come out of the loop if true iteration is added
     region = "sideband"
     if stype != 0:
         if sr:

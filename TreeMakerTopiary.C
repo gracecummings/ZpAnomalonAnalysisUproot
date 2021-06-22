@@ -268,10 +268,57 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //Z exploration
       unsigned int nselmu = SelectedMuons->size();
       unsigned int nselel = SelectedElectrons->size();
-      if (nselmu > 0  && nselel == 0) {
+      unsigned int nZmumu = ZCandidatesMuMu->size();
+      unsigned int nZee = ZCandidatesEE->size();
+      unsigned int nZeu = ZCandidatesEU->size();
+      TLorentzVector leadmu;
+      TLorentzVector subleadmu;
+      double muptmax = 0;
+      if (nselmu > 0  && nselel == 0) {//Only a dimuon Z in the event
 	mumuchan = true;
+	std::vector<TLorentzVector>::iterator muit;
+	for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
+	  if (muit->Pt() > muptmax) {
+	    muptmax = muit->Pt();
+	    leadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());
+	 }
+	  else {
+	    subleadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());;
+	 }
+	    
+	}
       }
 
+      
+      if (nZmumu > 0 && nZee > 0) {
+	cmixeemumu += 1;
+	std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(ee)!"<<std::endl;
+	std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+      if (nZmumu > 0 && nZeu > 0) {
+	cmixmumuemu += 1;
+	//std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(emu)!"<<std::endl;
+	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	//std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+      if (nZee > 0 && nZeu > 0) {
+	cmixeeemu += 1;
+	//std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
+	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	//std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+      if (nZee ==  0 && nZmumu ==  0 && nZeu > 0) {
+	cemusolo += 1;
+	//std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
+	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	//std::cout<<"         num of el: "<<nselel<<std::endl;
+      }
+
+      //std::cout<<"   The leading muon pt is: "<<leadmu.Pt()<<std::endl;
+      //std::cout<<"   The subldig muon pt is: "<<subleadmu.Pt()<<std::endl;
+      //std::cout<<"   The dimuon pt is      : "<<(leadmu+subleadmu).Pt()<<std::endl;
+      
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
       TLorentzVector theZ;

@@ -131,12 +131,12 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag="yes"):
         if bkg_channel == "DYJetsToLL":
             #orders smallest HT to largest
             bkg.sort(key = orderDY)
+        elif bkg_channel == "TT":
+            #sorts in alphabetical order 
+            bkg.sort()                                                     
         else:
             if flag == "no":
                 break
-        #elif bkg_channel == "TT":
-            #orders smallest # events (xs) to largest
-        #    bkg.sort(key = orderFall17TT)                                                     
         #loop through each process bin or categrory
         for s,bkgbin in enumerate(bkg):
             bkgbin_dict = {}
@@ -147,7 +147,7 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag="yes"):
             bkgbin_dict["scale"]   = findScale(float(bkgbin_sampsize),bkgbin_xs,lumi)
             bkgbin_dict["color"]   = bkg_colors[b]
             #get the number of passing events
-            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_btag').GetString()))#last cut hist
+            bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_pZ').GetString()))#last cut hist ##goes back to btag
             bkg_expyield          += bkgbin_yield*bkgbin_dict["scale"]
             bkg_binlist.append(bkgbin_dict)
             bkg_binsum["expyield"] = bkg_expyield
@@ -315,6 +315,7 @@ class backgrounds:
         bkg = self.bkgs[samp]
         xspairs = self.config.items(samp)
         bkgdfs  = []
+        holder = []
         
         for year in years:
             if year == 17:
@@ -327,7 +328,12 @@ class backgrounds:
             if "DYJetsToLL" in samp:
                 files.sort(key = orderDY)
                 errs.sort(key = orderDY)
+            if "TTTo" in samp:
+                files.sort()
+                errs.sort()
             for i,f in enumerate(files):
+                fparts = f.split("/")
+                name = fparts[-1]
                 tf = ROOT.TFile(f)
                 numevents = float(str(tf.Get('hnevents').GetString()))
                 xs = float(xspairs[i][1].split()[0])*1000#Into Femtobarn
@@ -342,6 +348,9 @@ class backgrounds:
                 sqrddf = sdf**2
                 bkgdfs.append(sqrddf)
 
+                debugstring = name+" "+str(xs)+" "+str(scale)
+                holder.append(debugstring)
+
         uncsqdDYJetsdf = sum(bkgdfs)
         uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
 
@@ -353,7 +362,7 @@ class backgrounds:
                 binerr = uncDYJetsdf['h_zp_jigm'][ibin-1]
                 hist.SetBinError(ibin,binerr)
 
-        return hist
+        return hist,holder
 
     #Add something that does this nicely within this class
     #no craziness
@@ -448,6 +457,7 @@ class signal:
         #gather signal plots
         self.sigsr = glob.glob(str(path)+'/Zp*_upout_signalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
         self.sigsb = glob.glob(str(path)+'/Zp*_upout_sideband*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
+        self.sigfl = glob.glob(str(path)+'/Zp*_upout_totalr*_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'.root')
         
         sig_colors = colsFromPalette(self.sigsr,ROOT.kCMYK)
         

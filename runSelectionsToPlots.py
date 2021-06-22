@@ -6,7 +6,8 @@ if __name__=='__main__':
     #steps to run
     #assumes you have run the whole thing at the start of the day
     #steps = {"selections":True,"uncs":True,"ratios":True,"opts":True}
-    steps = {"topiary":True,"selections":False,"uncs":False,"ratios":False,"opts":False,"cutflow":False}
+    steps = {"topiary":False,"selections":False,"uncs":False,"ratios":True,"opts":False,"cutflow":False}
+
     
     #cut list, Zpt, Hpt, met,btagger,btagwp
     cutlist = [['150.0','300.0','200.0','DeepMassDecorrelTagZHbbvsQCD','0.8'],
@@ -72,7 +73,7 @@ if __name__=='__main__':
         if steps["selections"]:
             for samp in samplelist:
                 subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0]])
-                subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-sr","True"])
+                #subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-sr","True"])
                 #subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-c","True"])
 
         for era in eras:
@@ -85,7 +86,7 @@ if __name__=='__main__':
         #stack all  
         if steps["ratios"]:
             #subprocess.run(["python","stackAll.py","-L",era[1],"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y",era[0]])
-            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","totalr"])
+            subprocess.run(["python","stackAll.py","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-r","sideband"])#add -y for a specific year
             #subprocess.run(["python","stackAll.py","-L","41.53","-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today()),"-y","17")
             #subprocess.run(["python","stackAll.py","-L",lumi,"-x","10.0","-m",cut[2],"-z",cut[0],"-j",cut[1],"-wp",cut[4],"-date",str(date.today())+'/signalregion_only/'])
 

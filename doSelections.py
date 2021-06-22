@@ -250,7 +250,3 @@ if __name__=='__main__':
     rootOutFile["hnevents_ph"]   = str(len(hptdf))
     rootOutFile["hnevents_sb"]   = str(len(sbdf))
     rootOutFile["hnevents_btag"] = str(len(btdf))
-
-    if stype != 0:
-        if sr:
-            rootOutFile["hnevents_sr"]   = str(len(srdf))

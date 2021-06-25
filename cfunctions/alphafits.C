@@ -185,6 +185,25 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
 }
 
 
+///////Development for normalization//
+
+Double_t poly5Model(Double_t *X, Double_t *par){
+  double x = X[0];
+  Double_t fitval = par[0]+par[1]*x+par[2]*std::pow(x,2.0)+par[3]*std::pow(x,3.0)+par[4]*std::pow(x,4.0)+par[5]*std::pow(x,5);
+  return fitval;
+}
+
+TF1 * poly5Fit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+  TF1 *poly5fit = new TF1(name,poly5Model,lowr,highr,6);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
+///////Unused Functions/////
+
+/*
 // this fucntion take 6 parameters 0..2 describe landau1
 // 3..5 describe landau2
 // returns landau1(x) / landau2(x)
@@ -245,3 +264,5 @@ TF1 * alphaRatioMakerLandau(TH1D *hsb, TH1D *hsr){
   //alpha->Draw();
   return alpha;
 }
+*/
+

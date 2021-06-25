@@ -40,12 +40,15 @@ def plotMsd(pad,hist,islog=False,logmin=0.1,isData=False):
     xax.SetTitle("m_{j}")
     xax.SetTitleSize(0.05)
     xax.SetLabelSize(0.035)
-    yax.SetTitle("Events / 45 GeV")
+    yax.SetTitle("Events / 5 GeV")
     yax.SetTitleSize(0.05)
     yax.SetLabelSize(0.04)
     yax.SetLabelOffset(0.015)
     
     hist.Draw(drawopts)
+
+ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
+ROOT.gSystem.Load("cfunctions/alphafits_C")
 
 if __name__=='__main__':
 
@@ -89,6 +92,9 @@ if __name__=='__main__':
     
     hdatsb = data.getAddedHist(empty9,"sb","h_h_sd")
 
+    #makes some fits
+    dyfit = ROOT.poly5Fit(htrdy,"sbl","R0+",30,400)
+
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
     p11 = ROOT.TPad("p11","dysr",0,0,0.33,1.0)
@@ -101,6 +107,7 @@ if __name__=='__main__':
     p11.cd()
     plotMsd(p11,htrdy)
     CMS_lumi.CMS_lumi(p11,4,13)
+    dyfit.Draw('same')
     p11.Update()
     
     tc.cd()

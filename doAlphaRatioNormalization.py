@@ -94,6 +94,7 @@ if __name__=='__main__':
 
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"sbl","R0+",30,400)
+    ttfit = ROOT.gaus2Fit(htrtt,"sbl","R0+",30,250)
 
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
@@ -115,6 +116,7 @@ if __name__=='__main__':
     p12.cd()
     plotMsd(p12,htrtt)
     CMS_lumi.CMS_lumi(p12,4,13)
+    ttfit.Draw("same")
     p12.Update()
 
     tc.cd()

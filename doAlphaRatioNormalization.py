@@ -17,6 +17,36 @@ def setLogAxis(pad,islog):
     if islog:
         pad.SetLogy()
 
+def plotMsd(pad,hist,islog=False,logmin=0.1,isData=False):
+    maxi = hist.GetMaximum()
+    mr   = round(maxi,0)
+    histmax = mr+mr*0.30
+    histmin = 0
+    if islog:
+        histmax = mr*10
+        histmin = logmin
+    hist.SetMaximum(histmax)
+    hist.SetMinimum(histmin)
+    hist.SetMarkerStyle(8)
+    hist.SetMarkerSize(0.5)
+    if isData:
+        hist.SetMarkerColor(ROOT.kBlack)
+        drawopts = "SAMEE2"
+    else:
+        hist.SetMarkerColor(ROOT.kBlue)
+        drawopts = "E1"
+    xax = hist.GetXaxis()
+    yax = hist.GetYaxis()
+    xax.SetTitle("m_{j}")
+    xax.SetTitleSize(0.05)
+    xax.SetLabelSize(0.035)
+    yax.SetTitle("Events / 45 GeV")
+    yax.SetTitleSize(0.05)
+    yax.SetLabelSize(0.04)
+    yax.SetLabelOffset(0.015)
+    
+    hist.Draw(drawopts)
+
 if __name__=='__main__':
 
     #will replace with command line options
@@ -69,15 +99,24 @@ if __name__=='__main__':
     tc.cd()
     p11.Draw()
     p11.cd()
-    htrdy.Draw()
+    plotMsd(p11,htrdy)
+    CMS_lumi.CMS_lumi(p11,4,13)
+    p11.Update()
+    
     tc.cd()
     p12.Draw()
     p12.cd()
-    htrtt.Draw()
+    plotMsd(p12,htrtt)
+    CMS_lumi.CMS_lumi(p12,4,13)
+    p12.Update()
+
     tc.cd()
     p13.Draw()
     p13.cd()
-    htrvv.Draw()
+    plotMsd(p13,htrvv)
+    CMS_lumi.CMS_lumi(p13,4,13)
+    p13.Update()
+
     tc.cd()
 
     normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))

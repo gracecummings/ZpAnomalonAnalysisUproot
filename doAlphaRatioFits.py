@@ -41,7 +41,7 @@ def plotMzp(pad,hist,islog=False,logmin=0.1,isData=False):
     xax.SetTitle("M_{Z'}")
     xax.SetTitleSize(0.05)
     xax.SetLabelSize(0.035)
-    yax.SetTitle("Events / 45 GeV")
+    yax.SetTitle("Events / 90 GeV")
     yax.SetTitleSize(0.05)
     yax.SetLabelSize(0.04)
     yax.SetLabelOffset(0.015)

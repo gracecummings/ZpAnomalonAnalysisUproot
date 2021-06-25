@@ -54,5 +54,31 @@ if __name__=='__main__':
     htrtt = bkgs.getAddedHist(empty6,"TT","tr","h_h_sd")
     htrzz = bkgs.getAddedHist(empty7,"ZZTo2L2Q","tr","h_h_sd")
     htrwz = bkgs.getAddedHist(empty8,"WZTo2L2Q","tr","h_h_sd")
+    htrvv = htrzz.Clone()
+    htrvv.Add(htrwz)
     
     hdatsb = data.getAddedHist(empty9,"sb","h_h_sd")
+
+    #make some output
+    tc = ROOT.TCanvas("tc","shapes",1100,400)
+    p11 = ROOT.TPad("p11","dysr",0,0,0.33,1.0)
+    p12 = ROOT.TPad("p12","ttsr",0.33,0,0.66,1.0)
+    p13 = ROOT.TPad("p13","vvsr",0.66,0,1.0,1.0)
+
+
+    tc.cd()
+    p11.Draw()
+    p11.cd()
+    htrdy.Draw()
+    tc.cd()
+    p12.Draw()
+    p12.cd()
+    htrtt.Draw()
+    tc.cd()
+    p13.Draw()
+    p13.cd()
+    htrvv.Draw()
+    tc.cd()
+
+    normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    tc.SaveAs(normshapes)

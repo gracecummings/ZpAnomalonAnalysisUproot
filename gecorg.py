@@ -236,72 +236,96 @@ class backgrounds:
         #gather background MC files
         self.f17dyjetsb = glob.glob(str(path)+'/Fall17.DYJetsToLL_M-50_HT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17dyjetsr = glob.glob(str(path)+'/Fall17.DYJetsToLL_M-50_HT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17dyjettr = glob.glob(str(path)+'/Fall17.DYJetsToLL_M-50_HT*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17ttsb = glob.glob(str(path)+'/Fall17.TTT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17ttsr = glob.glob(str(path)+'/Fall17.TTT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17tttr = glob.glob(str(path)+'/Fall17.TTT*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17wzsb = glob.glob(str(path)+'/Fall17.WZTo2L2Q*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17wzsr = glob.glob(str(path)+'/Fall17.WZTo2L2Q*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17wztr = glob.glob(str(path)+'/Fall17.WZTo2L2Q*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17zzsb = glob.glob(str(path)+'/Fall17.ZZTo2L2Q*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17zzsr = glob.glob(str(path)+'/Fall17.ZZTo2L2Q*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17zztr = glob.glob(str(path)+'/Fall17.ZZTo2L2Q*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18dyjetsb = glob.glob(str(path)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18dyjetsr = glob.glob(str(path)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18dyjettr = glob.glob(str(path)+'/Autumn18.DYJetsToLL_M-50_HT*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18ttsb = glob.glob(str(path)+'/Autumn18.TTT*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18ttsr = glob.glob(str(path)+'/Autumn18.TTT*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18tttr = glob.glob(str(path)+'/Autumn18.TTT*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18wzsb = glob.glob(str(path)+'/Autumn18.WZTo2L2Q*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18wzsr = glob.glob(str(path)+'/Autumn18.WZTo2L2Q*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18wztr = glob.glob(str(path)+'/Autumn18.WZTo2L2Q*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18zzsb = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_upout_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18zzsr = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_upout_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18zztr = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_upout_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
 
 
         #gather errors
         self.f17dyjetsberrs = glob.glob(str(path)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17dyjetsrerrs = glob.glob(str(path)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17dyjettrerrs = glob.glob(str(path)+'/Fall17.DYJetsToLL_M-50_HT*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17ttsberrs = glob.glob(str(path)+'/Fall17.TTT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17ttsrerrs = glob.glob(str(path)+'/Fall17.TTT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17tttrerrs = glob.glob(str(path)+'/Fall17.TTT*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17wzsberrs = glob.glob(str(path)+'/Fall17.WZTo2L2Q*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17wzsrerrs = glob.glob(str(path)+'/Fall17.WZTo2L2Q*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17wztrerrs = glob.glob(str(path)+'/Fall17.WZTo2L2Q*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17zzsberrs = glob.glob(str(path)+'/Fall17.ZZTo2L2Q*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.f17zzsrerrs = glob.glob(str(path)+'/Fall17.ZZTo2L2Q*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.f17zztrerrs = glob.glob(str(path)+'/Fall17.ZZTo2L2Q*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
 
         self.a18dyjetsberrs = glob.glob(str(path)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18dyjetsrerrs = glob.glob(str(path)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18dyjettrerrs = glob.glob(str(path)+'/Autumn18.DYJetsToLL_M-50_HT*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18ttsberrs = glob.glob(str(path)+'/Autumn18.TTT*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18ttsrerrs = glob.glob(str(path)+'/Autumn18.TTT*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18tttrerrs = glob.glob(str(path)+'/Autumn18.TTT*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18wzsberrs = glob.glob(str(path)+'/Autumn18.WZTo2L2Q*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18wzsrerrs = glob.glob(str(path)+'/Autumn18.WZTo2L2Q*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18wztrerrs = glob.glob(str(path)+'/Autumn18.WZTo2L2Q*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18zzsberrs = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_selected_errors_sideband_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
         self.a18zzsrerrs = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_selected_errors_signalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
+        self.a18zztrerrs = glob.glob(str(path)+'/Autumn18.ZZTo2L2Q*_selected_errors_totalr_DeepMassDecorrelTagZHbbvsQCD_Zptcut'+str(zptcut)+'_Hptcut'+str(hptcut)+'_metcut'+str(metcut)+'_btagwp'+str(btagwp)+'*')
 
         self.bkgs = {"DYJetsToLL":
                 {18:
                  {"sb":[self.a18dyjetsb,self.a18dyjetsberrs],
-                  "sr":[self.a18dyjetsr,self.a18dyjetsrerrs]},
+                  "sr":[self.a18dyjetsr,self.a18dyjetsrerrs],
+                  "tr":[self.a18dyjettr,self.a18dyjettrerrs]},
                  17:
                  {"sb":[self.f17dyjetsb,self.f17dyjetsberrs],
-                  "sr":[self.f17dyjetsr,self.f17dyjetsrerrs]},
+                  "sr":[self.f17dyjetsr,self.f17dyjetsrerrs],
+                  "tr":[self.f17dyjettr,self.f17dyjettrerrs]},
                 },
                 "TT":
                 {18:
                  {"sb":[self.a18ttsb,self.a18ttsberrs],
-                  "sr":[self.a18ttsr,self.a18ttsrerrs]},
+                  "sr":[self.a18ttsr,self.a18ttsrerrs],
+                  "tr":[self.a18tttr,self.a18tttrerrs]},
                  17:
                  {"sb":[self.f17ttsb,self.f17ttsberrs],
-                  "sr":[self.f17ttsr,self.f17ttsrerrs]},
+                  "sr":[self.f17ttsr,self.f17ttsrerrs],
+                  "tr":[self.f17tttr,self.f17tttrerrs]},
                 },
                 "WZTo2L2Q":
                 {18:
                  {"sb":[self.a18wzsb,self.a18wzsberrs],
-                  "sr":[self.a18wzsr,self.a18wzsrerrs]},
+                  "sr":[self.a18wzsr,self.a18wzsrerrs],
+                  "tr":[self.a18wztr,self.a18wztrerrs]},
                  17:
                  {"sb":[self.f17wzsb,self.f17wzsberrs],
-                  "sr":[self.f17wzsr,self.f17wzsrerrs]},
+                  "sr":[self.f17wzsr,self.f17wzsrerrs],
+                  "tr":[self.f17wztr,self.f17wztrerrs]},
                 },
                 "ZZTo2L2Q":
                 {18:
                  {"sb":[self.a18zzsb,self.a18zzsberrs],
-                  "sr":[self.a18zzsr,self.a18zzsrerrs]},
+                  "sr":[self.a18zzsr,self.a18zzsrerrs],
+                  "tr":[self.a18zztr,self.a18zztrerrs]},
                  17:
                  {"sb":[self.f17zzsb,self.f17zzsberrs],
-                  "sr":[self.f17zzsr,self.f17zzsrerrs]},
+                  "sr":[self.f17zzsr,self.f17zzsrerrs],
+                  "tr":[self.f17zztr,self.f17zztrerrs]},
                 }
         }
 

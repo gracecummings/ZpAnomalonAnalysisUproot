@@ -207,6 +207,16 @@ Double_t gausModel(Double_t *X, Double_t *par){
   return fitval;
 }
 
+TF1 * gausFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400,int mguess=90,int sigguess = 5) {
+  TF1 *gausfit = new TF1(name,gausModel,lowr,highr,5);
+  gausfit->SetParameter(1,mguess);
+  gausfit->SetParameter(2,sigguess);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
 Double_t gaus2Model(Double_t *X, Double_t *par){
   double x = X[0];
   Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2])+(par[5])*TMath::Gaus(x,par[3],par[4]);
@@ -214,11 +224,11 @@ Double_t gaus2Model(Double_t *X, Double_t *par){
 }
 
 TF1 * gaus2Fit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
-  TF1 *gaus2fit = new TF1(name,gaus2Model,lowr,highr,5);
-  gaus2fit->SetParameter(3,175.);
-  gaus2fit->SetParameter(1,50.);
-  gaus2fit->SetParameter(2,5.);
-  gaus2fit->SetParameter(4,5.);
+  TF1 *gaus2fit = new TF1(name,gaus2Model,lowr,highr,6);
+  gaus2fit->SetParameter(1,120);
+  gaus2fit->SetParameter(2,40);
+  gaus2fit->SetParameter(3,175);
+  gaus2fit->SetParameter(4,10);
   hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
 

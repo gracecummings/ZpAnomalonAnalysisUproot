@@ -93,8 +93,9 @@ if __name__=='__main__':
     hdatsb = data.getAddedHist(empty9,"sb","h_h_sd")
 
     #makes some fits
-    dyfit = ROOT.poly5Fit(htrdy,"sbl","R0+",30,400)
-    ttfit = ROOT.gaus2Fit(htrtt,"sbl","R0+",30,250)
+    dyfit = ROOT.poly5Fit(htrdy,"dyl","R0+",30,250)
+    ttfit = ROOT.gaus2Fit(htrtt,"ttl","R0+",30,400)
+    vvfit = ROOT.gausFit(htrvv,"vvl","R0+",30,250,90,5)
 
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
@@ -124,9 +125,16 @@ if __name__=='__main__':
     p13.cd()
     plotMsd(p13,htrvv)
     CMS_lumi.CMS_lumi(p13,4,13)
+    vvfit.Draw("same")
     p13.Update()
 
     tc.cd()
 
     normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(normshapes)
+
+    #ttbarhist = go.makeOutFile('Run2_2017_2018','ttbar_hist','.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+
+    #rootfile = ROOT.TFile(ttbarhist,"recreate")
+    #htrtt.Write()
+    #rootfile.Close()

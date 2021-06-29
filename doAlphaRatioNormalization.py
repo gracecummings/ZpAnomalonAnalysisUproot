@@ -74,28 +74,35 @@ if __name__=='__main__':
     empty8 = empty.Clone()
     empty9 = empty.Clone()
 
-    #hsbdy = bkgs.getAddedHist(empty,"DYJetsToLL","sb","h_h_sd")
-    #hsrdy = bkgs.getAddedHist(empty2,"DYJetsToLL","sr","h_h_sd")
-    #hsbtt = bkgs.getAddedHist(empty3,"TT","sb","h_h_sd")
-    #hsrtt = bkgs.getAddedHist(empty6,"TT","sr","h_h_sd")
-    #hsbzz = bkgs.getAddedHist(empty4,"ZZTo2L2Q","sb","h_h_sd")
-    #hsrzz = bkgs.getAddedHist(empty7,"ZZTo2L2Q","sr","h_h_sd")
-    #hsbwz = bkgs.getAddedHist(empty5,"WZTo2L2Q","sb","h_h_sd")
-    #hsrwz = bkgs.getAddedHist(empty8,"WZTo2L2Q","sr","h_h_sd")
-
     htrdy = bkgs.getAddedHist(empty2,"DYJetsToLL","tr","h_h_sd")
     htrtt = bkgs.getAddedHist(empty6,"TT","tr","h_h_sd")
     htrzz = bkgs.getAddedHist(empty7,"ZZTo2L2Q","tr","h_h_sd")
     htrwz = bkgs.getAddedHist(empty8,"WZTo2L2Q","tr","h_h_sd")
     htrvv = htrzz.Clone()
     htrvv.Add(htrwz)
-    
+
     hdatsb = data.getAddedHist(empty9,"sb","h_h_sd")
 
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"dyl","R0+",30,250)
     ttfit = ROOT.gaus2Fit(htrtt,"ttl","R0+",30,400)
     vvfit = ROOT.gausFit(htrvv,"vvl","R0+",30,250,90,5)
+
+    #label
+    dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    dyleg.AddEntry(htrdy,"DY","ep")
+    dyleg.AddEntry(dyfit,"5th deg poly fit","l")
+    dyleg.SetBorderSize(0)
+    ttleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    ttleg.AddEntry(htrtt,"TT","ep")
+    ttleg.AddEntry(ttfit,"2 Gaussian fit","l")
+    ttleg.SetBorderSize(0)
+    vvleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    vvleg.AddEntry(htrtt,"VV","ep")
+    vvleg.AddEntry(ttfit,"Gaussian Fit","l")
+    vvleg.SetBorderSize(0)
+    
+
 
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
@@ -110,6 +117,7 @@ if __name__=='__main__':
     plotMsd(p11,htrdy)
     CMS_lumi.CMS_lumi(p11,4,13)
     dyfit.Draw('same')
+    dyleg.Draw()
     p11.Update()
     
     tc.cd()
@@ -118,6 +126,7 @@ if __name__=='__main__':
     plotMsd(p12,htrtt)
     CMS_lumi.CMS_lumi(p12,4,13)
     ttfit.Draw("same")
+    ttleg.Draw()
     p12.Update()
 
     tc.cd()
@@ -126,6 +135,7 @@ if __name__=='__main__':
     plotMsd(p13,htrvv)
     CMS_lumi.CMS_lumi(p13,4,13)
     vvfit.Draw("same")
+    vvleg.Draw()
     p13.Update()
 
     tc.cd()

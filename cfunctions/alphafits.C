@@ -235,6 +235,28 @@ TF1 * gaus2Fit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int high
   return fitout;
 }
 
+Double_t ErfExp(Double_t x, Double_t c, Double_t offset, Double_t width){
+    if(width<1e-2)width=1e-2;
+    if (c==0)c=-1e-7;
+	return TMath::Exp(c*x)*(1.+TMath::Erf((x-offset)/width))/2. ;
+}
+
+Double_t gausErfModel(Double_t *X, Double_t *par){
+  double x = X[0];
+  Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2])+par[3]*ErfExp(x,par[4],par[5],par[6]);
+  return fitval;
+}
+
+TF1 * gausErfFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400,int mguess=90,int sigguess = 5) {
+  TF1 *gausErffit = new TF1(name,gausErfModel,lowr,highr,7);
+  gausErffit->SetParameter(1,mguess);
+  gausErffit->SetParameter(2,sigguess);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
 ///////Unused Functions/////
 
 /*

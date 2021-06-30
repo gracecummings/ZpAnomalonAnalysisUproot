@@ -86,7 +86,7 @@ if __name__=='__main__':
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"dyl","R0+",30,250)
     ttfit = ROOT.gaus2Fit(htrtt,"ttl","R0+",30,400)
-    vvfit = ROOT.gausFit(htrvv,"vvl","R0+",30,250,90,5)
+    vvfit = ROOT.gausErfFit(htrvv,"vvl","R0+",30,400,90,5)
 
     #label
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
@@ -99,7 +99,7 @@ if __name__=='__main__':
     ttleg.SetBorderSize(0)
     vvleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
     vvleg.AddEntry(htrtt,"VV","ep")
-    vvleg.AddEntry(ttfit,"Gaussian Fit","l")
+    vvleg.AddEntry(ttfit,"ErfExpGaus Fit","l")
     vvleg.SetBorderSize(0)
     
 

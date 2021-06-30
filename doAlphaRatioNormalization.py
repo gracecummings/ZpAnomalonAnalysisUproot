@@ -86,7 +86,7 @@ if __name__=='__main__':
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"dyl","R0+",30,250)
     ttfit = ROOT.gaus2Fit(htrtt,"ttl","R0+",30,400)
-    vvfit = ROOT.gausErfFit(htrvv,"vvl","R0+",30,400,90,5)
+    vvfit = ROOT.gausErfFit(htrvv,"vvl","R0+",30,200,90,5)
 
     #label
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)

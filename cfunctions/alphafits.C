@@ -251,6 +251,8 @@ TF1 * gausErfFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int hi
   TF1 *gausErffit = new TF1(name,gausErfModel,lowr,highr,7);
   gausErffit->SetParameter(1,mguess);
   gausErffit->SetParameter(2,sigguess);
+  //gausErffit->SetParameter(3,30);
+  //gausErffit->SetParameter(4,30);
   hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
 

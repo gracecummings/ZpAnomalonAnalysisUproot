@@ -283,7 +283,7 @@ Double_t totalBkgModel(Double_t *X, Double_t *par){
   return fitval;
 }
 
-TF1 * totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lowr=30, int highr=400) {
   TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",30,250);
   TF1 *ttfit = gaus2Fit(tthist,"ttl","QR0+",30,400);
   TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QR0+",30,250);
@@ -297,9 +297,21 @@ TF1 * totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TString nam
   TF1 *totalfit = new TF1("totalfit",totalBkgModel,30,250,17);
   totalfit->SetParameters(par);
   hist->Fit("totalfit","R0+");
+  TF1 *totmcfit = hist->GetFunction("totalfit");
 
-  TF1 *fitout = hist->GetFunction("totalfit");
-  return fitout;
+  Double_t parData[17];
+  totmcfit->GetParameters(parData);
+  TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModel,30,250,17);
+  sbdatfit->SetParameters(parData);
+  dathist->Fit("sbdatfit","R0+");
+  TF1 *totsbdatfit = dathist->GetFunction("sbdatfit");
+  
+
+  std::vector<TF1*> fitvector;
+  fitvector.push_back(totmcfit);
+  fitvector.push_back(totsbdatfit);
+  
+  return fitvector;
 }
 
 ///////Unused Functions/////

@@ -111,8 +111,10 @@ if __name__=='__main__':
     vvfit = ROOT.gausErfExpFit(htrvv,"vvl1","QR0+",30,250,90,5)
     vvfit2 = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
     vvfit2.SetLineColor(ROOT.kRed)
-    bkgfit = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,"datasb","R0+",30,250)
-
+    normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",30,250)
+    bkgfit = normfits[0]
+    sbdatfit = normfits[1]
+    
     #labels
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
     dyleg.AddEntry(htrdy,"DY","ep")
@@ -174,15 +176,17 @@ if __name__=='__main__':
     pd12 = ROOT.TPad("pd12","datfit",0.5,0.0,1.0,1.0)
     pd11.Draw()
     pd11.cd()
-    CMS_lumi.CMS_lumi(pd11,4,13)
     hsbkg.Draw('HIST')
+    CMS_lumi.CMS_lumi(pd11,4,13)
     bkgfit.Draw('SAME')
     stackleg.Draw()
     tc1.cd()
     pd12.Draw()
     pd12.cd()
-    CMS_lumi.CMS_lumi(pd12,4,13)
     hsbkg.Draw('HIST')
+    CMS_lumi.CMS_lumi(pd12,4,13)
+    sbdatfit.Draw("SAME")
+    hdatsb.Draw("SAME")
     stackleg.Draw()
     tc1.cd()
 

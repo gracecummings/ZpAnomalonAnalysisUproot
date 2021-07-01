@@ -188,7 +188,7 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
 ///////Development for normalization//
 
 Double_t poly5Model(Double_t *X, Double_t *par){
-  double x = X[0];
+  Double_t x = X[0];
   Double_t fitval = par[0]+par[1]*x+par[2]*std::pow(x,2.0)+par[3]*std::pow(x,3.0)+par[4]*std::pow(x,4.0)+par[5]*std::pow(x,5);
   return fitval;
 }
@@ -218,7 +218,7 @@ TF1 * gausFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr
 }
 
 Double_t gaus2Model(Double_t *X, Double_t *par){
-  double x = X[0];
+  Double_t x = X[0];
   Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2])+(par[5])*TMath::Gaus(x,par[3],par[4]);
   return fitval;
 }
@@ -241,14 +241,21 @@ Double_t ErfExp(Double_t x, Double_t c, Double_t offset, Double_t width){
 	return TMath::Exp(c*x)*(1.+TMath::Erf((x-offset)/width))/2. ;
 }
 
-Double_t gausErfModel(Double_t *X, Double_t *par){
+Double_t gausErfExpModel(Double_t *X, Double_t *par){
   double x = X[0];
   Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2])+par[3]*ErfExp(x,par[4],par[5],par[6]);
   return fitval;
 }
 
-TF1 * gausErfFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400,int mguess=90,int sigguess = 5) {
-  TF1 *gausErffit = new TF1(name,gausErfModel,lowr,highr,7);
+Double_t gausPoly1Model(Double_t *X, Double_t *par){
+  Double_t x = X[0];
+  Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2])+par[3]*x+par[4];
+  return fitval;
+}
+
+
+TF1 * gausErfExpFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400,int mguess=90,int sigguess = 5) {
+  TF1 *gausErffit = new TF1(name,gausErfExpModel,lowr,highr,7);
   gausErffit->SetParameter(1,mguess);
   gausErffit->SetParameter(2,sigguess);
   //gausErffit->SetParameter(3,30);
@@ -256,6 +263,42 @@ TF1 * gausErfFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int hi
   hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
 
+  return fitout;
+}
+
+TF1 * gausPoly1Fit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400,int mguess=90,int sigguess = 5) {
+  TF1 *gausPoly1fit = new TF1(name,gausPoly1Model,lowr,highr,5);
+  gausPoly1fit->SetParameter(1,mguess);
+  gausPoly1fit->SetParameter(2,sigguess);
+  gausPoly1fit->SetParameter(5,hist->GetBinContent(6));
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
+Double_t totalBkgModel(Double_t *X, Double_t *par){
+  //Double_t x = X[0];
+  Double_t fitval = poly5Model(X,&par[0])+gaus2Model(X,&par[6])+gausPoly1Model(X,&par[12]);
+  return fitval;
+}
+
+TF1 * totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+  TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",30,250);
+  TF1 *ttfit = gaus2Fit(tthist,"ttl","QR0+",30,400);
+  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QR0+",30,250);
+  //TF1 *totalfit = new TF1("totalfit",30,250);
+
+  Double_t par[17];
+  dyfit->GetParameters(&par[0]);
+  ttfit->GetParameters(&par[6]);
+  vvfit->GetParameters(&par[12]);
+
+  TF1 *totalfit = new TF1("totalfit",totalBkgModel,30,250,17);
+  totalfit->SetParameters(par);
+  hist->Fit("totalfit","R0+");
+
+  TF1 *fitout = hist->GetFunction("totalfit");
   return fitout;
 }
 

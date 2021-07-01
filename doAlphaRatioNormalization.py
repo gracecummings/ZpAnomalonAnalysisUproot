@@ -73,22 +73,47 @@ if __name__=='__main__':
     empty7 = empty.Clone()
     empty8 = empty.Clone()
     empty9 = empty.Clone()
+    
 
-    htrdy = bkgs.getAddedHist(empty2,"DYJetsToLL","tr","h_h_sd")
-    htrtt = bkgs.getAddedHist(empty6,"TT","tr","h_h_sd")
-    htrzz = bkgs.getAddedHist(empty7,"ZZTo2L2Q","tr","h_h_sd")
-    htrwz = bkgs.getAddedHist(empty8,"WZTo2L2Q","tr","h_h_sd")
-    htrvv = htrzz.Clone()
+
+    #Gather basics histograms
+    hdatsb = data.getAddedHist(empty9,"sb","h_h_sd")
+    htrdy  = bkgs.getAddedHist(empty2,"DYJetsToLL","tr","h_h_sd")
+    htrtt  = bkgs.getAddedHist(empty6,"TT","tr","h_h_sd")
+    htrzz  = bkgs.getAddedHist(empty7,"ZZTo2L2Q","tr","h_h_sd")
+    htrwz  = bkgs.getAddedHist(empty8,"WZTo2L2Q","tr","h_h_sd")
+    htrvv  = htrzz.Clone()
     htrvv.Add(htrwz)
 
-    hdatsb = data.getAddedHist(empty9,"sb","h_h_sd")
+    #Make overall stackplot
+    hsbkg = ROOT.THStack("hsbkg","")
+    bkgfiles17 = [bkgs.bkgs["DYJetsToLL"][17]["tr"][0],
+                  bkgs.bkgs["TT"][17]["tr"][0],
+                  bkgs.bkgs["WZTo2L2Q"][17]["tr"][0],
+                  bkgs.bkgs["ZZTo2L2Q"][17]["tr"][0]
+    ]
+    bkgfiles18 = [bkgs.bkgs["DYJetsToLL"][18]["tr"][0],
+                  bkgs.bkgs["TT"][18]["tr"][0],
+                  bkgs.bkgs["WZTo2L2Q"][18]["tr"][0],
+                  bkgs.bkgs["ZZTo2L2Q"][18]["tr"][0]
+    ]
+
+    bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
+    bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
+    info17 = go.prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
+    info18 = go.prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
+    stackleg = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    go.stackBkgMultiYear(info17,info18,'h_h_sd',hsbkg,stackleg,50,0)
 
     #makes some fits
-    dyfit = ROOT.poly5Fit(htrdy,"dyl","R0+",30,250)
-    ttfit = ROOT.gaus2Fit(htrtt,"ttl","R0+",30,400)
-    vvfit = ROOT.gausErfFit(htrvv,"vvl","R0+",30,200,90,5)
+    dyfit = ROOT.poly5Fit(htrdy,"dyl","QR0+",30,250)
+    ttfit = ROOT.gaus2Fit(htrtt,"ttl","QR0+",30,400)
+    vvfit = ROOT.gausErfExpFit(htrvv,"vvl1","QR0+",30,250,90,5)
+    vvfit2 = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
+    vvfit2.SetLineColor(ROOT.kRed)
+    bkgfit = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,"datasb","R0+",30,250)
 
-    #label
+    #labels
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
     dyleg.AddEntry(htrdy,"DY","ep")
     dyleg.AddEntry(dyfit,"5th deg poly fit","l")
@@ -98,12 +123,13 @@ if __name__=='__main__':
     ttleg.AddEntry(ttfit,"2 Gaussian fit","l")
     ttleg.SetBorderSize(0)
     vvleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
-    vvleg.AddEntry(htrtt,"VV","ep")
-    vvleg.AddEntry(ttfit,"ErfExpGaus Fit","l")
+    vvleg.AddEntry(htrvv,"VV","ep")
+    vvleg.AddEntry(vvfit,"ErfExpGaus Fit","l")
+    vvleg.AddEntry(vvfit2,"GausPol1 Fit","l")
     vvleg.SetBorderSize(0)
+    stackleg.AddEntry(bkgfit,"Bkg MC fit","l")
+    stackleg.SetBorderSize(0)
     
-
-
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
     p11 = ROOT.TPad("p11","dysr",0,0,0.33,1.0)
@@ -135,14 +161,22 @@ if __name__=='__main__':
     plotMsd(p13,htrvv)
     CMS_lumi.CMS_lumi(p13,4,13)
     vvfit.Draw("same")
+    vvfit2.Draw("same")
     vvleg.Draw()
     p13.Update()
-
     tc.cd()
-
+    
     normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(normshapes)
 
+    tc1 = ROOT.TCanvas("tc1","stacked",1100,400)
+    hsbkg.Draw('HIST')
+    bkgfit.Draw('SAME')
+    stackleg.Draw()
+
+    stackedfit = go.makeOutFile('Run2_2017_2018','norm_stackfit','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    tc1.SaveAs(stackedfit)
+    
     #ttbarhist = go.makeOutFile('Run2_2017_2018','ttbar_hist','.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))
 
     #rootfile = ROOT.TFile(ttbarhist,"recreate")

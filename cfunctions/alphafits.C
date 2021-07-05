@@ -1,3 +1,4 @@
+
 #include "Math/WrappedTF1.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
@@ -283,11 +284,19 @@ Double_t totalBkgModel(Double_t *X, Double_t *par){
   return fitval;
 }
 
+Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
+  if (X[0] > 70. && X[0] < 150.) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  Double_t fitval = poly5Model(X,&par[0])+gaus2Model(X,&par[6])+gausPoly1Model(X,&par[12]);
+  return fitval;
+}
+
 vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lowr=30, int highr=400) {
   TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",30,250);
   TF1 *ttfit = gaus2Fit(tthist,"ttl","QR0+",30,400);
   TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QR0+",30,250);
-  //TF1 *totalfit = new TF1("totalfit",30,250);
 
   Double_t par[17];
   dyfit->GetParameters(&par[0]);
@@ -301,15 +310,37 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
 
   Double_t parData[17];
   totmcfit->GetParameters(parData);
-  TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModel,30,250,17);
+  std::cout<<"Z peak guess "<<parData[13]<<std::endl;
+  std::cout<<"t peak guess "<<parData[9]<<std::endl;
+
+  //Now do the extrapolation
+  TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModelBlind,30,250,17);
   sbdatfit->SetParameters(parData);
+  sbdatfit->FixParameter(13,parData[13]);
+  sbdatfit->FixParameter(9,parData[9]);
+  //sbdatfit->FixParameter(14,parData[14]);
+  //sbdatfit->FixParameter(15,parData[15]);
+  //sbdatfit->FixParameter(16,parData[16]);
+
   dathist->Fit("sbdatfit","R0+");
   TF1 *totsbdatfit = dathist->GetFunction("sbdatfit");
-  
 
+  //Now seperate fits for visualization
+  //broken
+  //TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70);
+  //flsb->SetParameters(totsbdatfit->GetParameters());
+  //dathist->GetListOfFunctions()->Add(flsb);
+  //TF1 *lsbdatfit = dathist->GetFunction("flsb");
+  //TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,150,400);
+  //fhsb->SetParameters(totsbdatfit->GetParameters());
+  //dathist->GetListOfFunctions()->Add(fhsb);
+  //TF1 *hsbdatfit = dathist->GetFunction("fhsb");
+  
   std::vector<TF1*> fitvector;
   fitvector.push_back(totmcfit);
   fitvector.push_back(totsbdatfit);
+  //fitvector.push_back(lsbdatfit);
+  //fitvector.push_back(hsbdatfit);
   
   return fitvector;
 }

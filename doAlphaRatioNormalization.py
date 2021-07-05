@@ -37,7 +37,7 @@ def plotMsd(pad,hist,islog=False,logmin=0.1,isData=False):
         drawopts = "E1"
     xax = hist.GetXaxis()
     yax = hist.GetYaxis()
-    xax.SetTitle("m_{j}")
+    xax.SetTitle("Higgs Candidate Soft Drop Mass")
     xax.SetTitleSize(0.05)
     xax.SetLabelSize(0.035)
     yax.SetTitle("Events / 5 GeV")
@@ -73,8 +73,6 @@ if __name__=='__main__':
     empty7 = empty.Clone()
     empty8 = empty.Clone()
     empty9 = empty.Clone()
-    
-
 
     #Gather basics histograms
     hdatsb = data.getAddedHist(empty9,"sb","h_h_sd")
@@ -102,7 +100,7 @@ if __name__=='__main__':
     bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
     info17 = go.prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
     info18 = go.prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
-    stackleg = ROOT.TLegend(0.55,0.65,0.9,0.8)
+    stackleg = ROOT.TLegend(0.55,0.60,0.93,0.8)
     go.stackBkgMultiYear(info17,info18,'h_h_sd',hsbkg,stackleg,50,0)
 
     #makes some fits
@@ -114,6 +112,8 @@ if __name__=='__main__':
     normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",30,250)
     bkgfit = normfits[0]
     sbdatfit = normfits[1]
+    #sbdatfitlsb = normfits[2]
+    #sbdatfithsb = normfits[3]
     
     #labels
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
@@ -131,6 +131,8 @@ if __name__=='__main__':
     vvleg.SetBorderSize(0)
     stackleg.AddEntry(bkgfit,"Bkg MC fit","l")
     stackleg.SetBorderSize(0)
+    #datfitleg.AddEntry(sbdatfit,"Fit to data SB","l")
+    #datfitleg.SetBorderSize(0)
     
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
@@ -171,24 +173,56 @@ if __name__=='__main__':
     normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(normshapes)
 
+
+
     tc1 = ROOT.TCanvas("tc1","stacked",1100,400)
     pd11 = ROOT.TPad("pd11","bkgonly",0,0,0.5,1.0)
     pd12 = ROOT.TPad("pd12","datfit",0.5,0.0,1.0,1.0)
     pd11.Draw()
     pd11.cd()
     hsbkg.Draw('HIST')
+    xax = hsbkg.GetXaxis()
+    yax = hsbkg.GetYaxis()
+    xax.SetTitle("Higgs Candidate Soft Drop Mass")
+    xax.SetTitleSize(0.05)
+    xax.SetLabelSize(0.035)
+    yax.SetTitle("Events / 5 GeV")
+    yax.SetTitleSize(0.05)
+    yax.SetLabelSize(0.04)
+    yax.SetLabelOffset(0.015)
     CMS_lumi.CMS_lumi(pd11,4,13)
     bkgfit.Draw('SAME')
     stackleg.Draw()
     tc1.cd()
+    tc1.Update()
+
     pd12.Draw()
     pd12.cd()
     hsbkg.Draw('HIST')
+    xax = hsbkg.GetXaxis()
+    yax = hsbkg.GetYaxis()
+    xax.SetTitle("Higgs Candidate Soft Drop Mass")
+    xax.SetTitleSize(0.05)
+    xax.SetLabelSize(0.035)
+    yax.SetTitle("Events / 5 GeV")
+    yax.SetTitleSize(0.05)
+    yax.SetLabelSize(0.04)
+    yax.SetLabelOffset(0.015)
     CMS_lumi.CMS_lumi(pd12,4,13)
+    sbdatfit.SetLineColor(ROOT.kRed)
     sbdatfit.Draw("SAME")
+    #sbdatfitlsb.Draw("SAME")
+    #sbdatfithsb.Draw("SAME")
+    hdatsb.SetMarkerStyle(8)
+    hdatsb.SetMarkerSize(0.5)
+    hdatsb.SetMarkerColor(ROOT.kBlack)
     hdatsb.Draw("SAME")
+    stackleg.AddEntry(sbdatfit,"Fit to Data SB","l")
+    stackleg.AddEntry(sbdatfit,"Data SB","ep")
     stackleg.Draw()
     tc1.cd()
+    tc1.Update()
+
 
     stackedfit = go.makeOutFile('Run2_2017_2018','norm_stackfit','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc1.SaveAs(stackedfit)

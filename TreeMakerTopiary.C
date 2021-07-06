@@ -282,19 +282,20 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	}
       }
 
-      //DY+Jets k-factors
+      //DY+Jets k-factors+GenParticleInfo
       float evntw_hold = 1.;
-      TLorentzVector gZ;
+      TLorentzVector theGenZ;
+      TLorentzVector theGenH;
       if (sampleType != 0) {//Not Data
 	int gpid;
-	//TLorentzVector gh;
 	unsigned long ngen = GenParticles->size();
-	//std::cout<<"Number of Gen Particles: "<<ngen<<std::endl;
 	for (unsigned long i = 0; i < ngen; ++i) {
 	  int gpid = GenParticles_PdgId->at(i);
-	  //std::cout<<"PID "<<gpid<<std::endl;
 	  if (gpid == 23) {
-	    gZ = GenParticles->at(i);
+	    theGenZ = GenParticles->at(i);
+	  }
+	  if (gpid == 25) {
+	    theGenH = GenParticles->at(i);
 	  }
 	}
 
@@ -302,16 +303,16 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	double qcdnnlosf = 1;
 	float ewknlosf   = 1;
 	if (sampleType == 2) {//DY+Jets
-	  qcdnlosf = 1.423*exp(-0.002257*gZ.Pt())+0.451;
+	  qcdnlosf = 1.423*exp(-0.002257*theGenZ.Pt())+0.451;
 	  if (qcdnlosf <= 0.0) {
 	    qcdnlosf = 1.;
 	  }
-	  int zptbinqcd  = hqcdnnlosf->FindBin(gZ.Pt());
+	  int zptbinqcd  = hqcdnnlosf->FindBin(theGenZ.Pt());
 	  qcdnnlosf = hqcdnnlosf->GetBinContent(zptbinqcd);
 	  if (qcdnnlosf <= 0.0) {
 	    qcdnnlosf = 1.;
 	  }
-	  int zptbinewk = hewknlosf->FindBin(gZ.Pt());
+	  int zptbinewk = hewknlosf->FindBin(theGenZ.Pt());
 	  ewknlosf = hewknlosf->GetBinContent(zptbinewk);
 	  if (ewknlosf <= 0.0) {
 	    ewknlosf = 1.;
@@ -321,22 +322,22 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       }
 
       //gen particle addition. Should update with above
-      TLorentzVector theGenZ;
-      TLorentzVector theGenH;
-      unsigned long ngen = GenParticles->size();
-      if (sampleType != 0) {//Not Data
-	int gpid;
-	for (unsigned long i = 0; i < ngen; ++i) {
-	  int gpid = GenParticles_PdgId->at(i);
+      //TLorentzVector theGenZ;
+      //TLorentzVector theGenH;
+      //unsigned long ngen = GenParticles->size();
+      //if (sampleType != 0) {//Not Data
+     //int gpid;
+      //for (unsigned long i = 0; i < ngen; ++i) {
+      //  int gpid = GenParticles_PdgId->at(i);
 	  //std::cout<<"PID "<<gpid<<std::endl;
-	  if (gpid == 23) {
-	    theGenZ = GenParticles->at(i);
-	  }
-	  if (gpid == 25) {
-	    theGenH = GenParticles->at(i);
-	  }
-	}
-      }
+      //  if (gpid == 23) {
+      //    theGenZ = GenParticles->at(i);
+      //  }
+      //  if (gpid == 25) {
+      //    theGenH = GenParticles->at(i);
+      //  }
+      //}
+      //}
 
       
       //Z exploration

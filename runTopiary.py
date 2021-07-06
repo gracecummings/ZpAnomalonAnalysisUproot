@@ -33,6 +33,7 @@ if __name__=="__main__":
             origevnts += tf.Get("hnevents").GetBinContent(1)
     else:
         inChain = ROOT.TChain("TreeMaker2/PreSelection")
+        inputs = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
         inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
         origevnts = inChain.GetEntries()
 

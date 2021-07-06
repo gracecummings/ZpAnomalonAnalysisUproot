@@ -320,11 +320,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //std::cout<<"   The subldig muon pt is: "<<subleadmu.Pt()<<std::endl;
       //std::cout<<"   The dimuon pt is      : "<<(leadmu+subleadmu).Pt()<<std::endl;
       
-<<<<<<< HEAD
+
       */
       
-=======
->>>>>>> 7337c33269d4498a6a2e859fe3d65ce69e2b8b6a
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
       TLorentzVector theZ;

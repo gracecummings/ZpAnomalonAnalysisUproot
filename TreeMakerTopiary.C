@@ -89,8 +89,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double gzCandidate_phi;
    double gzCandidate_eta;
    double gzCandidate_m;
-
-
+   double channelflag;
 
       //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
@@ -120,6 +119,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    TBranch *NDMest    = trimTree->Branch("ND_mass_est",&mEstND,"mEstND/D");
    TBranch *NSMest    = trimTree->Branch("NS_mass_est",&mEstNS,"mEstNS/D");
    TBranch *evntweight = trimTree->Branch("event_weight",&evntw,"evntw/D");
+   TBranch *channelf   = trimTree->Branch("channel_flag",&channelflag,"channelflag/D");
    TBranch *LMuCand     = trimTree->Branch("LMuCandidate","TLorentzVector",&LMuCandidate);
    TBranch *LMuCand_pt  = trimTree->Branch("LMuCandidate_pt",&LMuCandidate_pt,"LMuCandidate_pt/D");
    TBranch *LMuCand_phi = trimTree->Branch("LMuCandidate_phi",&LMuCandidate_phi,"LMuCandidate_phi/D");
@@ -223,6 +223,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool passTrig = false;
       bool passFil  = false;
       bool mumuchan = false;
+      double channel = -1.0;
           
       //A counter, for my sanity
       if (jentry%25000 == 0) {
@@ -340,7 +341,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  if (muit->Pt() > muptmax) {
 	    muptmax = muit->Pt();
 	    leadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());
-	 }
+	  }
 	  else {
 	    subleadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());;
 	 }
@@ -348,39 +349,37 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	}
       }
 
-
-      /*
-      if (nZmumu > 0 && nZee > 0) {
-	cmixeemumu += 1;
-	std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(ee)!"<<std::endl;
-	std::cout<<"         num of mu: "<<nselmu<<std::endl;
-	std::cout<<"         num of el: "<<nselel<<std::endl;
+      ///*
+      if (nZmumu > 0 && nZee == 0 && nZeu == 0){
+	//in binary 100, 4 in decimal
+	channel = 4.;//4 in decimal
       }
-      if (nZmumu > 0 && nZeu > 0) {
-	cmixmumuemu += 1;
-	std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(emu)!"<<std::endl;
-	std::cout<<"         num of mu: "<<nselmu<<std::endl;
-	std::cout<<"         num of el: "<<nselel<<std::endl;
+      if (nZmumu > 0 && nZee > 0 && nZeu == 0) {
+	//110 in binary, 6 in decimal
+	channel = 6.;//
       }
-      if (nZee > 0 && nZeu > 0) {
-	cmixeeemu += 1;
-	std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
-	std::cout<<"         num of mu: "<<nselmu<<std::endl;
-	std::cout<<"         num of el: "<<nselel<<std::endl;
+      if (nZmumu > 0 && nZee > 0 && nZeu > 0) {
+	//111 in binary, 7 in decimal
+	channel = 7.;
       }
-      if (nZee ==  0 && nZmumu ==  0 && nZeu > 0) {
-	cemusolo += 1;
-	std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
-	std::cout<<"         num of mu: "<<nselmu<<std::endl;
-	std::cout<<"         num of el: "<<nselel<<std::endl;
+      if (nZmumu == 0 && nZee > 0 && nZeu == 0) {
+	//010
+	channel = 2.;
       }
-
+      if (nZmumu == 0 && nZee > 0 && nZeu > 0) {
+	//011
+	channel = 3.;
+      }
+      if (nZmumu == 0 && nZee == 0 && nZeu > 0) {
+	//001
+	channel = 1.;
+      }
       //std::cout<<"   The leading muon pt is: "<<leadmu.Pt()<<std::endl;
       //std::cout<<"   The subldig muon pt is: "<<subleadmu.Pt()<<std::endl;
       //std::cout<<"   The dimuon pt is      : "<<(leadmu+subleadmu).Pt()<<std::endl;
       
 
-      */
+      //*/
       
       //Z Candidate Build
       unsigned int nZs = ZCandidates->size();
@@ -516,7 +515,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	gzCandidate_phi = theGenZ.Phi();
 	gzCandidate_eta = theGenZ.Eta();
 	gzCandidate_m   = theGenZ.M();
-
+	channelflag = channel;
 	counthpass += 1;
       }
       

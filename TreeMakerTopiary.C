@@ -22,6 +22,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("ZCandidates*",1);
    fChain->SetBranchStatus("SelectedElectrons*",1);
    fChain->SetBranchStatus("eeBadScFilter",1);
+   fChain->SetBranchStatus("ZCandidatesMuMu",1);
+   fChain->SetBranchStatus("ZCandidatesEE",1);
+   fChain->SetBranchStatus("ZCandidatesEU",1);
 
    if (sampleType != 0){
      fChain->SetBranchStatus("GenParticles*",1);
@@ -236,7 +239,6 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       string token;
       if (year == 18) {
 	ourtrg = "HLT_Mu55_v";
-	  //break;
       }
       if (year == 17) {
 	ourtrg = "HLT_Mu50_v";
@@ -299,6 +301,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  }
 	}
 
+	//Calculate the k-factor
 	float qcdnlosf   = 1;
 	double qcdnnlosf = 1;
 	float ewknlosf   = 1;
@@ -320,32 +323,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  evntw_hold = ewknlosf*qcdnnlosf*qcdnlosf;
 	}
       }
-
-      //gen particle addition. Should update with above
-      //TLorentzVector theGenZ;
-      //TLorentzVector theGenH;
-      //unsigned long ngen = GenParticles->size();
-      //if (sampleType != 0) {//Not Data
-     //int gpid;
-      //for (unsigned long i = 0; i < ngen; ++i) {
-      //  int gpid = GenParticles_PdgId->at(i);
-	  //std::cout<<"PID "<<gpid<<std::endl;
-      //  if (gpid == 23) {
-      //    theGenZ = GenParticles->at(i);
-      //  }
-      //  if (gpid == 25) {
-      //    theGenH = GenParticles->at(i);
-      //  }
-      //}
-      //}
-
       
       //Z exploration
       unsigned int nselmu = SelectedMuons->size();
       unsigned int nselel = SelectedElectrons->size();
-      //unsigned int nZmumu = ZCandidatesMuMu->size();
-      //unsigned int nZee = ZCandidatesEE->size();
-      //unsigned int nZeu = ZCandidatesEU->size();
+      unsigned int nZmumu = ZCandidatesMuMu->size();
+      unsigned int nZee = ZCandidatesEE->size();
+      unsigned int nZeu = ZCandidatesEU->size();
       TLorentzVector leadmu;
       TLorentzVector subleadmu;
       double muptmax = 0;
@@ -374,21 +358,21 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       }
       if (nZmumu > 0 && nZeu > 0) {
 	cmixmumuemu += 1;
-	//std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(emu)!"<<std::endl;
-	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
-	//std::cout<<"         num of el: "<<nselel<<std::endl;
+	std::cout<<"Found a mixed case - Both a  Z(mumu) and a Z(emu)!"<<std::endl;
+	std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	std::cout<<"         num of el: "<<nselel<<std::endl;
       }
       if (nZee > 0 && nZeu > 0) {
 	cmixeeemu += 1;
-	//std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
-	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
-	//std::cout<<"         num of el: "<<nselel<<std::endl;
+	std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
+	std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	std::cout<<"         num of el: "<<nselel<<std::endl;
       }
       if (nZee ==  0 && nZmumu ==  0 && nZeu > 0) {
 	cemusolo += 1;
-	//std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
-	//std::cout<<"         num of mu: "<<nselmu<<std::endl;
-	//std::cout<<"         num of el: "<<nselel<<std::endl;
+	std::cout<<"Found a mixed case - Both a  Z(ee) and a Z(emu)!"<<std::endl;
+	std::cout<<"         num of mu: "<<nselmu<<std::endl;
+	std::cout<<"         num of el: "<<nselel<<std::endl;
       }
 
       //std::cout<<"   The leading muon pt is: "<<leadmu.Pt()<<std::endl;

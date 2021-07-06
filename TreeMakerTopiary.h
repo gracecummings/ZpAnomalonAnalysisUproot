@@ -249,6 +249,9 @@ public :
    vector<int>     *TriggerPrescales;
    vector<int>     *TriggerVersion;
    vector<TLorentzVector> *ZCandidates;
+   vector<TLorentzVector> *ZCandidatesMuMu;
+   vector<TLorentzVector> *ZCandidatesEE;
+   vector<TLorentzVector> *ZCandidatesEU;
 
    // List of branches
    TBranch        *b_RunNum;   //!
@@ -471,6 +474,9 @@ public :
    TBranch        *b_TriggerPrescales;   //!
    TBranch        *b_TriggerVersion;   //!
    TBranch        *b_ZCandidates;   //!
+   TBranch        *b_ZCandidatesMuMu;   //!
+   TBranch        *b_ZCandidatesEE;   //!
+   TBranch        *b_ZCandidatesEU;   //!
 
    //MC Only Variables
    vector<TLorentzVector> *GenElectrons;

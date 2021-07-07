@@ -325,11 +325,12 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   sbdatfit->FixParameter(8,parData[8]);
   sbdatfit->FixParameter(9,parData[9]);
   sbdatfit->FixParameter(10,parData[10]);
+  sbdatfit->FixParameter(12,parData[12]);
   sbdatfit->FixParameter(13,parData[13]);
   sbdatfit->FixParameter(14,parData[14]);
   sbdatfit->FixParameter(15,parData[15]);
 
-  dathist->Fit("sbdatfit","R0+");
+  dathist->Fit("sbdatfit","LR0+");
   TF1 *totsbdatfit = dathist->GetFunction("sbdatfit");
 
   //Now seperate fits for visualization
@@ -354,7 +355,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   totextrap->FixParameter(14,parExtrap[14]);
   totextrap->FixParameter(15,parExtrap[15]);
   totextrap->FixParameter(16,parExtrap[16]);
-  dathist->Fit("totextrap","R0+");
+  dathist->Fit("totextrap","QR0+");
   TF1 *totnorm = dathist->GetFunction("totextrap");
   
   //TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70);

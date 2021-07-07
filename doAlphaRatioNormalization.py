@@ -100,7 +100,7 @@ if __name__=='__main__':
     bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
     info17 = go.prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
     info18 = go.prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
-    stackleg = ROOT.TLegend(0.55,0.60,0.93,0.8)
+    stackleg = ROOT.TLegend(0.55,0.40,0.93,0.8)
     go.stackBkgMultiYear(info17,info18,'h_h_sd',hsbkg,stackleg,50,0)
 
     #makes some fits
@@ -215,7 +215,7 @@ if __name__=='__main__':
     hdatsb.SetMarkerColor(ROOT.kBlack)
     hdatsb.Draw("SAME")
     stackleg.AddEntry(sbdatfit,"Fit to Data SB","l")
-    stackleg.AddEntry(totnormfit,"Data SB extrapolation","l")
+    stackleg.AddEntry(totnormfit,"Data SB Extrap - Likelihood","l")
     stackleg.AddEntry(sbdatfit,"Data SB","ep")
     stackleg.Draw()
     tc1.cd()

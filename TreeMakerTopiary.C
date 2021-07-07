@@ -334,7 +334,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       TLorentzVector leadmu;
       TLorentzVector subleadmu;
       double muptmax = 0;
-      if (nselmu > 0  && nselel == 0) {//Only a dimuon Z in the event
+      unsigned int nZs = ZCandidates->size();
+      TLorentzVector theZ;
+      double baseZdiff = 99999;
+      //Channel Flags
+      ///*
+      if (nZmumu > 0 && nZee == 0 && nZeu == 0){
+	//in binary 100, 4 in decimal
+	channel = 4.;//4 in decimal
 	mumuchan = true;
 	std::vector<TLorentzVector>::iterator muit;
 	for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
@@ -345,18 +352,24 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  else {
 	    subleadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());;
 	 }
-	    
 	}
-      }
-
-      ///*
-      if (nZmumu > 0 && nZee == 0 && nZeu == 0){
-	//in binary 100, 4 in decimal
-	channel = 4.;//4 in decimal
+	std::vector<TLorentzVector>::iterator zit;
+	for (zit = ZCandidatesMuMu->begin(); zit != ZCandidatesMuMu->end(); ++zit) {
+	  double massZdiff = std::abs(91.1876 - zit->M());
+	  if ((massZdiff < baseZdiff) && (zit->M() > zmwinlow) && (zit->M() < zmwinhi)) {
+	    baseZdiff = massZdiff;
+	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Eta(),zit->Phi(),zit->M());
+	    passZ = true;
+	  }
+	}
       }
       if (nZmumu > 0 && nZee > 0 && nZeu == 0) {
 	//110 in binary, 6 in decimal
 	channel = 6.;//
+      }
+      if (nZmumu > 0 && nZee == 0 && nZeu > 0) {
+	//101 in binary, 5 in decimal
+	channel = 5.;//
       }
       if (nZmumu > 0 && nZee > 0 && nZeu > 0) {
 	//111 in binary, 7 in decimal
@@ -374,33 +387,37 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	//001
 	channel = 1.;
       }
-      //std::cout<<"   The leading muon pt is: "<<leadmu.Pt()<<std::endl;
-      //std::cout<<"   The subldig muon pt is: "<<subleadmu.Pt()<<std::endl;
-      //std::cout<<"   The dimuon pt is      : "<<(leadmu+subleadmu).Pt()<<std::endl;
-      
-
       //*/
-      
+
       //Z Candidate Build
-      unsigned int nZs = ZCandidates->size();
-      TLorentzVector theZ;
-      double baseZdiff = 99999;
+      //For old ntuples
+      /*
+      if (nselmu > 0 && nselel == 0) {
+      	mumuchan = true;
+	std::vector<TLorentzVector>::iterator muit;
+	for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
+	  if (muit->Pt() > muptmax) {
+	    muptmax = muit->Pt();
+	    leadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());
+	  }
+	  else {
+	    subleadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());;
+	 }
+	}
+      }
       if (nZs > 0) {
-	//std::cout<<"Greater than 0 Zs"<<std::endl;
 	std::vector<TLorentzVector>::iterator zit;
 	for (zit = ZCandidates->begin(); zit != ZCandidates->end(); ++zit) {
 	  double massZdiff = std::abs(91.1876 - zit->M());
-	  //if ((massZdiff < baseZdiff) && (zit->M() >= zmwinlow) && (zit->M() <= zmwinhi)) {
 	  if ((massZdiff < baseZdiff) && (zit->M() > zmwinlow) && (zit->M() < zmwinhi)) {
-	    //std::cout<<"    massdiff: "<<massZdiff<<std::endl;
-	    //std::cout<<"        mass: "<<zit->M()<<std::endl;
 	    baseZdiff = massZdiff;
 	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Eta(),zit->Phi(),zit->M());
 	    passZ = true;
 	  }
 	}
       }
-
+      */
+      
       //Higgs Candidate Build
       //unsigned long nfat = JetsAK8>size();
       unsigned long nfat = JetsAK8Clean->size();

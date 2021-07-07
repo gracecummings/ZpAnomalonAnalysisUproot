@@ -310,17 +310,24 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
 
   Double_t parData[17];
   totmcfit->GetParameters(parData);
-  std::cout<<"Z peak guess "<<parData[13]<<std::endl;
-  std::cout<<"t peak guess "<<parData[9]<<std::endl;
+  //std::cout<<"Z peak guess "<<parData[13]<<std::endl;
+  //std::cout<<"t peak guess "<<parData[9]<<std::endl;
 
   //Now do the extrapolation
   TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModelBlind,30,250,17);
   sbdatfit->SetParameters(parData);
-  sbdatfit->FixParameter(13,parData[13]);
+  sbdatfit->FixParameter(1,parData[1]);
+  sbdatfit->FixParameter(2,parData[2]);
+  sbdatfit->FixParameter(3,parData[3]);
+  sbdatfit->FixParameter(4,parData[4]);
+  sbdatfit->FixParameter(5,parData[5]);
+  sbdatfit->FixParameter(7,parData[7]);
+  sbdatfit->FixParameter(8,parData[8]);
   sbdatfit->FixParameter(9,parData[9]);
-  //sbdatfit->FixParameter(14,parData[14]);
-  //sbdatfit->FixParameter(15,parData[15]);
-  //sbdatfit->FixParameter(16,parData[16]);
+  sbdatfit->FixParameter(10,parData[10]);
+  sbdatfit->FixParameter(13,parData[13]);
+  sbdatfit->FixParameter(14,parData[14]);
+  sbdatfit->FixParameter(15,parData[15]);
 
   dathist->Fit("sbdatfit","R0+");
   TF1 *totsbdatfit = dathist->GetFunction("sbdatfit");

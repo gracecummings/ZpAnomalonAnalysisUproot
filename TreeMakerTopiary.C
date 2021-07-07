@@ -333,7 +333,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       unsigned int nZeu = ZCandidatesEU->size();
       TLorentzVector leadmu;
       TLorentzVector subleadmu;
-      double muptmax = 0;
+      TLorentzVector leade;
+      TLorentzVector subleade;
+      double lptmax = 0;
       unsigned int nZs = ZCandidates->size();
       TLorentzVector theZ;
       double baseZdiff = 99999;
@@ -345,8 +347,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	mumuchan = true;
 	std::vector<TLorentzVector>::iterator muit;
 	for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
-	  if (muit->Pt() > muptmax) {
-	    muptmax = muit->Pt();
+	  if (muit->Pt() > lptmax) {
+	    lptmax = muit->Pt();
 	    leadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());
 	  }
 	  else {
@@ -378,6 +380,26 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       if (nZmumu == 0 && nZee > 0 && nZeu == 0) {
 	//010
 	channel = 2.;
+	std::vector<TLorentzVector>::iterator eit;
+	for (eit = SelectedElectrons->begin(); eit != SelectedElectrons->end();++eit) { 
+	  if (eit->Pt() > lptmax) {
+	    lptmax = eit->Pt();
+	    leade.SetPtEtaPhiM(eit->Pt(),eit->Eta(),eit->Phi(),eit->M());
+	  }
+	  else {
+	    subleade.SetPtEtaPhiM(eit->Pt(),eit->Eta(),eit->Phi(),eit->M());;
+	 }
+	}
+	std::vector<TLorentzVector>::iterator zit;
+	for (zit = ZCandidatesEE->begin(); zit != ZCandidatesEE->end(); ++zit) {
+	  double massZdiff = std::abs(91.1876 - zit->M());
+	  if ((massZdiff < baseZdiff) && (zit->M() > zmwinlow) && (zit->M() < zmwinhi)) {
+	    baseZdiff = massZdiff;
+	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Eta(),zit->Phi(),zit->M());
+	    passZ = true;
+	  }
+	}
+
       }
       if (nZmumu == 0 && nZee > 0 && nZeu > 0) {
 	//011
@@ -396,8 +418,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       	mumuchan = true;
 	std::vector<TLorentzVector>::iterator muit;
 	for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
-	  if (muit->Pt() > muptmax) {
-	    muptmax = muit->Pt();
+	  if (muit->Pt() > lptmax) {
+	    lptmax = muit->Pt();
 	    leadmu.SetPtEtaPhiM(muit->Pt(),muit->Eta(),muit->Phi(),muit->M());
 	  }
 	  else {
@@ -497,7 +519,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	countzpass +=1 ;
       }
 
-      if (passh && passZ && passTrig && mumuchan) {
+      //if (passh && passZ && passTrig && mumuchan) {
+      if (passh && passZ ) {//Removed Z Channel Requirement
 	hCandidate = theh;
 	hCandidate_pt  = theh.Pt();
 	hCandidate_phi = theh.Phi();
@@ -524,6 +547,16 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	sLMuCandidate_phi = subleadmu.Phi();
 	sLMuCandidate_eta = subleadmu.Eta();
 	sLMuCandidate_m   = subleadmu.M();
+	LEleCandidate = leade;
+	LEleCandidate_pt  = leade.Pt();
+	LEleCandidate_phi = leade.Phi();
+	LEleCandidate_eta = leade.Eta();
+	LEleCandidate_m   = leade.M();
+	sLEleCandidate = subleade;
+	sLEleCandidate_pt  = subleade.Pt();
+	sLEleCandidate_phi = subleade.Phi();
+	sLEleCandidate_eta = subleade.Eta();
+	sLEleCandidate_m   = subleade.M();
 	ghCandidate_pt  = theGenH.Pt();
 	ghCandidate_phi = theGenH.Phi();
 	ghCandidate_eta = theGenH.Eta();
@@ -539,10 +572,12 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //Fill the Tree
       if (Cut(ientry) < 0) continue;
       if (passZ && passh && passTrig && sampleType !=0 && mumuchan) {
+      //if (passZ && passh && sampleType !=0) {//for Zee channel checks
 	trimTree->Fill();
 	countpass += 1;
 	}
       if (passZ && passh && passTrig && sampleType == 0 && passFil && mumuchan) {
+	//if (passZ && passh && sampleType == 0 && passFil) {//for Zee channel checks
 	trimTree->Fill();
 	countpass += 1;
       }

@@ -333,8 +333,6 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   dathist->Fit("sbdatfit","LR0+");
   TF1 *totsbdatfit = dathist->GetFunction("sbdatfit");
 
-  //Now seperate fits for visualization
-  //broken
   Double_t parExtrap[17];
   totsbdatfit->GetParameters(parExtrap);
   TF1 *totextrap = new TF1("totextrap",totalBkgModel,30,250,17);
@@ -357,22 +355,59 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   totextrap->FixParameter(16,parExtrap[16]);
   dathist->Fit("totextrap","QR0+");
   TF1 *totnorm = dathist->GetFunction("totextrap");
-  
-  //TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70);
-  //dathist->GetListOfFunctions()->Add(flsb);
-  //gROOT->GetListOfFunctions()->Remove(flsb);
-  //TF1 *lsbdatfit = dathist->GetFunction("flsb");
-  //TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,150,400);
-  //fhsb->SetParameters(totsbdatfit->GetParameters());
-  //dathist->GetListOfFunctions()->Add(fhsb);
-  //TF1 *hsbdatfit = dathist->GetFunction("fhsb");
+
+  //Now seperate fits for visualization
+  //broken
+  TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70,17);
+  flsb->FixParameter(0,parExtrap[0]);
+  flsb->FixParameter(1,parExtrap[1]);
+  flsb->FixParameter(2,parExtrap[2]);
+  flsb->FixParameter(3,parExtrap[3]);
+  flsb->FixParameter(4,parExtrap[4]);
+  flsb->FixParameter(5,parExtrap[5]);
+  flsb->FixParameter(6,parExtrap[6]);
+  flsb->FixParameter(7,parExtrap[7]);
+  flsb->FixParameter(8,parExtrap[8]);
+  flsb->FixParameter(9,parExtrap[9]);
+  flsb->FixParameter(10,parExtrap[10]);
+  flsb->FixParameter(11,parExtrap[11]);
+  flsb->FixParameter(12,parExtrap[12]);
+  flsb->FixParameter(13,parExtrap[13]);
+  flsb->FixParameter(14,parExtrap[14]);
+  flsb->FixParameter(15,parExtrap[15]);
+  flsb->FixParameter(16,parExtrap[16]);
+  dathist->Fit("flsb","QR0+");
+  TF1 *lsbdatfit = dathist->GetFunction("flsb");
+
+  TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,150,250,17);
+  fhsb->FixParameter(0,parExtrap[0]);
+  fhsb->FixParameter(1,parExtrap[1]);
+  fhsb->FixParameter(2,parExtrap[2]);
+  fhsb->FixParameter(3,parExtrap[3]);
+  fhsb->FixParameter(4,parExtrap[4]);
+  fhsb->FixParameter(5,parExtrap[5]);
+  fhsb->FixParameter(6,parExtrap[6]);
+  fhsb->FixParameter(7,parExtrap[7]);
+  fhsb->FixParameter(8,parExtrap[8]);
+  fhsb->FixParameter(9,parExtrap[9]);
+  fhsb->FixParameter(10,parExtrap[10]);
+  fhsb->FixParameter(11,parExtrap[11]);
+  fhsb->FixParameter(12,parExtrap[12]);
+  fhsb->FixParameter(13,parExtrap[13]);
+  fhsb->FixParameter(14,parExtrap[14]);
+  fhsb->FixParameter(15,parExtrap[15]);
+  fhsb->FixParameter(16,parExtrap[16]);
+  dathist->Fit("fhsb","QR0+");
+  TF1 *hsbdatfit = dathist->GetFunction("fhsb");
+
+
   
   std::vector<TF1*> fitvector;
   fitvector.push_back(totmcfit);
   fitvector.push_back(totsbdatfit);
   fitvector.push_back(totnorm);
-  //fitvector.push_back(hsbdatfit);
-  
+  fitvector.push_back(lsbdatfit);
+  fitvector.push_back(hsbdatfit);
   return fitvector;
 }
 

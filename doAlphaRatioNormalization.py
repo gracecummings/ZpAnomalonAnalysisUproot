@@ -106,14 +106,18 @@ if __name__=='__main__':
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"dyl","QR0+",30,250)
     ttfit = ROOT.gaus2Fit(htrtt,"ttl","QR0+",30,400)
-    #vvfit = ROOT.gausErfExpFit(htrvv,"vvl1","QR0+",30,250,90,5)
-    vvfit2 = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
-    #vvfit2.SetLineColor(ROOT.kRed)
+    vvfit = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
     normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",30,250)
     bkgfit = normfits[0]
     sbdatfit = normfits[1]
     totnormfit = normfits[2]
+    lsbdatfit = normfits[3]
+    hsbdatfit = normfits[4]
+
+    #Define some fit styles
+    bkgfit.SetLineStyle(6)
     totnormfit.SetLineColor(ROOT.kBlue)
+    totnormfit.SetLineStyle(9)
     
     #labels
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
@@ -126,8 +130,7 @@ if __name__=='__main__':
     ttleg.SetBorderSize(0)
     vvleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
     vvleg.AddEntry(htrvv,"VV","ep")
-    #vvleg.AddEntry(vvfit,"ErfExpGaus Fit","l")
-    vvleg.AddEntry(vvfit2,"GausPol1 Fit","l")
+    vvleg.AddEntry(vvfit,"GausPol1 Fit","l")
     vvleg.SetBorderSize(0)
     stackleg.AddEntry(bkgfit,"Bkg MC fit","l")
     stackleg.SetBorderSize(0)
@@ -162,8 +165,7 @@ if __name__=='__main__':
     p13.cd()
     plotMsd(p13,htrvv)
     CMS_lumi.CMS_lumi(p13,4,13)
-    #vvfit.Draw("same")
-    vvfit2.Draw("same")
+    vvfit.Draw("same")
     vvleg.Draw()
     p13.Update()
     tc.cd()
@@ -207,9 +209,10 @@ if __name__=='__main__':
     yax.SetLabelSize(0.04)
     yax.SetLabelOffset(0.015)
     CMS_lumi.CMS_lumi(pd12,4,13)
-    sbdatfit.SetLineColor(ROOT.kRed)
+    bkgfit.Draw("SAME")
     totnormfit.Draw("SAME")
-    sbdatfit.Draw("SAME")
+    lsbdatfit.Draw("SAME")
+    hsbdatfit.Draw("SAME")
     hdatsb.SetMarkerStyle(8)
     hdatsb.SetMarkerSize(0.5)
     hdatsb.SetMarkerColor(ROOT.kBlack)

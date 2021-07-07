@@ -334,9 +334,32 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
 
   //Now seperate fits for visualization
   //broken
+  Double_t parExtrap[17];
+  totsbdatfit->GetParameters(parExtrap);
+  TF1 *totextrap = new TF1("totextrap",totalBkgModel,30,250,17);
+  totextrap->FixParameter(0,parExtrap[0]);
+  totextrap->FixParameter(1,parExtrap[1]);
+  totextrap->FixParameter(2,parExtrap[2]);
+  totextrap->FixParameter(3,parExtrap[3]);
+  totextrap->FixParameter(4,parExtrap[4]);
+  totextrap->FixParameter(5,parExtrap[5]);
+  totextrap->FixParameter(6,parExtrap[6]);
+  totextrap->FixParameter(7,parExtrap[7]);
+  totextrap->FixParameter(8,parExtrap[8]);
+  totextrap->FixParameter(9,parExtrap[9]);
+  totextrap->FixParameter(10,parExtrap[10]);
+  totextrap->FixParameter(11,parExtrap[11]);
+  totextrap->FixParameter(12,parExtrap[12]);
+  totextrap->FixParameter(13,parExtrap[13]);
+  totextrap->FixParameter(14,parExtrap[14]);
+  totextrap->FixParameter(15,parExtrap[15]);
+  totextrap->FixParameter(16,parExtrap[16]);
+  dathist->Fit("totextrap","R0+");
+  TF1 *totnorm = dathist->GetFunction("totextrap");
+  
   //TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70);
-  //flsb->SetParameters(totsbdatfit->GetParameters());
   //dathist->GetListOfFunctions()->Add(flsb);
+  //gROOT->GetListOfFunctions()->Remove(flsb);
   //TF1 *lsbdatfit = dathist->GetFunction("flsb");
   //TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,150,400);
   //fhsb->SetParameters(totsbdatfit->GetParameters());
@@ -346,7 +369,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   std::vector<TF1*> fitvector;
   fitvector.push_back(totmcfit);
   fitvector.push_back(totsbdatfit);
-  //fitvector.push_back(lsbdatfit);
+  fitvector.push_back(totnorm);
   //fitvector.push_back(hsbdatfit);
   
   return fitvector;

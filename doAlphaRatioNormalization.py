@@ -106,14 +106,14 @@ if __name__=='__main__':
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"dyl","QR0+",30,250)
     ttfit = ROOT.gaus2Fit(htrtt,"ttl","QR0+",30,400)
-    vvfit = ROOT.gausErfExpFit(htrvv,"vvl1","QR0+",30,250,90,5)
+    #vvfit = ROOT.gausErfExpFit(htrvv,"vvl1","QR0+",30,250,90,5)
     vvfit2 = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
-    vvfit2.SetLineColor(ROOT.kRed)
+    #vvfit2.SetLineColor(ROOT.kRed)
     normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",30,250)
     bkgfit = normfits[0]
     sbdatfit = normfits[1]
-    #sbdatfitlsb = normfits[2]
-    #sbdatfithsb = normfits[3]
+    totnormfit = normfits[2]
+    totnormfit.SetLineColor(ROOT.kBlue)
     
     #labels
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
@@ -126,13 +126,11 @@ if __name__=='__main__':
     ttleg.SetBorderSize(0)
     vvleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
     vvleg.AddEntry(htrvv,"VV","ep")
-    vvleg.AddEntry(vvfit,"ErfExpGaus Fit","l")
+    #vvleg.AddEntry(vvfit,"ErfExpGaus Fit","l")
     vvleg.AddEntry(vvfit2,"GausPol1 Fit","l")
     vvleg.SetBorderSize(0)
     stackleg.AddEntry(bkgfit,"Bkg MC fit","l")
     stackleg.SetBorderSize(0)
-    #datfitleg.AddEntry(sbdatfit,"Fit to data SB","l")
-    #datfitleg.SetBorderSize(0)
     
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
@@ -164,7 +162,7 @@ if __name__=='__main__':
     p13.cd()
     plotMsd(p13,htrvv)
     CMS_lumi.CMS_lumi(p13,4,13)
-    vvfit.Draw("same")
+    #vvfit.Draw("same")
     vvfit2.Draw("same")
     vvleg.Draw()
     p13.Update()
@@ -210,14 +208,14 @@ if __name__=='__main__':
     yax.SetLabelOffset(0.015)
     CMS_lumi.CMS_lumi(pd12,4,13)
     sbdatfit.SetLineColor(ROOT.kRed)
+    totnormfit.Draw("SAME")
     sbdatfit.Draw("SAME")
-    #sbdatfitlsb.Draw("SAME")
-    #sbdatfithsb.Draw("SAME")
     hdatsb.SetMarkerStyle(8)
     hdatsb.SetMarkerSize(0.5)
     hdatsb.SetMarkerColor(ROOT.kBlack)
     hdatsb.Draw("SAME")
     stackleg.AddEntry(sbdatfit,"Fit to Data SB","l")
+    stackleg.AddEntry(totnormfit,"Data SB extrapolation","l")
     stackleg.AddEntry(sbdatfit,"Data SB","ep")
     stackleg.Draw()
     tc1.cd()

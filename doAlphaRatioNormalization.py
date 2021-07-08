@@ -105,7 +105,8 @@ if __name__=='__main__':
 
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"dyl","QR0+",30,250)
-    ttfit = ROOT.gaus2Fit(htrtt,"ttl","QR0+",30,400)
+    #ttfit = ROOT.gaus2Fit(htrtt,"ttl","QR0+",30,400)
+    ttfit = ROOT.gaus2Fit2(htrtt,"ttl","QR0+",30,400)
     vvfit = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
     normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",30,250)
     bkgfit = normfits[0]
@@ -210,9 +211,9 @@ if __name__=='__main__':
     yax.SetLabelOffset(0.015)
     CMS_lumi.CMS_lumi(pd12,4,13)
     bkgfit.Draw("SAME")
-    totnormfit.Draw("SAME")
-    lsbdatfit.Draw("SAME")
-    hsbdatfit.Draw("SAME")
+    #totnormfit.Draw("SAME")
+    #lsbdatfit.Draw("SAME")
+    #hsbdatfit.Draw("SAME")
     hdatsb.SetMarkerStyle(8)
     hdatsb.SetMarkerSize(0.5)
     hdatsb.SetMarkerColor(ROOT.kBlack)

@@ -218,6 +218,24 @@ TF1 * gausFit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr
   return fitout;
 }
 
+Double_t gaus2Model2(Double_t *X, Double_t *par){
+  Double_t x = X[0];
+  Double_t fitval = par[5]*(par[0]*TMath::Gaus(x,par[1],par[2])+(1-par[0])*TMath::Gaus(x,par[3],par[4]));
+  return fitval;
+}
+
+TF1 * gaus2Fit2(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+  TF1 *gaus2fit = new TF1(name,gaus2Model2,lowr,highr,6);
+  gaus2fit->SetParameter(1,120);
+  gaus2fit->SetParameter(2,40);
+  gaus2fit->SetParameter(3,175);
+  gaus2fit->SetParameter(4,10);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
 Double_t gaus2Model(Double_t *X, Double_t *par){
   Double_t x = X[0];
   Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2])+(par[5])*TMath::Gaus(x,par[3],par[4]);
@@ -280,7 +298,8 @@ TF1 * gausPoly1Fit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int 
 
 Double_t totalBkgModel(Double_t *X, Double_t *par){
   //Double_t x = X[0];
-  Double_t fitval = poly5Model(X,&par[0])+gaus2Model(X,&par[6])+gausPoly1Model(X,&par[12]);
+  //Double_t fitval = par[17]*poly5Model(X,&par[0])+par[18]*gaus2Model(X,&par[6])+par[19]*gausPoly1Model(X,&par[12]);
+  Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model2(X,&par[6])+par[18]*gausPoly1Model(X,&par[12]);
   return fitval;
 }
 
@@ -294,18 +313,37 @@ Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
 }
 
 vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lowr=30, int highr=400) {
-  TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",30,250);
-  TF1 *ttfit = gaus2Fit(tthist,"ttl","QR0+",30,400);
-  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QR0+",30,250);
+  TF1 *dyfit = poly5Fit(dyhist,"dyl","R0+",30,250);
+  TF1 *ttfit = gaus2Fit2(tthist,"ttl","R0+",30,400);
+  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","R0+",30,250);
 
   Double_t par[17];
   dyfit->GetParameters(&par[0]);
   ttfit->GetParameters(&par[6]);
   vvfit->GetParameters(&par[12]);
 
-  TF1 *totalfit = new TF1("totalfit",totalBkgModel,30,250,17);
-  totalfit->SetParameters(par);
-  hist->Fit("totalfit","R0+");
+  TF1 *totalfit = new TF1("totalfit",totalBkgModel,30,250,19);//17 without norms
+  totalfit->FixParameter(0,par[0]);
+  totalfit->FixParameter(1,par[1]);
+  totalfit->FixParameter(2,par[2]);
+  totalfit->FixParameter(3,par[3]);
+  totalfit->FixParameter(4,par[4]);
+  totalfit->FixParameter(5,par[5]);
+  totalfit->FixParameter(6,par[6]);
+  totalfit->FixParameter(7,par[7]);
+  totalfit->FixParameter(8,par[8]);
+  totalfit->FixParameter(9,par[9]);
+  totalfit->FixParameter(10,par[10]);
+  totalfit->FixParameter(11,par[11]);//norm of ttbar
+  totalfit->FixParameter(12,par[12]);
+  totalfit->FixParameter(13,par[13]);
+  totalfit->FixParameter(14,par[14]);
+  totalfit->FixParameter(15,par[15]);
+  totalfit->FixParameter(16,par[16]);
+  //totalfit->SetParameters(17,1);
+  //totalfit->SetParameters(18,1);
+  //totalfit->SetParameters(19,1);
+  hist->Fit("totalfit","R0L+");
   TF1 *totmcfit = hist->GetFunction("totalfit");
 
   Double_t parData[17];

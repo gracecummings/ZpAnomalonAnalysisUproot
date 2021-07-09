@@ -202,6 +202,20 @@ TF1 * poly5Fit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int high
   return fitout;
 }
 
+Double_t poly5Model2(Double_t *X, Double_t *par){
+  Double_t x = X[0];
+  Double_t fitval = par[6]*(par[0]+par[1]*x+par[2]*std::pow(x,2.0)+par[3]*std::pow(x,3.0)+par[4]*std::pow(x,4.0)+par[5]*std::pow(x,5));
+  return fitval;
+}
+
+TF1 * poly5Fit2(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+  TF1 *poly5fit = new TF1(name,poly5Model,lowr,highr,7);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
 Double_t gausModel(Double_t *X, Double_t *par){
   double x = X[0];
   Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2]);
@@ -268,7 +282,7 @@ Double_t gausErfExpModel(Double_t *X, Double_t *par){
 
 Double_t gausPoly1Model(Double_t *X, Double_t *par){
   Double_t x = X[0];
-  Double_t fitval = par[0]*TMath::Gaus(x,par[1],par[2])+par[3]*x+par[4];
+  Double_t fitval = par[0]*(TMath::Gaus(x,par[1],par[2])+par[3]*x+par[4]);
   return fitval;
 }
 
@@ -299,7 +313,9 @@ TF1 * gausPoly1Fit(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int 
 Double_t totalBkgModel(Double_t *X, Double_t *par){
   //Double_t x = X[0];
   //Double_t fitval = par[17]*poly5Model(X,&par[0])+par[18]*gaus2Model(X,&par[6])+par[19]*gausPoly1Model(X,&par[12]);
-  Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model2(X,&par[6])+par[18]*gausPoly1Model(X,&par[12]);
+  //Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model(X,&par[6])+par[18]*gausPoly1Model(X,&par[12]);
+  //Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model2(X,&par[6])+par[18]*gausPoly1Model(X,&par[12]);
+  Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model2(X,&par[6])+gausPoly1Model(X,&par[12]);
   return fitval;
 }
 
@@ -308,13 +324,13 @@ Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
     TF1::RejectPoint();
     return 0;
   }
-  Double_t fitval = poly5Model(X,&par[0])+gaus2Model(X,&par[6])+gausPoly1Model(X,&par[12]);
+  Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model2(X,&par[6])+gausPoly1Model(X,&par[12]);
   return fitval;
 }
 
 vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lowr=30, int highr=400) {
   TF1 *dyfit = poly5Fit(dyhist,"dyl","R0+",30,250);
-  TF1 *ttfit = gaus2Fit2(tthist,"ttl","R0+",30,400);
+  TF1 *ttfit = gaus2Fit(tthist,"ttl","R0+",30,400);
   TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","R0+",30,250);
 
   Double_t par[17];
@@ -322,7 +338,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   ttfit->GetParameters(&par[6]);
   vvfit->GetParameters(&par[12]);
 
-  TF1 *totalfit = new TF1("totalfit",totalBkgModel,30,250,19);//17 without norms
+  TF1 *totalfit = new TF1("totalfit",totalBkgModel,30,250,18);//17 without norms
   totalfit->FixParameter(0,par[0]);
   totalfit->FixParameter(1,par[1]);
   totalfit->FixParameter(2,par[2]);
@@ -335,14 +351,11 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   totalfit->FixParameter(9,par[9]);
   totalfit->FixParameter(10,par[10]);
   totalfit->FixParameter(11,par[11]);//norm of ttbar
-  totalfit->FixParameter(12,par[12]);
+  totalfit->FixParameter(12,par[12]);//norm of dib
   totalfit->FixParameter(13,par[13]);
   totalfit->FixParameter(14,par[14]);
   totalfit->FixParameter(15,par[15]);
   totalfit->FixParameter(16,par[16]);
-  //totalfit->SetParameters(17,1);
-  //totalfit->SetParameters(18,1);
-  //totalfit->SetParameters(19,1);
   hist->Fit("totalfit","R0L+");
   TF1 *totmcfit = hist->GetFunction("totalfit");
 
@@ -352,28 +365,32 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   //std::cout<<"t peak guess "<<parData[9]<<std::endl;
 
   //Now do the extrapolation
-  TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModelBlind,30,250,17);
+  TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModelBlind,30,250,18);
   sbdatfit->SetParameters(parData);
+  sbdatfit->FixParameter(0,parData[0]);
   sbdatfit->FixParameter(1,parData[1]);
   sbdatfit->FixParameter(2,parData[2]);
   sbdatfit->FixParameter(3,parData[3]);
   sbdatfit->FixParameter(4,parData[4]);
   sbdatfit->FixParameter(5,parData[5]);
+  sbdatfit->FixParameter(6,parData[6]);
   sbdatfit->FixParameter(7,parData[7]);
   sbdatfit->FixParameter(8,parData[8]);
   sbdatfit->FixParameter(9,parData[9]);
   sbdatfit->FixParameter(10,parData[10]);
+  sbdatfit->FixParameter(11,parData[11]);
   sbdatfit->FixParameter(12,parData[12]);
   sbdatfit->FixParameter(13,parData[13]);
   sbdatfit->FixParameter(14,parData[14]);
   sbdatfit->FixParameter(15,parData[15]);
+  sbdatfit->FixParameter(16,parData[16]);
 
   dathist->Fit("sbdatfit","LR0+");
   TF1 *totsbdatfit = dathist->GetFunction("sbdatfit");
 
-  Double_t parExtrap[17];
+  Double_t parExtrap[18];
   totsbdatfit->GetParameters(parExtrap);
-  TF1 *totextrap = new TF1("totextrap",totalBkgModel,30,250,17);
+  TF1 *totextrap = new TF1("totextrap",totalBkgModel,30,250,18);
   totextrap->FixParameter(0,parExtrap[0]);
   totextrap->FixParameter(1,parExtrap[1]);
   totextrap->FixParameter(2,parExtrap[2]);
@@ -391,12 +408,12 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   totextrap->FixParameter(14,parExtrap[14]);
   totextrap->FixParameter(15,parExtrap[15]);
   totextrap->FixParameter(16,parExtrap[16]);
+  totextrap->FixParameter(17,parExtrap[17]);
   dathist->Fit("totextrap","QR0+");
   TF1 *totnorm = dathist->GetFunction("totextrap");
 
   //Now seperate fits for visualization
-  //broken
-  TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70,17);
+  TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70,18);
   flsb->FixParameter(0,parExtrap[0]);
   flsb->FixParameter(1,parExtrap[1]);
   flsb->FixParameter(2,parExtrap[2]);
@@ -414,10 +431,11 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   flsb->FixParameter(14,parExtrap[14]);
   flsb->FixParameter(15,parExtrap[15]);
   flsb->FixParameter(16,parExtrap[16]);
+  flsb->FixParameter(17,parExtrap[17]);
   dathist->Fit("flsb","QR0+");
   TF1 *lsbdatfit = dathist->GetFunction("flsb");
 
-  TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,150,250,17);
+  TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,150,250,18);
   fhsb->FixParameter(0,parExtrap[0]);
   fhsb->FixParameter(1,parExtrap[1]);
   fhsb->FixParameter(2,parExtrap[2]);
@@ -435,6 +453,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   fhsb->FixParameter(14,parExtrap[14]);
   fhsb->FixParameter(15,parExtrap[15]);
   fhsb->FixParameter(16,parExtrap[16]);
+  fhsb->FixParameter(17,parExtrap[17]);
   dathist->Fit("fhsb","QR0+");
   TF1 *hsbdatfit = dathist->GetFunction("fhsb");
 

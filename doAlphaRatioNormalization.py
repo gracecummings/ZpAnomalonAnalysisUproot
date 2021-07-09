@@ -83,7 +83,7 @@ if __name__=='__main__':
     htrvv  = htrzz.Clone()
     htrvv.Add(htrwz)
 
-    #Make overall stackplot
+    #Make overall stackplot, og way
     hsbkg = ROOT.THStack("hsbkg","")
     bkgfiles17 = [bkgs.bkgs["DYJetsToLL"][17]["tr"][0],
                   bkgs.bkgs["TT"][17]["tr"][0],
@@ -103,23 +103,45 @@ if __name__=='__main__':
     stackleg = ROOT.TLegend(0.55,0.40,0.93,0.8)
     go.stackBkgMultiYear(info17,info18,'h_h_sd',hsbkg,stackleg,50,0)
 
+
     #makes some fits
     dyfit = ROOT.poly5Fit(htrdy,"dyl","QR0+",30,250)
     #ttfit = ROOT.gaus2Fit(htrtt,"ttl","QR0+",30,400)
     ttfit = ROOT.gaus2Fit2(htrtt,"ttl","QR0+",30,400)
     vvfit = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
     normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",30,250)
-    bkgfit = normfits[0]
-    sbdatfit = normfits[1]
-    totnormfit = normfits[2]
-    lsbdatfit = normfits[3]
-    hsbdatfit = normfits[4]
+    bkgfit = normfits[0]#fit to un-normalized MC
+    sbdatfit = normfits[1]#Fit with blinded region, bad for visuals
+    totnormfit = normfits[2]#Uses params of fit above to draw full line
+    lsbdatfit = normfits[3]#low sideband of fit above
+    hsbdatfit = normfits[4]#high sideband of fit 2 above
+    dynormprefit = bkgfit.GetParameters()[17] 
+    dynormpostfit = totnormfit.GetParameters()[17]
 
     #Define some fit styles
     bkgfit.SetLineStyle(6)
     totnormfit.SetLineColor(ROOT.kBlue)
     totnormfit.SetLineStyle(9)
-    
+
+    #Stack for DY Scaling
+    hsbkgnorm = ROOT.THStack("hsbkgnorm","")
+    htrdyclone = htrdy.Clone()
+    htrdyclone.SetFillColor(bkgcols[0])
+    htrdyclone.SetLineColor(bkgcols[0])
+    htrdyclone.Scale(dynormpostfit)
+    htrtt.SetFillColor(bkgcols[1])
+    htrtt.SetLineColor(bkgcols[1])
+    htrwz.SetFillColor(bkgcols[2])
+    htrwz.SetLineColor(bkgcols[2])
+    htrzz.SetFillColor(bkgcols[3])
+    htrzz.SetLineColor(bkgcols[3])
+    hsbkgnorm.Add(htrzz)
+    hsbkgnorm.Add(htrwz)
+    hsbkgnorm.Add(htrtt)
+    hsbkgnorm.Add(htrdyclone)
+    hsbkgnorm.SetMaximum(50.)
+    hsbkgnorm.SetMinimum(0.0)
+
     #labels
     dyleg  = ROOT.TLegend(0.55,0.65,0.9,0.8)
     dyleg.AddEntry(htrdy,"DY","ep")
@@ -135,6 +157,16 @@ if __name__=='__main__':
     vvleg.SetBorderSize(0)
     stackleg.AddEntry(bkgfit,"Bkg MC fit Prefit - Likelihood","l")
     stackleg.SetBorderSize(0)
+    normcomplabel = ROOT.TPaveText(0.17,0.8,0.52,0.9,"NBNDC")
+    normcomplabel.AddText("Prefit DY Norm:  {0}".format(round(dynormprefit,4)))
+    normcomplabel.AddText("Postfit DY Norm: {0}".format(round(dynormpostfit,4)))
+    normcomplabel.SetFillColor(0)
+    unnormlabel = ROOT.TPaveText(0.6,0.2,0.93,0.35,"NBNDC")
+    unnormlabel.AddText("MC w/out SB data norm")
+    unnormlabel.SetFillColor(0)
+    normlabel = ROOT.TPaveText(0.6,0.2,0.93,0.35,"NBNDC")
+    normlabel.AddText("DY MC with SB data norm")
+    normlabel.SetFillColor(0)
     
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
@@ -174,7 +206,7 @@ if __name__=='__main__':
     normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(normshapes)
 
-    tc1 = ROOT.TCanvas("tc1","stacked",750,600)
+    tc1 = ROOT.TCanvas("tc1","stacked",1500,600)
     pd11 = ROOT.TPad("pd11","bkgonly",0,0,0.5,1.0)
     pd12 = ROOT.TPad("pd12","datfit",0.5,0.0,1.0,1.0)
     #pd12 = ROOT.TPad("pd12","datfit",0.0,0.0,1.0,1.0)
@@ -200,15 +232,20 @@ if __name__=='__main__':
     hdatsb.SetMarkerSize(0.5)
     hdatsb.SetMarkerColor(ROOT.kBlack)
     hdatsb.Draw("SAME")
+    stackleg.AddEntry(sbdatfit,"Fit to Data SB","l")
+    stackleg.AddEntry(totnormfit,"Data SB Extrap - Likelihood","l")
+    stackleg.AddEntry(sbdatfit,"Data SB","ep")
     stackleg.Draw()
+    unnormlabel.Draw()
+    pd11.Update()
     tc1.cd()
     tc1.Update()
 
     pd12.Draw()
     pd12.cd()
-    hsbkg.Draw('HIST')
-    xax = hsbkg.GetXaxis()
-    yax = hsbkg.GetYaxis()
+    hsbkgnorm.Draw('HIST')
+    xax = hsbkgnorm.GetXaxis()
+    yax = hsbkgnorm.GetYaxis()
     xax.SetTitle("Higgs Candidate Soft Drop Mass")
     xax.SetTitleSize(0.05)
     xax.SetLabelSize(0.035)
@@ -225,10 +262,10 @@ if __name__=='__main__':
     hdatsb.SetMarkerColor(ROOT.kBlack)
     hdatsb.Draw("SAME")
     bkgfit.Draw("SAME")
-    stackleg.AddEntry(sbdatfit,"Fit to Data SB","l")
-    stackleg.AddEntry(totnormfit,"Data SB Extrap - Likelihood","l")
-    stackleg.AddEntry(sbdatfit,"Data SB","ep")
     stackleg.Draw()
+    normcomplabel.Draw()
+    normlabel.Draw()
+    p12.Update()
     tc1.cd()
     tc1.Update()
 

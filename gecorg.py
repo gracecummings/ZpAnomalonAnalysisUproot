@@ -380,7 +380,7 @@ class backgrounds:
             if ibin == 0:
                 continue
             else:
-                binerr = uncDYJetsdf['h_zp_jigm'][ibin-1]
+                binerr = uncDYJetsdf[hname][ibin-1]
                 hist.SetBinError(ibin,binerr)
 
         return hist

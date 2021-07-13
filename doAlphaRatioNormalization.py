@@ -66,7 +66,7 @@ if __name__=='__main__':
     sr  = [110,150]
     vr  = [55,70]
     
-    validation = True
+    validation = False
     rstr = "signalblind"
     if validation:
         rstr = "validationblind"
@@ -130,6 +130,12 @@ if __name__=='__main__':
     dynormprefit = bkgfit.GetParameters()[17] 
     dynormpostfit = totnormfit.GetParameters()[17]
 
+    #Save the normalization
+    normfilename = go.makeOutFile('Run2_2017_2018','dynormalization_'+rstr,'.npy',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    normfile     = open(normfilename,'wb')
+    np.save(normfile,np.array([dynormpostfit]))
+    normfile.close()
+    
     #Define some fit styles
     bkgfit.SetLineStyle(6)
     totnormfit.SetLineColor(ROOT.kBlue)
@@ -264,11 +270,12 @@ if __name__=='__main__':
     unnormlabel.Draw()
     brl.Draw()
     brh.Draw()
-    vrl.Draw()
     srl.Draw()
     srlabel.Draw()
-    vrlabel.Draw()
     zrlabel.Draw()
+    if validation:
+        vrl.Draw()
+        vrlabel.Draw()
     pd11.Update()
     tc1.cd()
     tc1.Update()
@@ -299,11 +306,12 @@ if __name__=='__main__':
     normlabel.Draw()
     brl.Draw()
     brh.Draw()
-    vrl.Draw()
     srl.Draw()
     srlabel.Draw()
-    vrlabel.Draw()
     zrlabel.Draw()
+    if validation:
+        vrl.Draw()    
+        vrlabel.Draw()
     p12.Update()
     tc1.cd()
     tc1.Update()

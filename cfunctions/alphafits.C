@@ -319,8 +319,13 @@ Double_t totalBkgModel(Double_t *X, Double_t *par){
   return fitval;
 }
 
+Bool_t validationregion;
 Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
-  if (X[0] > 70. && X[0] < 150.) {
+  if (validationregion && X[0] > 55. && X[0] < 150.) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  if (!validationregion && X[0] > 70. && X[0] < 150.) {
     TF1::RejectPoint();
     return 0;
   }
@@ -328,17 +333,17 @@ Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
   return fitval;
 }
 
-vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lowr=30, int highr=400) {
-  TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",30,250);
-  TF1 *ttfit = gaus2Fit(tthist,"ttl","QR0+",30,400);
-  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QR0+",30,250);
+vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",Bool_t vr= false,int lsbl=30,int lsbh = 70,int hsbl=150,int hsbh=250) {
+  TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",lsbl,hsbh);
+  TF1 *ttfit = gaus2Fit(tthist,"ttl","QR0+",lsbl,400);
+  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QR0+",lsbl,hsbh);
 
   Double_t par[17];
   dyfit->GetParameters(&par[0]);
   ttfit->GetParameters(&par[6]);
   vvfit->GetParameters(&par[12]);
 
-  TF1 *totalfit = new TF1("totalfit",totalBkgModel,30,250,18);//17 without norms
+  TF1 *totalfit = new TF1("totalfit",totalBkgModel,lsbl,hsbh,18);//17 without norms
   totalfit->FixParameter(0,par[0]);
   totalfit->FixParameter(1,par[1]);
   totalfit->FixParameter(2,par[2]);
@@ -361,11 +366,15 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
 
   Double_t parData[17];
   totmcfit->GetParameters(parData);
-  //std::cout<<"Z peak guess "<<parData[13]<<std::endl;
-  //std::cout<<"t peak guess "<<parData[9]<<std::endl;
 
+  if (vr){
+    std::cout<<"Using validation studies SB"<<std::endl;
+    lsbh = 55.;
+    validationregion = true;
+  }
+  
   //Now do the extrapolation
-  TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModelBlind,30,250,18);
+  TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModelBlind,lsbl,hsbh,18);
   sbdatfit->SetParameters(parData);
   sbdatfit->FixParameter(0,parData[0]);
   sbdatfit->FixParameter(1,parData[1]);
@@ -390,7 +399,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
 
   Double_t parExtrap[18];
   totsbdatfit->GetParameters(parExtrap);
-  TF1 *totextrap = new TF1("totextrap",totalBkgModel,30,250,18);
+  TF1 *totextrap = new TF1("totextrap",totalBkgModel,lsbl,hsbh,18);
   totextrap->FixParameter(0,parExtrap[0]);
   totextrap->FixParameter(1,parExtrap[1]);
   totextrap->FixParameter(2,parExtrap[2]);
@@ -413,7 +422,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   TF1 *totnorm = dathist->GetFunction("totextrap");
 
   //Now seperate fits for visualization
-  TF1 *flsb = new TF1("flsb",totalBkgModelBlind,30,70,18);
+  TF1 *flsb = new TF1("flsb",totalBkgModelBlind,lsbl,lsbh,18);
   flsb->FixParameter(0,parExtrap[0]);
   flsb->FixParameter(1,parExtrap[1]);
   flsb->FixParameter(2,parExtrap[2]);
@@ -435,7 +444,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   dathist->Fit("flsb","QR0+");
   TF1 *lsbdatfit = dathist->GetFunction("flsb");
 
-  TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,150,250,18);
+  TF1 *fhsb = new TF1("fhsb",totalBkgModelBlind,hsbl,hsbh,18);
   fhsb->FixParameter(0,parExtrap[0]);
   fhsb->FixParameter(1,parExtrap[1]);
   fhsb->FixParameter(2,parExtrap[2]);

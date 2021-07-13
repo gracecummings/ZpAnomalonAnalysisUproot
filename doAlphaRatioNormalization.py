@@ -58,6 +58,10 @@ if __name__=='__main__':
     hptcut  = '300.0'
     metcut  = '200.0'
     btagwp  = '0.8'
+    validation = True
+    rstr = "signalblind"
+    if validation:
+        rstr = "validationblind"
 
     bkgs = go.backgrounds(path,zptcut,hptcut,metcut,btagwp)
     data = go.run2(path,zptcut,hptcut,metcut,btagwp)
@@ -109,7 +113,7 @@ if __name__=='__main__':
     #ttfit = ROOT.gaus2Fit(htrtt,"ttl","QR0+",30,400)
     ttfit = ROOT.gaus2Fit2(htrtt,"ttl","QR0+",30,400)
     vvfit = ROOT.gausPoly1Fit(htrvv,"vvl","QR0+",30,250,90,5)
-    normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",30,250)
+    normfits = ROOT.totalFit(hsbkg.GetStack().Last(),htrdy,htrtt,htrvv,hdatsb,"R0+",validation)
     bkgfit = normfits[0]#fit to un-normalized MC
     sbdatfit = normfits[1]#Fit with blinded region, bad for visuals
     totnormfit = normfits[2]#Uses params of fit above to draw full line
@@ -203,7 +207,7 @@ if __name__=='__main__':
     p13.Update()
     tc.cd()
     
-    normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    normshapes = go.makeOutFile('Run2_2017_2018','norm_shapes_'+rstr,'.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(normshapes)
 
     tc1 = ROOT.TCanvas("tc1","stacked",1500,600)
@@ -270,7 +274,7 @@ if __name__=='__main__':
     tc1.Update()
 
 
-    stackedfit = go.makeOutFile('Run2_2017_2018','norm_stackfit','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    stackedfit = go.makeOutFile('Run2_2017_2018','norm_stackfit_'+rstr,'.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc1.SaveAs(stackedfit)
     
     #ttbarhist = go.makeOutFile('Run2_2017_2018','ttbar_hist','.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))

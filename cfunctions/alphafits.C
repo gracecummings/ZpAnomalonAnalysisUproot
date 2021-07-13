@@ -319,13 +319,19 @@ Double_t totalBkgModel(Double_t *X, Double_t *par){
   return fitval;
 }
 
+int lowsbl = 30;
+int lowsbh = 70;
+int highsbl = 150;
+int highsbh = 250;
 Bool_t validationregion;
+int validationlsbh = 55.;
+
 Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
-  if (validationregion && X[0] > 55. && X[0] < 150.) {
+  if (validationregion && X[0] > validationlsbh && X[0] < highsbl) {
     TF1::RejectPoint();
     return 0;
   }
-  if (!validationregion && X[0] > 70. && X[0] < 150.) {
+  if (!validationregion && X[0] > lowsbh && X[0] < highsbl) {
     TF1::RejectPoint();
     return 0;
   }
@@ -333,7 +339,7 @@ Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
   return fitval;
 }
 
-vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",Bool_t vr= false,int lsbl=30,int lsbh = 70,int hsbl=150,int hsbh=250) {
+vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",Bool_t vr= false,int lsbl=lowsbl,int lsbh = lowsbh,int hsbl=highsbl,int hsbh=highsbh) {
   TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",lsbl,hsbh);
   TF1 *ttfit = gaus2Fit(tthist,"ttl","QR0+",lsbl,400);
   TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QR0+",lsbl,hsbh);
@@ -369,7 +375,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
 
   if (vr){
     std::cout<<"Using validation studies SB"<<std::endl;
-    lsbh = 55.;
+    lsbh = validationlsbh;
     validationregion = true;
   }
   

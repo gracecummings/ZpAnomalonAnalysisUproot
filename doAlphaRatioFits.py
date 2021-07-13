@@ -67,10 +67,20 @@ if __name__=='__main__':
     hptcut  = '300.0'
     metcut  = '200.0'
     btagwp  = '0.8'
+    dynorm  = 1.
+    validation = False
+    rstr = "signalblind"
+    if validation:
+        rstr = "validationblind"
+        dynorm = np.load(path+'/Run2_2017_2018_dynormalization_validationblind_Zptcut150.0_Hptcut300.0_metcut200.0_btagwp0.8.npy')[0]
+    else:
+        dynorm = np.load(path+'Run2_2017_2018_dynormalization_signalblind_Zptcut150.0_Hptcut300.0_metcut200.0_btagwp0.8.npy')[0]
+
+    print("Using the DY normalization factor: ",dynorm)
     
     bkgs = go.backgrounds(path,zptcut,hptcut,metcut,btagwp)
     data = go.run2(path,zptcut,hptcut,metcut,btagwp)
-
+    
     tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
     empty = tf1.Get('h_zp_jigm')
     empty.Reset("ICESM")#creates an empty hist with same structure
@@ -98,6 +108,10 @@ if __name__=='__main__':
 
     hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
     hdatsbsub = hdatsb.Clone()
+
+    #Apply the normalization
+    hsbdy.Scale(dynorm)
+    hsrdy.Scale(dynorm)
     
     ROOT.gSystem.CompileMacro("cfunctions/alphafits.C","kfc")
     ROOT.gSystem.Load("cfunctions/alphafits_C")
@@ -206,26 +220,35 @@ if __name__=='__main__':
     l111.AddEntry(sbdatfit,"2 Param Exp fit","l")
     l111.AddEntry(sbdatunc,"2 $\sigma$ uncertainty","f")
     l111.SetBorderSize(0)
-    hsbkg = ROOT.THStack("hsbkg","")
 
-    #####REMOVE THS ATROCITY
-    bkgfiles17 = [bkgs.bkgs["DYJetsToLL"][17]["sb"][0],
-                  bkgs.bkgs["TT"][17]["sb"][0],
-                  bkgs.bkgs["WZTo2L2Q"][17]["sb"][0],
-                  bkgs.bkgs["ZZTo2L2Q"][17]["sb"][0]
-    ]
-    bkgfiles18 = [bkgs.bkgs["DYJetsToLL"][18]["sb"][0],
-                  bkgs.bkgs["TT"][18]["sb"][0],
-                  bkgs.bkgs["WZTo2L2Q"][18]["sb"][0],
-                  bkgs.bkgs["ZZTo2L2Q"][18]["sb"][0]
-    ]
     bkgnames = ["DYJetsToLL","TT","WZTo2L2Q","ZZTo2L2Q"]
     bkgcols  = go.colsFromPalette(bkgnames,ROOT.kLake)
     
-    info17 = go.prepBkg(bkgfiles17,bkgnames,bkgcols,"xsects_2017.ini",41.53)
-    info18 = go.prepBkg(bkgfiles18,bkgnames,bkgcols,"xsects_2017.ini",59.74)
-    go.stackBkgMultiYear(info17,info18,'h_zp_jigm',hsbkg,l111,50,0)#need to add some flexibilty to the max
-    #####
+    hsbkg = ROOT.THStack("hsbkg","")
+    hsbdyc = hsbdy.Clone()
+    hsbdyc.SetFillColor(bkgcols[0])
+    hsbdyc.SetLineColor(bkgcols[0])
+    hsbttc = hsbtt.Clone()
+    hsbttc.SetFillColor(bkgcols[1])
+    hsbttc.SetLineColor(bkgcols[1])
+    hsbwzc = hsbwz.Clone() 
+    hsbwzc.SetFillColor(bkgcols[2])
+    hsbwzc.SetLineColor(bkgcols[2])
+    hsbzzc = hsbwz.Clone() 
+    hsbzzc.SetFillColor(bkgcols[3])
+    hsbzzc.SetLineColor(bkgcols[3])
+    hsbkg.Add(hsbzzc)
+    hsbkg.Add(hsbwzc)
+    hsbkg.Add(hsbttc)
+    hsbkg.Add(hsbdyc)
+    l111.AddEntry(hsbdyc,"DYJetsToLL","f")
+    l111.AddEntry(hsbttc,"TT","f")
+    l111.AddEntry(hsbwzc,"WZ","f")
+    l111.AddEntry(hsbwzc,"ZZ","f")
+    hsbkg.SetMaximum(50.)
+    hsbkg.SetMinimum(0.)
+
+    hsbkg.Draw("HIST")
     xax = hsbkg.GetXaxis()
     yax = hsbkg.GetYaxis()
     xax.SetTitle("M_{Z'}")
@@ -235,8 +258,6 @@ if __name__=='__main__':
     yax.SetTitleSize(0.05)
     yax.SetLabelSize(0.04)
     yax.SetLabelOffset(0.015)
-
-    hsbkg.Draw("HIST")
     plotMzp(p12,hdatsb,isData=True)
     sbdatunc.Draw("e3,same,c")
     sbdatfit.Draw("SAME")
@@ -278,8 +299,8 @@ if __name__=='__main__':
     alpha.Draw()
 
     
-    figshapes = go.makeOutFile('Run2_2017_2018','alpha_shapes','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
-    datavis = go.makeOutFile('Run2_2017_2018','alpha_sub_tester','.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    figshapes = go.makeOutFile('Run2_2017_2018','alpha_shapes_'+rstr,'.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    datavis = go.makeOutFile('Run2_2017_2018','alpha_sub_tester_'+rstr,'.png',str(zptcut),str(hptcut),str(metcut),str(btagwp))
     tc.SaveAs(figshapes)
 
     #Subtracted Background canvas

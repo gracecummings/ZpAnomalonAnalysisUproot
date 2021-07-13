@@ -58,6 +58,14 @@ if __name__=='__main__':
     hptcut  = '300.0'
     metcut  = '200.0'
     btagwp  = '0.8'
+
+    #ranges in question
+    lsb = [30,70]
+    hsb = [150,400]
+    br  = [70,150]
+    sr  = [110,150]
+    vr  = [55,70]
+    
     validation = True
     rstr = "signalblind"
     if validation:
@@ -171,6 +179,19 @@ if __name__=='__main__':
     normlabel = ROOT.TPaveText(0.6,0.2,0.93,0.35,"NBNDC")
     normlabel.AddText("DY MC with SB data norm")
     normlabel.SetFillColor(0)
+    brl = ROOT.TLine(br[0],0,br[0],40.)
+    brh = ROOT.TLine(br[1],0,br[1],40.)
+    vrl = ROOT.TLine(vr[0],0,vr[0],40.)
+    srl = ROOT.TLine(sr[0],0,sr[0],40.)
+    srlabel = ROOT.TPaveText(125,35,135,40,"NB")
+    srlabel.SetFillColor(0)
+    srlabel.AddText("SR")
+    vrlabel = ROOT.TPaveText(57.5,35,67.5,40,"NB")
+    vrlabel.SetFillColor(0)
+    vrlabel.AddText("VR")
+    zrlabel = ROOT.TPaveText(85,35,95,40,"NB")
+    zrlabel.SetFillColor(0)
+    zrlabel.AddText("ZR")
     
     #make some output
     tc = ROOT.TCanvas("tc","shapes",1100,400)
@@ -241,6 +262,13 @@ if __name__=='__main__':
     stackleg.AddEntry(sbdatfit,"Data SB","ep")
     stackleg.Draw()
     unnormlabel.Draw()
+    brl.Draw()
+    brh.Draw()
+    vrl.Draw()
+    srl.Draw()
+    srlabel.Draw()
+    vrlabel.Draw()
+    zrlabel.Draw()
     pd11.Update()
     tc1.cd()
     tc1.Update()
@@ -269,6 +297,13 @@ if __name__=='__main__':
     stackleg.Draw()
     normcomplabel.Draw()
     normlabel.Draw()
+    brl.Draw()
+    brh.Draw()
+    vrl.Draw()
+    srl.Draw()
+    srlabel.Draw()
+    vrlabel.Draw()
+    zrlabel.Draw()
     p12.Update()
     tc1.cd()
     tc1.Update()

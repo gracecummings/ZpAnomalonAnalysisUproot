@@ -22,16 +22,16 @@ if __name__=='__main__':
     plots = ['h_z_pt']#['h_h_pt','h_z_pt','h_met','h_nd_jigm','h_zp_jigm','h_h_sd','h_btag']
 
     #topiary sample list: dateforfolder, samplename
-    samplelist = [#['2021-06-17','Run2017B-31Mar2018-v1.SingleMuon'],
-                  #['2021-06-17','Run2017C-31Mar2018-v1.SingleMuon'],
-                  #['2021-06-17','Run2017D-31Mar2018-v1.SingleMuon'],
-                  #['2021-06-17','Run2017E-31Mar2018-v1.SingleMuon'],
-                  #['2021-06-17','Run2017F-31Mar2018-v1.SingleMuon'],
-                  ['2021-06-17','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
-                  ['2021-06-17','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
-                  ['2021-06-17','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
-                  ['2021-06-17','ZpAnomalonHZ_UFO-Zp2000-ND800-NS200'],
-                  ['2021-06-17','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
+    samplelist = [['2021-06-17','Run2017B-31Mar2018-v1.SingleMuon'],
+                  ['2021-06-17','Run2017C-31Mar2018-v1.SingleMuon'],
+                  ['2021-06-17','Run2017D-31Mar2018-v1.SingleMuon'],
+                  ['2021-06-17','Run2017E-31Mar2018-v1.SingleMuon'],
+                  ['2021-06-17','Run2017F-31Mar2018-v1.SingleMuon'],
+                  #['2021-06-17','ZpAnomalonHZ_UFO-Zp1200-ND175-NS1'],
+                  #['2021-06-17','ZpAnomalonHZ_UFO-Zp2000-ND300-NS1'],
+                  #['2021-06-17','ZpAnomalonHZ_UFO-Zp2000-ND500-NS200'],
+                  #['2021-06-17','ZpAnomalonHZ_UFO-Zp2000-ND800-NS200'],
+                  #['2021-06-17','ZpAnomalonHZ_UFO-Zp3000-ND1200-NS1'],
                   ['2021-06-17','Fall17.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_new_pmx'],
                   ['2021-06-17','Fall17.TTToHadronic_TuneCP5_13TeV-powheg-pythia8_new_pmx'],##ttbar bg
                   ['2021-06-17','Fall17.TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_new_pmx'],##ttbar bg
@@ -44,10 +44,10 @@ if __name__=='__main__':
                   ['2021-06-17','Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   ['2021-06-17','Fall17.DYJetsToLL_M-50_HT-1200to2500_TuneCP5_13TeV-madgraphMLM-pythia8'],
                   ['2021-06-17','Fall17.DYJetsToLL_M-50_HT-2500toInf_TuneCP5_13TeV-madgraphMLM-pythia8'],
-                  #['2021-06-17','Run2018C-17Sep2018-v1.SingleMuon'],
-                  #['2021-06-17','Run2018B-17Sep2018-v1.SingleMuon'],
-                  #['2021-06-17','Run2018A-17Sep2018-v1.SingleMuon'],
-                  #['2021-06-17','Run2018D-22Jan2019-v2.SingleMuon'],#ttbar background
+                  ['2021-06-17','Run2018C-17Sep2018-v1.SingleMuon'],
+                  ['2021-06-17','Run2018B-17Sep2018-v1.SingleMuon'],
+                  ['2021-06-17','Run2018A-17Sep2018-v1.SingleMuon'],
+                  ['2021-06-17','Run2018D-22Jan2019-v2.SingleMuon'],#ttbar background
                   ['2021-06-17','Autumn18.TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8'],##ttbar bg
                   ['2021-06-17','Autumn18.TTToHadronic_TuneCP5_13TeV-powheg-pythia8'],##ttbar bg
                   ['2021-06-17','Autumn18.TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8'],##ttbar bg
@@ -71,9 +71,9 @@ if __name__=='__main__':
         #do selections
         if steps["selections"]:
             for samp in samplelist:
-                #subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0]])
-                #subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-sr","True"])
-                subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-c","True"])
+                subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0]])
+                subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-sr","True"])
+                #subprocess.run(["python","doSelections.py","-f",samp[1],"-zpt",cut[0],"-hpt",cut[1],"-met",cut[2],"-sdm","30.0","-b",cut[3],"-wp",cut[4],"-date",samp[0],"-c","True"])
 
         for era in eras:
             print("   Beginning plottng and analysis for year {0}, with a luminosity of {1}".format(era[0],era[1]))

@@ -66,19 +66,28 @@ if __name__=='__main__':
     btagwp = args.btagWP
     sr     = args.signalregion
     comb   = args.comboregion
+    valid  = True
 
 
     inputfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')
     print("    Doing selections on:")
     print(inputfiles[:1])
     stype,year = go.sampleType(samp)
-    print(stype)
-    if sr and stype != 0:
-        print("    using signal region selections")
-    elif comb and stype != 0:
-        print("    using full region selections")
-    else:
-        print("    using sideband selections")
+
+    if not valid:
+        if sr and stype != 0:
+            print("    using signal region selections")
+        elif comb and stype != 0:
+            print("    using full region selections")
+        else:
+            print("    using sideband selections")
+
+    if valid:
+        print("    Doing validation of alpha method cuts")
+        if sr:
+            print("    'signalr' labeled events are in soft drop mass bands (55,70]")
+        else:
+            print("    'sideband' labeled events are in soft drop mass bands [30,55],[150,5000]")
     
     branches = [b'ZCandidate_*',
                 b'hCandidate_*',
@@ -106,35 +115,55 @@ if __name__=='__main__':
         #do some cuts
     #print("Number of events in chunk ",len(events))
     sddf   = events[events['hCandidate_sd'] > sdmcut]
-    #print("number of events with high enough soft drop: ",len(sddf))
     metdf  = sddf[sddf['METclean'] > metcut]
     zptdf  = metdf[metdf['ZCandidate_pt'] > zptcut]
     hptdf  = zptdf[zptdf['hCandidate_pt'] > hptcut]
     btdf   = hptdf[hptdf['hCandidate_'+btaggr] > float(btagwp)]
-    
-    srup   = btdf[btdf['hCandidate_sd'] > 70.]
-    bldf   = srup[srup['hCandidate_sd'] < 150.]#full blinded region
-    srdf   = bldf[bldf['hCandidate_sd'] > 110.]#Higgs Peak
-    lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
-    highsb = btdf[btdf['hCandidate_sd'] >= 150.]
-    sbdf   = pd.concat([lowsb,highsb])
-    #print("In loop number of events in sb ",len(sbdf))
 
-    #print("out of loop number of events in sb ",len(sbdf))
-    #This will have to come out of the loop if true iteration is added
+    #Actual Analysis
+    if not valid:
+        srup   = btdf[btdf['hCandidate_sd'] > 70.]
+        bldf   = srup[srup['hCandidate_sd'] < 150.]#full blinded region
+        srdf   = bldf[bldf['hCandidate_sd'] > 110.]#Higgs Peak
+        lowsb  = btdf[btdf['hCandidate_sd'] <= 70.]
+        highsb = btdf[btdf['hCandidate_sd'] >= 150.]
+        sbdf   = pd.concat([lowsb,highsb])
+
+    #Validation region for alpha method for DY
+    if valid:
+        srup   = btdf[btdf['hCandidate_sd'] > 55.]
+        bldf   = srup[srup['hCandidate_sd'] < 150.]#full blinded region
+        srdf   = bldf[bldf['hCandidate_sd'] <= 70.]#Validation region
+        lowsb  = btdf[btdf['hCandidate_sd'] <= 55.]
+        highsb = btdf[btdf['hCandidate_sd'] >= 150.]
+        sbdf   = pd.concat([lowsb,highsb])
+
+
     region = "sideband"
-    if stype != 0:
+    if not valid:
+        if stype != 0:
+            if sr:
+                fdf = srdf
+                region = "signalr"
+            elif comb:
+                fdf = btdf
+                region = "totalr"
+            else:
+                fdf = sbdf
+                region = "sideband"
+        else:
+            fdf = sbdf
+
+    if valid:
         if sr:
             fdf = srdf
-            region = "signalr"
+            region = "validationr"
         elif comb:
             fdf = btdf
             region = "totalr"
         else:
             fdf = sbdf
-            region = "sideband"
-    else:
-        fdf = sbdf
+            region = "validationsideband"
 
     print("    number of passing events ",len(fdf))
     #print("number of btag passing events ",len(btdf))

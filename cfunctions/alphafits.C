@@ -53,6 +53,13 @@ Double_t expNRatio(Double_t *x, Double_t *par) {
   return numer/denom;
 }
 
+Double_t expRatioMultiply(Double_t *x, Double_t *par) {
+  double numer = expModel(x,par);
+  double denom = expModel(x,&par[2]);
+  double multiplier = expModel(x,&par[4]);
+  if (denom==0) return -1.0;
+  return numer/denom*multiplier;
+}
 
 TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
   TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
@@ -171,18 +178,48 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
   char srl[len+1];
   strcpy(sbl,sb.c_str());
   strcpy(srl,sr.c_str());
-  TF1 *sbfit= expFit(hsb,sbl,"R0+");
-  TF1 *srfit= expFit(hsr,srl,"R0+");
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
   Double_t sbamp = sbfit->GetParameter(0);
   Double_t sblambda = sbfit->GetParameter(1);
   Double_t sramp = srfit->GetParameter(0);
   Double_t srlambda = srfit->GetParameter(1);
-  TF1 *alpha = new TF1("alpha",expRatio,1500,5000,4);
+  TF1 *alpha = new TF1("alpha",expRatio,1500,5000,4);//was to 5000 previously
   alpha->SetParameter(0,sramp);
   alpha->SetParameter(1,srlambda);
   alpha->SetParameter(2,sbamp);
   alpha->SetParameter(3,sblambda);
   return alpha;
+}
+
+TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
+  string sb = "sbl";
+  string sr = "srl";
+  string dt = "dtl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  char dtl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  strcpy(dtl,dt.c_str());
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);
+  TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
+  TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,3000);
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t sbdatamp = sbdatfit->GetParameter(0);
+  Double_t sbdatlambda = sbdatfit->GetParameter(1);
+  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,5000,6);
+  srextrap->SetParameter(0,sramp);
+  srextrap->SetParameter(1,srlambda);
+  srextrap->SetParameter(2,sbamp);
+  srextrap->SetParameter(3,sblambda);
+  srextrap->SetParameter(4,sbdatamp);
+  srextrap->SetParameter(5,sbdatlambda);
+  return srextrap;
 }
 
 

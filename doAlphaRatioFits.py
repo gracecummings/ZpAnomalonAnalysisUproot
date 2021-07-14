@@ -68,18 +68,26 @@ if __name__=='__main__':
     metcut  = '200.0'
     btagwp  = '0.8'
     dynorm  = 1.
-    validation = False
+    validation = True
     rstr = "signalblind"
     if validation:
         rstr = "validationblind"
         dynorm = np.load(path+'/Run2_2017_2018_dynormalization_validationblind_Zptcut150.0_Hptcut300.0_metcut200.0_btagwp0.8.npy')[0]
+        bkgs = go.validation('analysis_output_ZpAnomalon/2021-07-14',zptcut,hptcut,metcut,btagwp)
+        data = go.validation('analysis_output_ZpAnomalon/2021-07-14',zptcut,hptcut,metcut,btagwp)
+        sbstring = "30 < m_{hcand,SD} <= 55"
+        srstring = "55 < m_{hcand,SD} < 70"
+        srregionstring = "Validation Region"
     else:
         dynorm = np.load(path+'Run2_2017_2018_dynormalization_signalblind_Zptcut150.0_Hptcut300.0_metcut200.0_btagwp0.8.npy')[0]
-
+        bkgs = go.backgrounds(path,zptcut,hptcut,metcut,btagwp)
+        data = go.run2(path,zptcut,hptcut,metcut,btagwp)
+        sbstring = "30 < m_{hcand,SD} < 70"
+        srstring = "110 <= m_{hcand,SD} < 150"
+        srregionstring = "Signal Region"
+        
     print("Using the DY normalization factor: ",dynorm)
     
-    bkgs = go.backgrounds(path,zptcut,hptcut,metcut,btagwp)
-    data = go.run2(path,zptcut,hptcut,metcut,btagwp)
     
     tf1 = ROOT.TFile(bkgs.f17dyjetsb[0])
     empty = tf1.Get('h_zp_jigm')
@@ -92,6 +100,7 @@ if __name__=='__main__':
     empty7 = empty.Clone()
     empty8 = empty.Clone()
     empty9 = empty.Clone()
+    empty10 = empty.Clone()
 
     hsbdy = bkgs.getAddedHist(empty,"DYJetsToLL","sb","h_zp_jigm")
     hsrdy = bkgs.getAddedHist(empty2,"DYJetsToLL","sr","h_zp_jigm")
@@ -106,7 +115,11 @@ if __name__=='__main__':
     hsrvv = hsrzz.Clone()
     hsrvv.Add(hsrwz)
 
-    hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
+    if not validation:
+        hdatsb = data.getAddedHist(empty9,"sb","h_zp_jigm")
+    if validation:
+        hdatsb = data.getAddedHistData(empty9,"sb","h_zp_jigm")
+        hdatvr = data.getAddedHistData(empty10,"vr","h_zp_jigm")
     hdatsbsub = hdatsb.Clone()
 
     #Apply the normalization
@@ -151,7 +164,7 @@ if __name__=='__main__':
     l21.Draw()
     
     label = ROOT.TPaveText(.5,.4,.9,.5,"NBNDC")
-    label.AddText("30 < m_{hcand,SD} < 70")
+    label.AddText(sbstring)
     label.AddText("150 < m_{hcand,SD}")
     label.SetFillColor(0)
     label.Draw()
@@ -180,8 +193,8 @@ if __name__=='__main__':
     l11.Draw()
     
     label2 = ROOT.TPaveText(.5,.4,.9,.5,"NBNDC")
-    label2.AddText("110 <= m_{hcand,SD} < 150")#higgs mass
-    label2.AddText("70 < m_{hcand,SD} < 110")
+    label2.AddText(srstring)#higgs mass
+    label2.AddText(srregionstring)#higgs mass
     label2.SetFillColor(0)
     label2.Draw()
     p11.Update()
@@ -365,7 +378,7 @@ if __name__=='__main__':
     print("=========doing sb extrapolation fit==================")
     extrap  = ROOT.alphaExtrapolation(hsbdy,hsrdy,hdatsbsub1)
     hsrdy.GetXaxis().SetRangeUser(1500,5000)
-    hsrdy.GetYaxis().SetRangeUser(0,8)
+    hsrdy.GetYaxis().SetRangeUser(0,10)
     hsrdy.Draw("HIST")
     extrap.Draw("SAME")
     CMS_lumi.CMS_lumi(pd132,4,13)
@@ -373,6 +386,11 @@ if __name__=='__main__':
     lstack1 = ROOT.TLegend(0.30,0.6,0.93,0.8)
     lstack1.AddEntry(extrap,"DY Predict, alpha*(data SB fit)","p")
     lstack1.AddEntry(hsrdy,"DY MC SR","f")
+    if validation:
+        hdatvr.SetMarkerStyle(8)
+        hdatvr.SetMarkerSize(0.5)
+        hdatvr.Draw("SAME")
+        lstack1.AddEntry(hdatvr,"Validation Region Data","ep")
     lstack1.SetBorderSize(0)
     lstack1.Draw()
 

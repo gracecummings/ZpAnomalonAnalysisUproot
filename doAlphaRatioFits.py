@@ -390,7 +390,7 @@ if __name__=='__main__':
         hdatvr.SetMarkerStyle(8)
         hdatvr.SetMarkerSize(0.5)
         hdatvr.Draw("SAME")
-        lstack1.AddEntry(hdatvr,"Validation Region Data","ep")
+        lstack1.AddEntry(hdatvr,"VR Data, no subtraction","ep")
     lstack1.SetBorderSize(0)
     lstack1.Draw()
 

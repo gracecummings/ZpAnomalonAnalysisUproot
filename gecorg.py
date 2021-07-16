@@ -4,6 +4,7 @@ import glob
 import ROOT
 import configparser
 import pandas as pd
+import numpy as np
 from datetime import date
 
 def sampleType(sampstring):
@@ -128,9 +129,11 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag="yes"):
         bkg_expyield = 0
         # bkg xs from .ini file
         bkgbin_xs_pairs = config.items(bkg_channel)
+        normscale = 1.
         if bkg_channel == "DYJetsToLL":
             #orders smallest HT to largest
             bkg.sort(key = orderDY)
+            normscale = np.load('analysis_output_ZpAnomalon/2021-06-22_alphaMethStuff/Run2_2017_2018_dynormalization_signalblind_Zptcut150.0_Hptcut300.0_metcut200.0_btagwp0.8.npy')[0]
         elif bkg_channel == "TT":
             #sorts in alphabetical order 
             bkg.sort()                                                     
@@ -144,7 +147,7 @@ def prepBkg(bkgfiles,bkgnames,bkg_colors,ini_file,lumi,flag="yes"):
             bkgbin_dict["tfile"]   = ROOT.TFile(bkgbin)
             bkgbin_sampsize        = str(bkgbin_dict["tfile"].Get('hnevents').GetString())
             bkgbin_xs              = float(bkgbin_xs_pairs[s][1].split()[0])*1000#Into Femtobarn
-            bkgbin_dict["scale"]   = findScale(float(bkgbin_sampsize),bkgbin_xs,lumi)
+            bkgbin_dict["scale"]   = findScale(float(bkgbin_sampsize),bkgbin_xs,lumi)*normscale
             bkgbin_dict["color"]   = bkg_colors[b]
             #get the number of passing events
             bkgbin_yield           = float(str(bkgbin_dict["tfile"].Get('hnevents_pZ').GetString()))#last cut hist ##goes back to btag

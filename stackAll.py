@@ -145,19 +145,19 @@ if __name__=='__main__':
             gecorg.stackBkg(bkg_info18,hname,hsbkg,leg,max_plot,min_plot)
             
         #data hist
-        hsdat = dat_info[0].Get(hname)
-        hsdat.SetStats(0)
-        hsdat.SetMaximum(max_plot)
-        hsdat.SetMinimum(min_plot)
-        hsdat.SetMarkerStyle(8)
-        leg.AddEntry(hsdat,"Data")
-        for d,datf in enumerate(dat_info[1:]):
-            hdat = datf.Get(hname)
-            hdat.SetStats(0)
-            hdat.SetMaximum(max_plot)
-            hdat.SetMinimum(min_plot)
-            hsdat.Add(hdat)
-        hsdat.SetBinErrorOption(1)
+        #hsdat = dat_info[0].Get(hname)
+        #hsdat.SetStats(0)
+        #hsdat.SetMaximum(max_plot)
+        #hsdat.SetMinimum(min_plot)
+        #hsdat.SetMarkerStyle(8)
+        #leg.AddEntry(hsdat,"Data")
+        #for d,datf in enumerate(dat_info[1:]):
+        #    hdat = datf.Get(hname)
+        #    hdat.SetStats(0)
+        #    hdat.SetMaximum(max_plot)
+        #    hdat.SetMinimum(min_plot)
+        #    hsdat.Add(hdat)
+        #hsdat.SetBinErrorOption(1)
 
         
         #Make a multigraph
@@ -190,7 +190,7 @@ if __name__=='__main__':
         hsbkg.GetXaxis().SetTitleOffset(0.85)
         hsbkg.GetYaxis().SetTitle("Events")
         hsbkg.GetYaxis().SetTitleSize(0.05)
-        hsdat.Draw("HISTSAMEPE")
+        #hsdat.Draw("HISTSAMEPE")
 
         #if 'h_h_sd' in hname:
         #    l0.Draw()
@@ -223,19 +223,21 @@ if __name__=='__main__':
         for ibin in range(hsumb.GetNbinsX()+1):#CHECK
             bincen = hsumb.GetBinCenter(ibin)
             bkgmc  = hsumb.GetBinContent(ibin)
-            data   = hsdat.GetBinContent(ibin)
+            #data   = hsdat.GetBinContent(ibin)
             binlist[ibin] = bincen
             if ibin != 0:
-                hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
-                datunc = datuncs[hname][ibin-1]
-                if bkgmc != 0 and data != 0:
-                    ratiolist[ibin] = data/bkgmc
+                #for no data
+                ratiolist[ibin] = -1
+                #hsdat.SetBinError(ibin,datuncs[hname][ibin-1])
+                #datunc = datuncs[hname][ibin-1]
+                #if bkgmc != 0 and data != 0:
+                    #ratiolist[ibin] = data/bkgmc
              #       #pulllist[ibin]  = (data-bkgmc)/datunc
              #       #rerrlist[ibin] = datunc/bkgmc
-                    rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
-                if bkgmc == 0:
-                    ratiolist[ibin] = -1
-                    rerrlist[ibin] = 0
+             #       rerrlist[ibin] = data/bkgmc*sqrt((datunc/data)**2+(bkguncs[hname][ibin-1]/bkgmc)**2)
+             #   if bkgmc == 0:
+              #      ratiolist[ibin] = -1
+              #      rerrlist[ibin] = 0
             else:
                 ratiolist[ibin] = -1
                 rerrlist[ibin] = 0

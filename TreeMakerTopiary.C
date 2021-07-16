@@ -210,6 +210,13 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    int counthpass    = 0;
    int countmetpass  = 0;
    int countpass     = 0;
+   int zmumu = 0;
+   int zmumuzee = 0;
+   int zmumuzemu = 0;
+   int zmumuzeezemu = 0;
+   int zee = 0;
+   int zeezemu = 0;
+   int zemu = 0;
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -335,6 +342,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       TLorentzVector subleadmu;
       TLorentzVector leade;
       TLorentzVector subleade;
+      TLorentzVector testmu;
       double lptmax = 0;
       unsigned int nZs = ZCandidates->size();
       TLorentzVector theZ;
@@ -362,24 +370,52 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    baseZdiff = massZdiff;
 	    theZ.SetPtEtaPhiM(zit->Pt(),zit->Eta(),zit->Phi(),zit->M());
 	    passZ = true;
+	    if (passTrig){
+	      zmumu += 1;
+	    }
+
 	  }
 	}
       }
       if (nZmumu > 0 && nZee > 0 && nZeu == 0) {
 	//110 in binary, 6 in decimal
 	channel = 6.;//
+	if (passTrig){
+	zmumuzee += 1;
+	}
       }
       if (nZmumu > 0 && nZee == 0 && nZeu > 0) {
 	//101 in binary, 5 in decimal
 	channel = 5.;//
+	int matchmu = 0;
+	if (passTrig) {
+	  std::vector<TLorentzVector>::iterator muit;
+	  std::vector<TLorentzVector>::iterator muit2;
+	  for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
+	    for (muit2 = muit+1;muit2 != SelectedMuons->end();++muit2){
+	      if (*muit2 == *muit) {
+		matchmu += 1;}
+	    }
+	  }
+	  if (matchmu == 0){
+	    zmumuzemu +=1;
+	  }
+	}
       }
       if (nZmumu > 0 && nZee > 0 && nZeu > 0) {
 	//111 in binary, 7 in decimal
 	channel = 7.;
+	if (passTrig) {
+	zmumuzeezemu +=1;
+	}
       }
       if (nZmumu == 0 && nZee > 0 && nZeu == 0) {
 	//010
 	channel = 2.;
+	if (passTrig) {
+	zee +=1;
+	}
+	/*
 	std::vector<TLorentzVector>::iterator eit;
 	for (eit = SelectedElectrons->begin(); eit != SelectedElectrons->end();++eit) { 
 	  if (eit->Pt() > lptmax) {
@@ -399,15 +435,21 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	    passZ = true;
 	  }
 	}
-
+	*/
       }
       if (nZmumu == 0 && nZee > 0 && nZeu > 0) {
 	//011
 	channel = 3.;
+	if (passTrig) {
+	zeezemu +=1;
+	}
       }
       if (nZmumu == 0 && nZee == 0 && nZeu > 0) {
 	//001
 	channel = 1.;
+	if (passTrig) {
+	zemu += 1;
+	}
       }
       //*/
 
@@ -519,8 +561,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	countzpass +=1 ;
       }
 
-      //if (passh && passZ && passTrig && mumuchan) {
-      if (passh && passZ ) {//Removed Z Channel Requirement
+      if (passh && passZ && passTrig && mumuchan) {
+      //if (passh && passZ ) {//Removed Z Channel Requirement
 	hCandidate = theh;
 	hCandidate_pt  = theh.Pt();
 	hCandidate_phi = theh.Phi();
@@ -584,11 +626,19 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 
    }
 
+   
    std::cout<<"Passing Trigger req: "<<counttrigpass<<std::endl;
    std::cout<<"Passing Z  req:      "<<countzpass<<std::endl;
    std::cout<<"Passing h  req:      "<<counthpass<<std::endl;
    std::cout<<"Passing    req:      "<<countpass<<std::endl;
 
+   std::cout<<"Events with zmumu        "<<zmumu<<std::endl;
+   std::cout<<"Events with zmumuzee     "<<zmumuzee<<std::endl;
+   std::cout<<"Events with zmumuzemu    "<<zmumuzemu<<std::endl;
+   std::cout<<"Events with zmumuzeezemu "<<zmumuzeezemu<<std::endl;
+   std::cout<<"Events with zee          "<<zee<<std::endl;
+   std::cout<<"Events with zeezemu      "<<zeezemu<<std::endl;
+   std::cout<<"Events with zemu         "<<zemu<<std::endl;
 
    htrigpass->SetBinContent(1,counttrigpass);
    hZpass->SetBinContent(1,countzpass);

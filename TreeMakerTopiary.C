@@ -7,7 +7,7 @@
 RestFrames::RFKey ensure_autoload(1);
 using namespace RestFrames;
 
-void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents, int sampleType,int year)
+void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvents, int sampleType,int year,int anchan)
 {
    if (fChain == 0) return;
    Long64_t nentries = fChain->GetEntriesFast();
@@ -235,7 +235,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       bool passFil  = false;
       bool mumuchan = false;
       double channel = -1.0;
-          
+
       //A counter, for my sanity
       if (jentry%25000 == 0) {
       	std::cout<<"    analyzing event "<<jentry<<std::endl;

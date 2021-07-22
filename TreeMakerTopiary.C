@@ -204,7 +204,17 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    int trgval;
    TFile * fthen = 0;
    TFile * fnow = 0;
-
+   std::vector<string> trig18mu = {"HLT_Mu55_v"};
+   std::vector<string> trig17mu = {"HLT_Mu50_v"};
+   std::vector<string> trig16mu = {""};
+   std::vector<string> trig18e = {""};
+   std::vector<string> trig17e = {""};
+   std::vector<string> trig16e = {""};
+   std::vector<std::vector<string>> trig18 = {{"no"},{"emu"},trig18e,{"no"},trig18mu};
+   std::vector<std::vector<string>> trig17 = {{"no"},{"emu"},trig17e,{"no"},trig17mu};
+   std::vector<std::vector<string>> trig16 = {{"no"},{"emu"},trig16e,{"no"},trig16mu};
+   std::vector<std::vector<std::vector<string>>> trigs = {trig16,trig17,trig18};
+   
    //counters
    int counttrigpass = 0;
    int countzpass    = 0;
@@ -245,21 +255,19 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       //if (jentry == 200) {
       //break;
       //}
+     
 
       //Trigger decisions
       size_t pos = 0;
       string token;
-      if (year == 18) {
-	ourtrg = "HLT_Mu55_v";
-      }
-      if (year == 17) {
-	ourtrg = "HLT_Mu50_v";
-      }
+      ourtrg = trigs[year-16][anchan][0];//add iteration for more triggers
       if (year == 16) {
 	std::cout<<"Find you 2016 triggers, moron"<<std::endl;
 	break;
       }
       if (jentry == 0) {
+	//This is where you would add the iteration over last nested vector
+	//Would need to save a vector of good indices
 	trgtit = fChain->GetBranch("TriggerPass")->GetTitle();
 	fthen = fChain->GetCurrentFile();
 	while ((pos = trgtit.find(delim)) != std::string::npos && token != ourtrg) {
@@ -282,6 +290,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  }
 	}
       }
+      //If more triggers are used, will need to
+      //iterate over a vector of good indices
       trgval = TriggerPass->at(trgidx);
       if (trgval == 1) {
 	passTrig = true;

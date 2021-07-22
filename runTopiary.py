@@ -24,7 +24,7 @@ if __name__=="__main__":
 
     origevnts = 0
     
-    if samptype != 1:
+    if samptype != 0:#just for investigation, should be a 1
         inChain = ROOT.TChain("PreSelection")
         inputs  = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
         for f in inputs:
@@ -33,9 +33,16 @@ if __name__=="__main__":
             origevnts += tf.Get("hnevents").GetBinContent(1)
     else:
         inChain = ROOT.TChain("TreeMaker2/PreSelection")
-        inputs = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
-        inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
-        origevnts = inChain.GetEntries()
+        #inputs = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
+        #inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
+        #origevnts = inChain.GetEntries()
+        
+        #The bad stuff for the treemaker debug
+        inputs = [samp]
+        for f in inputs:
+            inChain.Add(f)
+
+        
 
     outFile = go.makeOutFile(samp,'topiary','.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
     print( "Making topiary of ",samp)

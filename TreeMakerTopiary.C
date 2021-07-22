@@ -15,6 +15,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    fChain->SetBranchStatus("*",0);
    fChain->SetBranchStatus("TriggerPass",1);
    fChain->SetBranchStatus("JetsAK8Clean*",1);
+   fChain->SetBranchStatus("JetsAK8",1);//turn off
    fChain->SetBranchStatus("Muons*",1);
    fChain->SetBranchStatus("METclean*",1);
    fChain->SetBranchStatus("METPhiclean",1);
@@ -217,6 +218,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    int zee = 0;
    int zeezemu = 0;
    int zemu = 0;
+   int znorecfat = 0;
+   int znounrecfat = 0;
+   int znofat = 0;
    
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
@@ -353,6 +357,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	//in binary 100, 4 in decimal
 	channel = 4.;//4 in decimal
 	mumuchan = true;
+	//zmumu += 1;
 	std::vector<TLorentzVector>::iterator muit;
 	for (muit = SelectedMuons->begin(); muit != SelectedMuons->end();++muit) { //might need to move after Z
 	  if (muit->Pt() > lptmax) {
@@ -483,7 +488,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       */
       
       //Higgs Candidate Build
-      //unsigned long nfat = JetsAK8>size();
+      unsigned long nunfat = JetsAK8->size();
       unsigned long nfat = JetsAK8Clean->size();
       TLorentzVector theh;
       theh.SetPtEtaPhiM(0.0,0.0,0.0,0.0);;
@@ -498,6 +503,20 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       double hmiddb = 0;
       bool   fid = 0;
 
+      if (nZs > 0 && nfat == 0){
+	//std::cout<<"Found an event with a Z Candidate but no reclustered fat jets"<<std::endl;
+	znorecfat +=1;
+      }
+
+      if (nZs > 0 && nunfat == 0){
+	//std::cout<<"Found an event with a Z Candidate but no reclustered fat jets"<<std::endl;
+	znounrecfat +=1;
+      }
+
+      if (nZs > 0 && nfat == 0 && nunfat == 0){
+	//std::cout<<"Found an event with a Z Candidate but no reclustered fat jets"<<std::endl;
+	znofat +=1;
+      }
       //reclustered jets
       if (nfat > 0) {
 	for (unsigned long i =0; i < nfat; ++i) {
@@ -639,6 +658,10 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    std::cout<<"Events with zee          "<<zee<<std::endl;
    std::cout<<"Events with zeezemu      "<<zeezemu<<std::endl;
    std::cout<<"Events with zemu         "<<zemu<<std::endl;
+
+   std::cout<<"Events with no reclustered fat jets, but a Z "<<znorecfat<<std::endl;
+   std::cout<<"Events with no orignal  fat jets, but a Z    "<<znounrecfat<<std::endl;
+   std::cout<<"Events with no fat jets, but a Z             "<<znofat<<std::endl;
 
    htrigpass->SetBinContent(1,counttrigpass);
    hZpass->SetBinContent(1,countzpass);

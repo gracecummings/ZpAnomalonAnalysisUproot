@@ -222,6 +222,51 @@ TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
   return srextrap;
 }
 
+TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
+  string sb = "sbl";
+  string sr = "srl";
+  string dt = "dtl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  char dtl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  strcpy(dtl,dt.c_str());
+  float nbins     = hsb->GetNbinsX();
+  float binwidth  = hsb->GetBinWidth(1);
+  float histlowed = hsb->GetBinLowEdge(1);
+  float histhied  = hsb->GetBinLowEdge(nbins)+binwidth;
+  TH1D *extrphist = new TH1D("extrphist","Histogram with DY extrap to SR",nbins,histlowed,histhied);
+  
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);
+  TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
+  TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,3000);
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t sbdatamp = sbdatfit->GetParameter(0);
+  Double_t sbdatlambda = sbdatfit->GetParameter(1);
+  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,5000,6);
+  srextrap->SetParameter(0,sramp);
+  srextrap->SetParameter(1,srlambda);
+  srextrap->SetParameter(2,sbamp);
+  srextrap->SetParameter(3,sblambda);
+  srextrap->SetParameter(4,sbdatamp);
+  srextrap->SetParameter(5,sbdatlambda);
+
+  //Make the histogram
+  for (int ib = 0; ib <= nbins ; ib++){
+    double x = hsb->GetBinCenter(ib);
+    double val = (*srextrap)(x);
+    extrphist->SetBinContent(ib,val);
+  }
+
+  return extrphist;
+  
+}
+
 
 ///////Development for normalization//
 

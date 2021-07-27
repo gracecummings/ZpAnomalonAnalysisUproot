@@ -68,7 +68,7 @@ if __name__=='__main__':
     metcut  = '200.0'
     btagwp  = '0.8'
     dynorm  = 1.
-    validation = True
+    validation = False
     rstr = "signalblind"
     if validation:
         rstr = "validationblind"
@@ -377,6 +377,7 @@ if __name__=='__main__':
     hdatsbsub1 = hdatsbsub.Clone()#check errors
     print("=========doing sb extrapolation fit==================")
     extrap  = ROOT.alphaExtrapolation(hsbdy,hsrdy,hdatsbsub1)
+    extrphist = ROOT.alphaExtrapolationHist(hsbdy,hsrdy,hdatsbsub1)
     hsrdy.GetXaxis().SetRangeUser(1500,5000)
     hsrdy.GetYaxis().SetRangeUser(0,10)
     hsrdy.Draw("HIST")
@@ -395,3 +396,8 @@ if __name__=='__main__':
     lstack1.Draw()
 
     tc2.SaveAs(datavis)
+
+    rootOutName = go.makeOutFile('Run2_2017_2018','dy_extraploation','.root',str(zptcut),str(hptcut),str(metcut),str(btagwp))
+    rootFile = ROOT.TFile(rootOutName,"recreate")
+    extrphist.Write()
+    rootFile.Close()

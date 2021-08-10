@@ -67,7 +67,7 @@ To see what you have installed, ```conda list```. The python environment is read
 
 ### Download Repository and Setup RestFrames
 
-Download this analysis repository. I would recommend forking it, with the icon in the top left. Detailed directions on how to fork, and sync with this repo, can be found in the [Github Docs](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo). Ther eis no special setup script or compiling. Once you have the repository setup locally,
+Download this analysis repository. I would recommend forking it, with the icon in the top left. Detailed directions on how to fork, and sync with this repo, can be found in the [Github Docs](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo). *The current branch of interest in recluster_cluster.* There is no special setup script or compiling. Once you have the repository setup locally,
 
 ```bash
 cd ZpAnomalonAnalysisUproot
@@ -100,10 +100,10 @@ inputs  = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
 in ```runTopiary.py``` to the correct path on your machine. An example executable command to produce a topiary is:
 
 ```bash
-python runTopiary.py -s Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8 -y 2017
+python runTopiary.py -s Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8 -c mumu
 ```
 
-Executables inthis framework are naming sensitive, so be sure to include the [ZpAnomalon_TreeMaker](https://github.com/gracecummings/ZpAnomalon_TreeMaker) naming conventions in the sample strings.
+Executables in this framework are naming sensitive, so be sure to include the [ZpAnomalon_TreeMaker](https://github.com/gracecummings/ZpAnomalon_TreeMaker) naming conventions in the sample strings. This naming convention automatically handles the year (for triggers) and the  sample type (for k-factors and triggers). The channel must be explicitly indicated, with either "mumu", "ee" or "emu" selected. Currently only the mumu channel is fully supported.
 
 ## Doing selections (Analysis Fourth Step)
 

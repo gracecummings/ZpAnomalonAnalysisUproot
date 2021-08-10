@@ -145,6 +145,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    TBranch *gzCand_phi = trimTree->Branch("gzCandidate_phi",&gzCandidate_phi,"gzCandidate_phi/D");
    TBranch *gzCand_eta = trimTree->Branch("gzCandidate_eta",&gzCandidate_eta,"gzCandidate_eta/D");
    TBranch *gzCand_m   = trimTree->Branch("gzCandidate_m",&gzCandidate_m,"gzCandidate_m/D");
+   TBranch *JetBranch;
 
    hnskimed->SetBinContent(1,nentries);
    hnorigevnts->SetBinContent(1,totalOriginalEvents);
@@ -363,7 +364,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       double baseZdiff = 99999;
       //Channel Flags
       ///*
-      if (nZmumu > 0 && nZee == 0 && nZeu == 0){
+      if (nZmumu > 0 && nZee == 0 && nZeu == 0 && anchan == 4){
 	//in binary 100, 4 in decimal
 	channel = 4.;//4 in decimal
 	mumuchan = true;
@@ -392,14 +393,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  }
 	}
       }
-      if (nZmumu > 0 && nZee > 0 && nZeu == 0) {
+      if (nZmumu > 0 && nZee > 0 && nZeu == 0 && anchan == 6) {
 	//110 in binary, 6 in decimal
 	channel = 6.;//
 	if (passTrig){
 	zmumuzee += 1;
 	}
       }
-      if (nZmumu > 0 && nZee == 0 && nZeu > 0) {
+      if (nZmumu > 0 && nZee == 0 && nZeu > 0 && anchan == 5) {
 	//101 in binary, 5 in decimal
 	channel = 5.;//
 	int matchmu = 0;
@@ -417,14 +418,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	  }
 	}
       }
-      if (nZmumu > 0 && nZee > 0 && nZeu > 0) {
+      if (nZmumu > 0 && nZee > 0 && nZeu > 0 && anchan == 7) {
 	//111 in binary, 7 in decimal
 	channel = 7.;
 	if (passTrig) {
 	zmumuzeezemu +=1;
 	}
       }
-      if (nZmumu == 0 && nZee > 0 && nZeu == 0) {
+      if (nZmumu == 0 && nZee > 0 && nZeu == 0 && anchan == 2) {
 	//010
 	channel = 2.;
 	if (passTrig) {
@@ -452,14 +453,14 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	}
 	*/
       }
-      if (nZmumu == 0 && nZee > 0 && nZeu > 0) {
+      if (nZmumu == 0 && nZee > 0 && nZeu > 0 && anchan == 3) {
 	//011
 	channel = 3.;
 	if (passTrig) {
 	zeezemu +=1;
 	}
       }
-      if (nZmumu == 0 && nZee == 0 && nZeu > 0) {
+      if (nZmumu == 0 && nZee == 0 && nZeu > 0 && anchan == 1) {
 	//001
 	channel = 1.;
 	if (passTrig) {
@@ -498,7 +499,9 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       */
       
       //Higgs Candidate Build
-      unsigned long nunfat = JetsAK8->size();
+      //JetBranch = JetsAK8Clean;
+      //unsigned long nfat = JetsAK8->size();
+      //unsigned long nfat = JetBranch->size();
       unsigned long nfat = JetsAK8Clean->size();
       TLorentzVector theh;
       theh.SetPtEtaPhiM(0.0,0.0,0.0,0.0);;
@@ -513,6 +516,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
       double hmiddb = 0;
       bool   fid = 0;
 
+      /*
       if (nZs > 0 && nfat == 0){
 	//std::cout<<"Found an event with a Z Candidate but no reclustered fat jets"<<std::endl;
 	znorecfat +=1;
@@ -527,6 +531,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
 	//std::cout<<"Found an event with a Z Candidate but no reclustered fat jets"<<std::endl;
 	znofat +=1;
       }
+      */
+      
       //reclustered jets
       if (nfat > 0) {
 	for (unsigned long i =0; i < nfat; ++i) {

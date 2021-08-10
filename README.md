@@ -67,7 +67,7 @@ To see what you have installed, ```conda list```. The python environment is read
 
 ### Download Repository and Setup RestFrames
 
-Download this analysis repository. I would recommend forking it, with the icon in the top left. Detailed directions on how to fork, and sync with this repo, can be found in the [Github Docs](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo). *The current branch of interest in recluster_cluster.* There is no special setup script or compiling. Once you have the repository setup locally,
+Download this analysis repository. I would recommend forking it, with the icon in the top left. Detailed directions on how to fork, and sync with this repo, can be found in the [Github Docs](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo). **The current branch of interest in recluster_cluster.** There is no special setup script or compiling. Once you have the repository setup locally,
 
 ```bash
 cd ZpAnomalonAnalysisUproot
@@ -97,7 +97,7 @@ Currently, these scripts are designed to run locally, with the [trimmerShed](htt
 inputs  = glob.glob("../dataHandling/"+year+"/"+samp+"*.root")
 ```
 
-in ```runTopiary.py``` to the correct path on your machine. An example executable command to produce a topiary is:
+in ```runTopiary.py``` to the correct path on your machine. If the source ROOT file is in the executable directory, and no TChaining is needed, you can also just pass the entire name of the ROOT file directly. An example executable command to produce a topiary is:
 
 ```bash
 python runTopiary.py -s Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8 -c mumu
@@ -106,6 +106,34 @@ python runTopiary.py -s Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgra
 Executables in this framework are naming sensitive, so be sure to include the [ZpAnomalon_TreeMaker](https://github.com/gracecummings/ZpAnomalon_TreeMaker) naming conventions in the sample strings. This naming convention automatically handles the year (for triggers) and the  sample type (for k-factors and triggers). The channel must be explicitly indicated, with either "mumu", "ee" or "emu" selected. Currently only the mumu channel is fully supported.
 
 ## Doing selections (Analysis Fourth Step)
+
+The fourth step in our analysis chain is a Python-based analyzer that does our cuts. The flattened topiaries are built for analysis using a dataframe, which is where Pandas and company come into play. The fourth step produces histograms that pass all Pre-selection cuts, impose the binning, and calculate the stats error bars using Sumw2. At this step, the k-factors are applied to DY+Jets samples. No xs, lumi, or stitching is applied at this step. An example excutable is:
+
+```bash
+python doSelections.py -f Fall17.DYJetsToLL_M-50_HT-800to1200_TuneCP5_13TeV-madgraphMLM-pythia8 -zpt 150.0 -hpt 300.0 -met 200.0 -sdm 30.0 -b DeepMassDecorrelTagZHbbvsQCD -wp 0.8 -date 2021-08-10
+```
+
+Let's go through some options:
+
++ `-f` is the sample string
++ `-zpt` is the Z candidate pT cut
++ `-hpt` is the Higgs candidate pT cut
++ `-met` is the MET cut
++ `-sdm` is the lower cut on soft drop mass
++ `-b` is th btagger name to use
++ `-wp` is the btagger working point to use
++ `-date` is actually the directory in the "analysis_output_ZpAnomalon" folder where the input to this selections step is held. Step 3 (Topiary) automatically creates the aforementioned folder, and outputs are nested in directories named for the date the file was created, so this takes a date, classically.
++ `-sr True` is a flag for is signal region selections should be used. Default are sidebands
++ `-c True` is a flag for if the entire region (no signal/sideband differentiation) should be used.
++ `-v True` is a flag to use validation region sidebands and fake signal regions. Must be combined with region flags.
+
+Output for this step is stored in "analysis_output_ZpAnomalon/DATEOFEXECUTION". Three files are created, with different names and file types. The three files produced are identified as:
+
++ sampleName+`upout`+region+cutdetails+`.root` - ROOT file with weighted preselection histograms
++ sampleName+`selected_errors`+region+cutdetails+`.pkl` - Pickle file with bin-by-bin stats errors
++ sampleName+`totalevents`+region+cutdetails+`.npy` - numpy file with the original event counts
+
+These three files are used in the plotting steps of the analysis.
 
 ## Other manipulations and facillitated respins
 

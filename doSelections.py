@@ -55,6 +55,7 @@ if __name__=='__main__':
     parser.add_argument("-date","--date",type=str,help = "where are your topiary plots?")
     parser.add_argument("-sr","--signalregion",type=bool,help = "do you want a signal region plot?")
     parser.add_argument("-c","--comboregion",type=bool,help = "do you want combined SR and SB?")
+    parser.add_argument("-v","--validation",type=bool,help = "validation region bounds?")
     args = parser.parse_args()
 
     samp   = args.sample
@@ -66,7 +67,7 @@ if __name__=='__main__':
     btagwp = args.btagWP
     sr     = args.signalregion
     comb   = args.comboregion
-    valid  = True
+    valid  = args.validation
 
 
     inputfiles = glob.glob('analysis_output_ZpAnomalon/'+args.date+'/'+samp+'*_topiary*.root')

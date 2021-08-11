@@ -56,7 +56,6 @@ def orderFall17TT(histFile):#NROKEN AT THE MOMENT
 
 def massPoints(nameSig):#do this for full name
     s1  = nameSig.split("-")
-    #print s1
     mzp = int(s1[0].split("Zp")[1])
     mnd = int(s1[1].split("ND")[1])
     ms1 = s1[2].split("_upout")[0]

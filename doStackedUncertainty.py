@@ -77,6 +77,8 @@ if __name__=='__main__':
 
     if len(bkgdfs["DYJetsToLL"]) > 0:
         dy = True
+        if dy:
+            print("have DY")
         uncsqdDYJetsdf = sum(bkgdfs["DYJetsToLL"])
         uncDYJetsdf    = uncsqdDYJetsdf**(1/2)
         saveDYJetsunc  = go.makeOutFile(mcprefix+'.DYJetsToLL','unc_'+reg,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
@@ -84,6 +86,8 @@ if __name__=='__main__':
 
     if len(bkgdfs["TT"]) > 0:
         tt = True
+        if tt:
+            print("have tt")
         uncsqdTTdf     = sum(bkgdfs["TT"])
         uncTTdf        = uncsqdTTdf**(1/2)
         saveTTunc      = go.makeOutFile(mcprefix+'.TT','unc_'+reg,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
@@ -91,6 +95,8 @@ if __name__=='__main__':
 
     if len(bkgdfs["WZTo2L2Q"]) > 0:
         wz = True
+        if wz:
+            print("have wz")
         uncsqdWZdf     = sum(bkgdfs["WZTo2L2Q"])
         uncWZdf        = uncsqdWZdf**(1/2)
         saveWZ2L2Qunc  = go.makeOutFile(mcprefix+'.WZ2L2Q','unc_'+reg,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))
@@ -98,6 +104,8 @@ if __name__=='__main__':
 
     if len(bkgdfs["ZZTo2L2Q"]) > 0:
         zz = True
+        if zz:
+            print("have zz")
         uncsqdZZdf     = sum(bkgdfs["ZZTo2L2Q"])
         uncZZdf        = uncsqdZZdf**(1/2)
         saveZZ2L2Qunc  = go.makeOutFile(mcprefix+'.ZZ2L2Q','unc_'+reg,'.pkl',str(zptcut),str(hptcut),str(metcut),str(btagwp))

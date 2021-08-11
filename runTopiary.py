@@ -106,6 +106,10 @@ if __name__=="__main__":
         inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
         origevnts = inChain.GetEntries()
 
+    if "eos" in samp:
+        samp = samp.split("/")[-1]
+        
+
     outFile = makeOutFile(samp,'topiary_'+args.channel,'.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
     print "Making topiary of ",samp
     print "     Sample type ",samptype

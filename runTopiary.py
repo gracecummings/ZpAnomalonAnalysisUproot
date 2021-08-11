@@ -3,7 +3,7 @@ import glob
 import argparse
 import os
 import sys
-import gecorg as go
+#import gecorg as go
 from datetime import date
 
 def channelEncoding(string):
@@ -25,6 +25,44 @@ def channelEncoding(string):
         channel = -1
     return channel,message
 
+def sampleType(sampstring):
+    #Make numerical code for type of sample
+    if "Run" in sampstring:
+        samptype = 0
+    elif "ZpAnomalon" in sampstring:
+        samptype = 1
+        year = 17
+    elif "DYJetsToLL" in sampstring:
+         samptype = 2
+    elif "TTTo" in sampstring:
+        samptype = 3
+    elif "WZTo" in sampstring:
+        samptype = 4
+    elif "ZZTo" in sampstring:
+        samptype = 5
+    else:
+        samptype = -1
+
+    if "2018" in sampstring:
+        year = 18
+    if "Autumn18" in sampstring:
+        year = 18
+    if "2017" in sampstring:
+        year = 17
+    if "Fall17" in sampstring:
+        year = 17
+    if "2016" in sampstring:
+        year = 16
+
+    return samptype,year
+
+def makeOutFile(sampstring,descrip,ftype,zptcut,hptcut,metcut,btagwp):
+    if not os.path.exists("analysis_output_ZpAnomalon/"+str(date.today())+"/"):
+        os.makedirs("analysis_output_ZpAnomalon/"+str(date.today())+"/")
+    outFile = "analysis_output_ZpAnomalon/"+str(date.today())+"/"+sampstring+"_"+descrip+"_Zptcut"+zptcut+"_Hptcut"+hptcut+"_metcut"+metcut+"_btagwp"+btagwp+ftype
+    return outFile
+
+
 parser = argparse.ArgumentParser()
 
 if __name__=="__main__":
@@ -35,16 +73,16 @@ if __name__=="__main__":
     samptype = -1
 
     #Check what you are working with
-    samptype,checkedyear = go.sampleType(samp)
+    samptype,checkedyear = sampleType(samp)
     channel,channelprint = channelEncoding(args.channel)
     year = "20"+str(checkedyear)
 
     #Do not start if you are not prepared
     if samptype < 0:
-        print("You have a problem, we do not undertand the sample coding")
+        print "You have a problem, we do not undertand the sample coding"
         sys.exit()
     if channel <= 0:
-        print("You have a problem, no channel given")
+        print "You have a problem, no channel given"
         sys.exit()
     origevnts = 0
 
@@ -68,14 +106,14 @@ if __name__=="__main__":
         inChain.Add("../dataHandling/"+year+"/"+samp+"*.root")
         origevnts = inChain.GetEntries()
 
-    outFile = go.makeOutFile(samp,'topiary_'+args.channel,'.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
-    print( "Making topiary of ",samp)
-    print("     Sample type ",samptype)
-    print("     Sample Year ",year)
-    print("    ",channelprint)
-    print("     Events in TChain: ",inChain.GetEntries())
-    print(("     Original data set had {0} events in type.").format(origevnts))
-    print("    Saving topiary in ",outFile)
+    outFile = makeOutFile(samp,'topiary_'+args.channel,'.root','0.0','250.0','0.0','0.0')#Needs to become dynamic with cuts
+    print "Making topiary of ",samp
+    print "     Sample type ",samptype
+    print "     Sample Year ",year
+    print "    ",channelprint
+    print "     Events in TChain: ",inChain.GetEntries()
+    print ("     Original data set had {0} events in type.").format(origevnts)
+    print "    Saving topiary in ",outFile
 
 
     ROOT.gSystem.CompileMacro("TreeMakerTopiary.C","g0ck")

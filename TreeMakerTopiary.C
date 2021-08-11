@@ -32,11 +32,11 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    }
 
 
-   TFile qcdnnloFile("../DYCorrection/lindert_qcd_nnlo_sf.root","READ");
+   TFile qcdnnloFile("DYCorrections/lindert_qcd_nnlo_sf.root","READ");
    TH1D *hqcdnnlosf  = (TH1D*)qcdnnloFile.Get("eej");
    hqcdnnlosf->SetDirectory(0);
    qcdnnloFile.Close();
-   TFile ewknloFile("../DYCorrection/merged_kfactors_zjets.root","READ");
+   TFile ewknloFile("DYCorrections/merged_kfactors_zjets.root","READ");
    TH1F *hewknlosf = (TH1F*)ewknloFile.Get("kfactor_monojet_ewk");
    hewknlosf->SetDirectory(0);
    ewknloFile.Close();

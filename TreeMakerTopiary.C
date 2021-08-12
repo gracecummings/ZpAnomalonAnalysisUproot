@@ -92,7 +92,7 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    double gzCandidate_m;
    double channelflag;
 
-      //Define the skimmed skim  output file and tree
+   //Define the skimmed skim  output file and tree
    TFile* trimFile = new TFile(outputFileName.c_str(),"recreate");
    TTree* trimTree = fChain->CloneTree(0);
    TH1F*  hnskimed = new TH1F("hnskimed","number of events at skim level",1,0,1);
@@ -145,8 +145,8 @@ void TreeMakerTopiary::Loop(std::string outputFileName, float totalOriginalEvent
    TBranch *gzCand_phi = trimTree->Branch("gzCandidate_phi",&gzCandidate_phi,"gzCandidate_phi/D");
    TBranch *gzCand_eta = trimTree->Branch("gzCandidate_eta",&gzCandidate_eta,"gzCandidate_eta/D");
    TBranch *gzCand_m   = trimTree->Branch("gzCandidate_m",&gzCandidate_m,"gzCandidate_m/D");
-   TBranch *JetBranch;
 
+   //Info and holders
    hnskimed->SetBinContent(1,nentries);
    hnorigevnts->SetBinContent(1,totalOriginalEvents);
 

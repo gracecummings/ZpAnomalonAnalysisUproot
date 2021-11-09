@@ -67,6 +67,9 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int high
   double max = hist->GetXaxis()->GetBinCenter(binmax);
   double amp = hist->GetMaximum();
   double_t lambda = guessDecayConstant(hist,amp);
+
+  //std::cout<<" Max guess> "<<amp<<std::endl;
+  //std::cout<<" lamda guess> "<<lambda<<std::endl;
   expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
   //expfit->SetParameter(0,amp);//just use amp for old way
   expfit->SetParameter(1,lambda);
@@ -132,15 +135,28 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,i
   //std::cout<<"First bin low edge "<<hist->GetBinLowEdge(1)<<std::endl;
   //std::cout<<"Last  bin low edge "<<hist->GetBinLowEdge(hist->GetNbinsX())+binwidth<<std::endl;
 
+  //std::cout<<"hist low edge  "<<histlowed<<std::endl;
+  //std::cout<<"fit low edge   "<<lowr<<std::endl;
+  
   float fitplace = (lowr-histlowed)/binwidth;
+  //std::cout<<"fit place "<<fitplace<<std::endl;
   float fitplacer = round((lowr-histlowed)/binwidth);
   float fitstartbin;
-  if ((fitplace - fitplacer) < 0.5) {
+  //example: hist low edge = 0, fit low = 1500, binwidth = 200
+  //fitplace = 7.5, we actually know that 1500 is in bin 8
+  //we want the fit histogram to start at bin 8
+  //fit placer, when rounded, gives us 8
+  if (std::abs(fitplace - fitplacer) < 0.5) {
       fitstartbin = fitplacer+1;
+      //std::cout<<"calulated diff "<<(fitplace - fitplacer)<<std::endl;
     }
   else {
     fitstartbin = fitplacer;
   }
+  //std::cout<<"rounded fit placer "<<fitplacer<<std::endl;
+  //std::cout<<"fit start bin "<<fitstartbin<<std::endl;
+  //std::cout<<"Value in starting bin "<<hist->GetBinContent(fitplacer)<<std::endl;
+  //std::cout<<"Filling the UNC Bin histogram "<<std::endl;
     
   // Get the Covariance matrix
   TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
@@ -148,8 +164,12 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,i
   TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
   int finalbin = (highr-histlowed)/binwidth;
   for (int ib = fitstartbin;ib<=finalbin;ib++){
+    //std::cout<<"Bin number "<<ib<<std::endl;
     double x = hist->GetBinCenter(ib);
+    //std::cout<<"Bin Center "<<x<<std::endl;
     double sigma = GetError(wfit,x,pars,*COV,nPars);
+    //std::cout<<"Fit value  "<<(*fitout)(x)<<std::endl;
+    //std::cout<<"Hist value  "<<hist->GetBinContent(ib)<<std::endl;
     errhist->SetBinContent(ib,(*fitout)(x));
     errhist->SetBinError(ib,nsig*sigma);
   }
@@ -206,6 +226,7 @@ TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
   TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);
   TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
   TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,3000);
+  //TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,2500);//jecup
   Double_t sbamp = sbfit->GetParameter(0);
   Double_t sblambda = sbfit->GetParameter(1);
   Double_t sramp = srfit->GetParameter(0);
@@ -222,7 +243,7 @@ TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
   return srextrap;
 }
 
-TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
+TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1){
   string sb = "sbl";
   string sr = "srl";
   string dt = "dtl";
@@ -237,7 +258,7 @@ TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
   float binwidth  = hsb->GetBinWidth(1);
   float histlowed = hsb->GetBinLowEdge(1);
   float histhied  = hsb->GetBinLowEdge(nbins)+binwidth;
-  TH1D *extrphist = new TH1D("extrphist","Histogram with DY extrap to SR",nbins,histlowed,histhied);
+
   
   TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);
   TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
@@ -257,8 +278,9 @@ TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
   srextrap->SetParameter(5,sbdatlambda);
 
   //Make the histogram
-  for (int ib = 0; ib <= nbins ; ib++){
-    double x = hsb->GetBinCenter(ib);
+  TH1D *extrphist = new TH1D("extrphist","Histogram with DY extrap to SR",nbins/rebindiv,histlowed,histhied);
+  for (int ib = 0; ib <= (nbins/rebindiv); ib++){
+    double x = extrphist->GetBinCenter(ib);
     double val = (*srextrap)(x);
     extrphist->SetBinContent(ib,val);
   }

@@ -190,7 +190,7 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,i
 }
 
 
-TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
+TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000){
   string sb = "sbl";
   string sr = "srl";
   int len = sb.length();
@@ -198,8 +198,8 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
   char srl[len+1];
   strcpy(sbl,sb.c_str());
   strcpy(srl,sr.c_str());
-  TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);//added ranges
-  TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",lowrsr,highrsr);
   Double_t sbamp = sbfit->GetParameter(0);
   Double_t sblambda = sbfit->GetParameter(1);
   Double_t sramp = srfit->GetParameter(0);
@@ -212,7 +212,7 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr){
   return alpha;
 }
 
-TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
+TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
   string sb = "sbl";
   string sr = "srl";
   string dt = "dtl";
@@ -223,9 +223,10 @@ TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
   strcpy(sbl,sb.c_str());
   strcpy(srl,sr.c_str());
   strcpy(dtl,dt.c_str());
-  TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);
-  TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
-  TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,3000);
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",lowrsr,highrsr);
+  //TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",lowrdat,highrdat);
+  TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",lowrdat,3000);
   //TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,2500);//jecup
   Double_t sbamp = sbfit->GetParameter(0);
   Double_t sblambda = sbfit->GetParameter(1);
@@ -243,7 +244,7 @@ TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb){
   return srextrap;
 }
 
-TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1){
+TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
   string sb = "sbl";
   string sr = "srl";
   string dt = "dtl";
@@ -260,15 +261,22 @@ TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1)
   float histhied  = hsb->GetBinLowEdge(nbins)+binwidth;
 
   
-  TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);
-  TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
-  TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,3000);
+  //TF1 *sbfit= expFit(hsb,sbl,"R0+",1500,5000);
+  //TF1 *srfit= expFit(hsr,srl,"R0+",1500,4000);
+  //TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",1500,3000);
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",lowrsr,highrsr);
+
+  ///limits might be weird because of the limits of the others
+  TF1 *sbdatfit= expFit(hdatsb,dtl,"R0+",lowrdat,3000);///THIS IS THE BUG
+  //This is a fit to a histogram that is made form subtracting fits from fits
   Double_t sbamp = sbfit->GetParameter(0);
   Double_t sblambda = sbfit->GetParameter(1);
   Double_t sramp = srfit->GetParameter(0);
   Double_t srlambda = srfit->GetParameter(1);
   Double_t sbdatamp = sbdatfit->GetParameter(0);
   Double_t sbdatlambda = sbdatfit->GetParameter(1);
+  //limits!!! NEEDs attention
   TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,5000,6);
   srextrap->SetParameter(0,sramp);
   srextrap->SetParameter(1,srlambda);

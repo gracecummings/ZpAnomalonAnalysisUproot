@@ -94,6 +94,87 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int high
   //double acamp = fitout->GetParameter(0);
 }
 
+TF1 * expFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
+  expfit->SetParameter(0,pars[0]);
+  expfit->SetParameter(1,pars[1]);
+  return expfit;
+}
+
+TVectorD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambdaOG = guessDecayConstantOG(hist,amp);
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 2;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vecout = TVectorD(nPars);
+
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  eigvec.Transpose(eigvec);
+  vdecorrparams = eigvec*oriparams;
+  vecout = eigvec.Invert()*(vdecorrparams+vdecorrerrs);
+  return vecout;
+}
+
+TVectorD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambdaOG = guessDecayConstantOG(hist,amp);
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 2;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vecout = TVectorD(nPars);
+
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  eigvec.Transpose(eigvec);
+  vdecorrparams = eigvec*oriparams;
+  vecout = eigvec.Invert()*(vdecorrparams-vdecorrerrs);
+  return vecout;
+}
+
 TF1 * expNFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
   TF1 *expNfit = new TF1(name,expNModel,1500,5000,3);
   int binmax = hist->GetMaximumBin();
@@ -245,6 +326,71 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr,int lowrsb=1500, int highrsb=3000,
   alpha->SetParameter(2,sbamp);
   alpha->SetParameter(3,sblambda);
   return alpha;
+}
+
+
+TF1 * alphaRatioMakerExpExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  TF1 *alpha = new TF1(name,expRatio,1500,5000,4);//was to 5000 previously
+  alpha->SetParameter(0,sramp);
+  alpha->SetParameter(1,srlambda);
+  alpha->SetParameter(2,sbamp);
+  alpha->SetParameter(3,sblambda);
+  return alpha;
+}
+
+//TF1 *datafitforsubtraction;
+//TF1 *ttsbfitforsubtraction;
+//TF1 *vvsbfitforsubtraction;
+
+Double_t subtractedFitsForDataSB(Double_t *x,Double_t *par){
+  Double_t data = expModel(x,par);
+  Double_t tt   = expModel(x,&par[2]);
+  Double_t vv   = expModel(x,&par[4]);
+  return data-tt-vv;
+}
+
+TF1 * subtractionFromFits(TF1 *dataf, TF1 *ttf, TF1 *vvf,TString name){
+  Double_t par[6];
+  dataf->GetParameters(&par[0]);
+  ttf->GetParameters(&par[2]);
+  vvf->GetParameters(&par[4]);
+  TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSB,1500,3000,6);
+  subtracteddatasb->SetParameter(0,par[0]);
+  subtracteddatasb->SetParameter(1,par[1]);
+  subtracteddatasb->SetParameter(2,par[2]);
+  subtracteddatasb->SetParameter(3,par[3]);
+  subtracteddatasb->SetParameter(4,par[4]);
+  subtracteddatasb->SetParameter(5,par[5]);
+  return subtracteddatasb;
+}
+
+Double_t alphaExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subtractedFitsForDataSB(x,par);
+  Double_t alpha  = expRatio(x,&par[6]);
+  return subdat*alpha;
+}
+
+TF1 * alphaExtrapolationFromFits(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[10];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[6]);
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapBuiltFromFunctions,1500,3000,10);
+  //alphaextraptf1->SetParameters(par);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  alphaextraptf1->SetParameter(7,par[7]);
+  alphaextraptf1->SetParameter(8,par[8]);
+  alphaextraptf1->SetParameter(9,par[9]);
+  return alphaextraptf1;
 }
 
 TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
@@ -451,6 +597,149 @@ TH1D * poly5mod5FitErrBands(TH1D *hist, TString name, TString opt="R0+",int lowr
   return errhist;
 }
 
+TGraph *errup;
+TGraph *errdwn;
+
+Double_t upfunc(Double_t *x,Double_t *t){return errup->Eval(x[0]);}
+Double_t dwnfunc(Double_t *x,Double_t *t){return errdwn->Eval(x[0]);}
+
+vector<TF1 *> poly5mod5FitErrFunctionsGraphs(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+  const Int_t nPars = 6;
+  Double_t pars[nPars], grad[nPars];
+  TF1 *poly5mod5fit = new TF1(name,poly5Model5,lowr,highr,6);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  int nbins  = hist->GetNbinsX();
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+
+  //TH1D *errhistup = new TH1D("errhistup","Histogram with bin value as nomval+1sigma",nbins,histlowed,histhied);
+  //TH1D *errhistdwn = new TH1D("errhistdwn","Histogram with bin value as nomval+1sigma",nbins,histlowed,histhied);
+
+  fitout->GetParameters(pars);
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+    fitstartbin = fitplacer+1;
+  }
+  else {
+    fitstartbin = fitplacer;
+  }
+  int finalbin = (highr-histlowed)/binwidth;
+
+  errup = new TGraph(finalbin+1);
+  errdwn = new TGraph(finalbin+1);
+  
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  for (int ib = fitstartbin;ib<=finalbin+1;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    errup->SetPoint(ib,x,(*fitout)(x)+sigma);
+    errdwn->SetPoint(ib,x,(*fitout)(x)-sigma);
+  }
+
+  TF1 *fitoutup  = new TF1("fitoutup",upfunc,lowr,highr,0);
+  TF1 *fitoutdwn = new TF1("fitoutdwn",dwnfunc,lowr,highr,0);
+
+  //std::cout<<"DEBUG DEBUG DEBUG"<<std::endl;
+  //for (int ib = fitstartbin;ib<=finalbin+1;ib++){
+  //double x = hist->GetBinCenter(ib);
+    //double sigma = GetError(wfit,x,pars,*COV,nPars);
+    //double upgx;
+    //double upgy;
+    //errup->GetPoint(ib,upgx,upgy);
+    //std::cout<<"The histogram up value y: "<<upgy<<std::endl;
+    //std::cout<<"The       fit up value: "<<(*fitoutup)(x)<<std::endl;
+    //std::cout<<"The histogram dn value: "<<errdwn->GetPoint(ib)<<std::endl;
+    //std::cout<<"The       fit dn value: "<<(*fitoutdwn)(x)<<std::endl;
+  //}
+
+  //std::cout<<fitoutup<<std::endl;
+  //std::cout<<fitoutdwn<<std::endl;
+
+  //TFormula* upform = fitoutup->GetFormula();
+  //std::cout<<"The formula param 0: "<<upform->GetParameter(0)<<std::endl;
+  vector<TF1 *> vecout;
+  vecout.push_back(fitoutup);
+  vecout.push_back(fitoutdwn);
+  return vecout;
+}
+
+vector<TF1 *> poly5mod5FitErrFunctionsHists(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+  const Int_t nPars = 6;
+  Double_t pars[nPars], grad[nPars];
+  TF1 *poly5mod5fit = new TF1(name,poly5Model5,lowr,highr,6);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  int nbins  = hist->GetNbinsX();
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+
+  TH1D *errhistup = new TH1D("errhistup","Histogram with bin value as nomval+1sigma",nbins,histlowed,histhied);
+  TH1D *errhistdwn = new TH1D("errhistdwn","Histogram with bin value as nomval+1sigma",nbins,histlowed,histhied);
+
+  fitout->GetParameters(pars);
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+    fitstartbin = fitplacer+1;
+  }
+  else {
+    fitstartbin = fitplacer;
+  }
+  int finalbin = (highr-histlowed)/binwidth;
+
+  //errup = new TGraph(finalbin+1);
+  //errdwn = new TGraph(finalbin+1);
+  
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  for (int ib = fitstartbin;ib<=finalbin+1;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    errhistup->SetBinContent(ib,x,(*fitout)(x)+sigma);
+    errhistdwn->SetBinContent(ib,x,(*fitout)(x)-sigma);
+  }
+
+  TF1 *poly5mod5fitup = new TF1("fitforupuncs",poly5Model5,lowr,highr,6);
+  TF1 *poly5mod5fitdn = new TF1("fitfordnuncs",poly5Model5,lowr,highr,6);
+  errhistup->Fit("fitforupuncs","R0+");
+  errhistdwn->Fit("fitfordnuncs","R0+");
+  TF1 *fitoutup = errhistup->GetFunction("fitforupuncs");
+  TF1 *fitoutdwn = errhistdwn->GetFunction("fitfordnuncs");
+
+  std::cout<<"DEBUG DEBUG DEBUG"<<std::endl;
+  for (int ib = fitstartbin;ib<=finalbin+1;ib++){
+    double x = hist->GetBinCenter(ib);
+    //double sigma = GetError(wfit,x,pars,*COV,nPars);
+    std::cout<<"The histogram up value: "<<errhistup->GetBinContent(ib)<<std::endl;
+    std::cout<<"The       fit up value: "<<(*fitoutup)(x)<<std::endl;
+    std::cout<<"The histogram dn value: "<<errhistdwn->GetBinContent(ib)<<std::endl;
+    std::cout<<"The       fit dn value: "<<(*fitoutdwn)(x)<<std::endl;
+  }
+    
+
+  std::cout<<fitoutup<<std::endl;
+  std::cout<<fitoutdwn<<std::endl;
+  vector<TF1 *> vecout;
+  vecout.push_back(fitoutup);
+  vecout.push_back(fitoutdwn);
+  return vecout;
+}
+
 TVectorD poly5mod5FitDecorrelatedUncs(TH1D *hist,TString name,TString opt="R0+",int lowr=30, int highr=400) {
   const Int_t nPars = 6;
   Double_t pars[nPars], grad[nPars];
@@ -512,6 +801,8 @@ TVectorD poly5mod5FitDecorrelatedParams(TH1D *hist,TString name,TString opt="R0+
   return vdecorrparams;
 }
 
+
+
 TVectorD poly5mod5FitDecorrParamsShifted(TH1D *hist,TString name,int multi,TString opt="R0+",int lowr=30, int highr=400) {
   const Int_t nPars = 6;
   Double_t pars[nPars], grad[nPars];
@@ -527,30 +818,14 @@ TVectorD poly5mod5FitDecorrParamsShifted(TH1D *hist,TString name,int multi,TStri
   for (int i = 0;i<nPars;i++){
     oriparams[i] = pars[i];
   }
-  //std::cout<<"The original params"<<std::endl;
-  //oriparams.Print();
-
   ROOT::Math::WrappedTF1 wfit(*fitout);
   TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
   assert (nPars == fitter->GetNumberFreeParameters());
   TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
-  //std::cout<<"The standard covariance matrix"<<std::endl;
-  //COV->Print();
   TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
-  //std::cout<<"The eigenvators of the covariance matrix"<<std::endl;
-  //eigvec.Print();
   eigvec.Transpose(eigvec);
-  //std::cout<<"The eigenvators of the covariance matrix transposed, hopefully"<<std::endl;
-  //eigvec.Print();
   vdecorrparams = eigvec*oriparams;
-  vecout = eigvec.Invert()*(vdecorrparams-vdecorrerrs);
-  //vecout = eigvec.Invert()*(vdecorrparams);
-  //vecout.Print();
-  //vdecorrerrs.Print();
-  //vdecorrparams.Print();  
-  //(vdecorrparams+vdecorrerrs).Print();  
-  //vdecorrparams.Print() ;
-  
+  vecout = eigvec.Invert()*(vdecorrparams+vdecorrerrs);
   return vecout;
 }
 
@@ -634,6 +909,108 @@ TF1 * gaus2Fit2(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int hig
 
   return fitout;
 }
+
+TVectorD gaus2Fit2DecorrParamsShifted(TH1D *hist,TString name,int multi,TString opt="R0+",int lowr=30, int highr=400) {
+  const Int_t nPars = 6;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(6);
+  TVectorD vdecorrparams = TVectorD(6);
+  TVectorD vdecorrerrs = TVectorD(6);
+  TVectorD vecout = TVectorD(6);
+
+  TF1 *gaus2fit = new TF1(name,gaus2Model2,lowr,highr,6);
+  gaus2fit->SetParameter(1,120);
+  gaus2fit->SetParameter(2,40);
+  gaus2fit->SetParameter(3,175);
+  gaus2fit->SetParameter(4,10);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  eigvec.Transpose(eigvec);
+  vdecorrparams = eigvec*oriparams;
+  vecout = eigvec.Invert()*(vdecorrparams+vdecorrerrs);
+  return vecout;
+}
+
+
+TGraph *erruptt;
+TGraph *errdwntt;
+
+Double_t upfunctt(Double_t *x,Double_t *t){return erruptt->Eval(x[0]);}
+Double_t dwnfunctt(Double_t *x,Double_t *t){return errdwntt->Eval(x[0]);}
+
+vector<TF1 *> gaus2Fit2ErrFunctionsGraphs(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
+  const Int_t nPars = 6;
+  Double_t pars[nPars], grad[nPars];
+  TF1 *gaus2fit = new TF1(name,gaus2Model2,lowr,highr,6);
+  gaus2fit->SetParameter(1,120);
+  gaus2fit->SetParameter(2,40);
+  gaus2fit->SetParameter(3,175);
+  gaus2fit->SetParameter(4,10);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  int nbins  = hist->GetNbinsX();
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+  fitout->GetParameters(pars);
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+    fitstartbin = fitplacer+1;
+  }
+  else {
+    fitstartbin = fitplacer;
+  }
+  int finalbin = (highr-histlowed)/binwidth;
+
+  erruptt = new TGraph(finalbin+1);
+  errdwntt = new TGraph(finalbin+1);
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  for (int ib = fitstartbin;ib<=finalbin+1;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    erruptt->SetPoint(ib,x,(*fitout)(x)+sigma);
+    errdwntt->SetPoint(ib,x,(*fitout)(x)-sigma);
+  }
+
+  TF1 *fitoutup  = new TF1("fitoutup",upfunctt,lowr,highr,0);
+  TF1 *fitoutdwn = new TF1("fitoutdwn",dwnfunctt,lowr,highr,0);
+
+  /*
+  std::cout<<"DEBUG DEBUG DEBUG TTBAR ENVELOPE FUNCTIONS"<<std::endl;
+  for (int ib = fitstartbin;ib<=finalbin+1;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    double upgx;
+    double upgy;
+    errup->GetPoint(ib,upgx,upgy);
+    std::cout<<"The histogram up value y: "<<upgy<<std::endl;
+    std::cout<<"The       fit up value: "<<(*fitoutup)(x)<<std::endl;
+  }
+  */
+  vector<TF1 *> vecout;
+  vecout.push_back(fitoutup);
+  vecout.push_back(fitoutdwn);
+  return vecout;
+}
+
+
+  
 
 TH1D * gaus2Fit2ErrBands(TH1D *hist, TString name, TString opt="R0+",int lowr=30, int highr=400) {
   const Int_t nPars = 6;
@@ -807,11 +1184,6 @@ TF1 * gausPoly1FitSetParsAndErrs(TString name,TVector pars,int lowr=30, int high
 }
 
 Double_t totalBkgModel(Double_t *X, Double_t *par){
-  //Double_t x = X[0];
-  //Double_t fitval = par[17]*poly5Model(X,&par[0])+par[18]*gaus2Model(X,&par[6])+par[19]*gausPoly1Model(X,&par[12]);
-  //Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model(X,&par[6])+par[18]*gausPoly1Model(X,&par[12]);
-  //Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model2(X,&par[6])+par[18]*gausPoly1Model(X,&par[12]);
-  //Double_t fitval = par[17]*poly5Model(X,&par[0])+gaus2Model2(X,&par[6])+gausPoly1Model(X,&par[12]);
   Double_t fitval = par[17]*poly5Model5(X,&par[0])+gaus2Model2(X,&par[6])+gausPoly1Model(X,&par[12]);
   return fitval;
 }
@@ -836,10 +1208,356 @@ Double_t totalBkgModelBlind(Double_t *X, Double_t *par){
   return fitval;
 }
 
-vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",Bool_t vr= false,int lsbl=lowsbl,int lsbh = lowsbh,int hsbl=highsbl,int hsbh=highsbh) {
+TF1* dyfunctionInTotalEnvelope;
+TF1* ttfunctionInTotalEnvelope;
+
+Double_t totalBkgModelTTEnvelope(Double_t *X, Double_t *par){
+  Double_t fitval = par[11]*poly5Model5(X,&par[0])+ttfunctionInTotalEnvelope->Eval(*X)+gausPoly1Model(X,&par[6]);
+  return fitval;
+}
+
+Double_t totalBkgModelDYEnvelope(Double_t *X, Double_t *par){
+  //Double_t x = X[0];
+  Double_t fitval = par[11]*dyfunctionInTotalEnvelope->Eval(*X)+gaus2Model2(X,&par[0])+gausPoly1Model(X,&par[6]);
+  return fitval;
+}
+
+Double_t totalBkgModelBlindTTEnvelope(Double_t *X, Double_t *par){
+  if (validationregion && X[0] > validationlsbh && X[0] < highsbl) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  if (!validationregion && X[0] > lowsbh && X[0] < highsbl) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  Double_t fitval = par[11]*poly5Model5(X,&par[0])+ttfunctionInTotalEnvelope->Eval(*X)+gausPoly1Model(X,&par[6]);
+  return fitval;
+}
+
+Double_t totalBkgModelBlindDYEnvelope(Double_t *X, Double_t *par){
+  if (validationregion && X[0] > validationlsbh && X[0] < highsbl) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  if (!validationregion && X[0] > lowsbh && X[0] < highsbl) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  Double_t fitval = par[11]*dyfunctionInTotalEnvelope->Eval(*X)+gaus2Model2(X,&par[0])+gausPoly1Model(X,&par[6]);
+  return fitval;
+}
+
+vector<TF1 *> totalFitTTEnvelope(TH1D *hist, TF1 *ttfit, TH1D *dyhist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lsbl=30,int hsbh=250) {
+  TF1 *dyfit = poly5mod5Fit(dyhist,"dyl","QER0+",lsbl,225);
+  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QER0+",lsbl,hsbh);
+  Double_t parIn[12];
+  dyfit->GetParameters(&parIn[0]);
+  vvfit->GetParameters(&parIn[6]);
+  ttfunctionInTotalEnvelope = ttfit;
+
+  std::cout<<"    You have the max fixed at "<<225<<std::endl;
+  //std::cout<<"    Doing total bkg fit "<<std::endl;
+  TF1 *totalfit = new TF1("totalfitttenv",totalBkgModelTTEnvelope,lsbl,225,12);//17 without norms
+  totalfit->FixParameter(0,parIn[0]);
+  totalfit->FixParameter(1,parIn[1]);
+  totalfit->FixParameter(2,parIn[2]);
+  totalfit->FixParameter(3,parIn[3]);
+  totalfit->FixParameter(4,parIn[4]);
+  totalfit->FixParameter(5,parIn[5]);
+  totalfit->FixParameter(6,parIn[6]);
+  totalfit->FixParameter(7,parIn[7]);
+  totalfit->FixParameter(8,parIn[8]);
+  totalfit->FixParameter(9,parIn[9]);
+  totalfit->FixParameter(10,parIn[10]);
+  //totalfit->FixParameter(11,parIn[11]);
+  hist->Fit("totalfitttenv","ER0L+");
+  TF1 *totmcfit = hist->GetFunction("totalfitttenv");
+  
+  //Now do the extrapolation
+  //std::cout<<"    Doing sb data fit "<<std::endl;
+  TF1 *sbdatfit = new TF1("sbdatfitttshiftenv",totalBkgModelBlindTTEnvelope,lsbl,225,12);
+  sbdatfit->FixParameter(0,parIn[0]);
+  sbdatfit->FixParameter(1,parIn[1]);
+  sbdatfit->FixParameter(2,parIn[2]);
+  sbdatfit->FixParameter(3,parIn[3]);
+  sbdatfit->FixParameter(4,parIn[4]);
+  sbdatfit->FixParameter(5,parIn[5]);
+  sbdatfit->FixParameter(6,parIn[6]);
+  sbdatfit->FixParameter(7,parIn[7]);
+  sbdatfit->FixParameter(8,parIn[8]);
+  sbdatfit->FixParameter(9,parIn[9]);
+  sbdatfit->FixParameter(10,parIn[10]);
+  //sbdatfit->FixParameter(11,parIn[11]);
+  dathist->Fit("sbdatfitttshiftenv","ELR0+");
+  TF1 *totsbdatfit = dathist->GetFunction("sbdatfitttshiftenv");
+
+  //Double_t parExtrap[18];
+  //totsbdatfit->GetParameters(parExtrap);
+  TF1 *totextrap = new TF1("totextrapttenv",totalBkgModelTTEnvelope,lsbl,225,12);
+  totextrap->FixParameter(0,parIn[0]);
+  totextrap->FixParameter(1,parIn[1]);
+  totextrap->FixParameter(2,parIn[2]);
+  totextrap->FixParameter(3,parIn[3]);
+  totextrap->FixParameter(4,parIn[4]);
+  totextrap->FixParameter(5,parIn[5]);
+  totextrap->FixParameter(6,parIn[6]);
+  totextrap->FixParameter(7,parIn[7]);
+  totextrap->FixParameter(8,parIn[8]);
+  totextrap->FixParameter(9,parIn[9]);
+  totextrap->FixParameter(10,parIn[10]);
+  totextrap->FixParameter(11,totsbdatfit->GetParameter(11));
+  //totextrap->FixParameter(12,totsbdatfit->GetParameter(12));
+
+  std::vector<TF1*> fitvector;
+  fitvector.push_back(totmcfit);
+  fitvector.push_back(totsbdatfit);
+  fitvector.push_back(totextrap);
+  return fitvector;
+}
+
+vector<TF1 *> totalFitDYEnvelope(TH1D *hist, TF1 *dyfit, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lsbl=30,int hsbh=250) {
+  
+  //std::cout<<"  TT fit    "<<std::endl;
+  TF1 *ttfit = gaus2Fit2(tthist,"ttl","QER0+",lsbl,400);
+  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QER0+",lsbl,hsbh);
+  Double_t parIn[12];
+  ttfit->GetParameters(&parIn[0]);
+  vvfit->GetParameters(&parIn[6]);
+  dyfunctionInTotalEnvelope = dyfit;
+
+  std::cout<<"    You have the max fixed at "<<225<<std::endl;
+  //std::cout<<"    Doing total bkg fit "<<std::endl;
+  TF1 *totalfit = new TF1("totalfitdyenv",totalBkgModelDYEnvelope,lsbl,225,12);//17 without norms
+  totalfit->FixParameter(0,parIn[0]);
+  totalfit->FixParameter(1,parIn[1]);
+  totalfit->FixParameter(2,parIn[2]);
+  totalfit->FixParameter(3,parIn[3]);
+  totalfit->FixParameter(4,parIn[4]);
+  totalfit->FixParameter(5,parIn[5]);
+  totalfit->FixParameter(6,parIn[6]);
+  totalfit->FixParameter(7,parIn[7]);
+  totalfit->FixParameter(8,parIn[8]);
+  totalfit->FixParameter(9,parIn[9]);
+  totalfit->FixParameter(10,parIn[10]);
+  //totalfit->FixParameter(11,parIn[11]);
+  hist->Fit("totalfitdyenv","ER0L+");
+  TF1 *totmcfit = hist->GetFunction("totalfitdyenv");
+  
+  //Now do the extrapolation
+  //std::cout<<"    Doing sb data fit "<<std::endl;
+  TF1 *sbdatfit = new TF1("sbdatfitdyshiftenv",totalBkgModelBlindDYEnvelope,lsbl,225,12);
+  sbdatfit->FixParameter(0,parIn[0]);
+  sbdatfit->FixParameter(1,parIn[1]);
+  sbdatfit->FixParameter(2,parIn[2]);
+  sbdatfit->FixParameter(3,parIn[3]);
+  sbdatfit->FixParameter(4,parIn[4]);
+  sbdatfit->FixParameter(5,parIn[5]);
+  sbdatfit->FixParameter(6,parIn[6]);
+  sbdatfit->FixParameter(7,parIn[7]);
+  sbdatfit->FixParameter(8,parIn[8]);
+  sbdatfit->FixParameter(9,parIn[9]);
+  sbdatfit->FixParameter(10,parIn[10]);
+  //sbdatfit->FixParameter(11,parIn[11]);
+  dathist->Fit("sbdatfitdyshiftenv","ELR0+");
+  TF1 *totsbdatfit = dathist->GetFunction("sbdatfitdyshiftenv");
+
+  //Double_t parExtrap[18];
+  //totsbdatfit->GetParameters(parExtrap);
+  TF1 *totextrap = new TF1("totextrapdyenv",totalBkgModelDYEnvelope,lsbl,225,12);
+  totextrap->FixParameter(0,parIn[0]);
+  totextrap->FixParameter(1,parIn[1]);
+  totextrap->FixParameter(2,parIn[2]);
+  totextrap->FixParameter(3,parIn[3]);
+  totextrap->FixParameter(4,parIn[4]);
+  totextrap->FixParameter(5,parIn[5]);
+  totextrap->FixParameter(6,parIn[6]);
+  totextrap->FixParameter(7,parIn[7]);
+  totextrap->FixParameter(8,parIn[8]);
+  totextrap->FixParameter(9,parIn[9]);
+  totextrap->FixParameter(10,parIn[10]);
+  totextrap->FixParameter(11,totsbdatfit->GetParameter(11));
+  //totextrap->FixParameter(12,totsbdatfit->GetParameter(12));
+
+  std::vector<TF1*> fitvector;
+  fitvector.push_back(totmcfit);
+  fitvector.push_back(totsbdatfit);
+  fitvector.push_back(totextrap);
+  return fitvector;
+}
+
+//*/
+vector<TF1 *> totalFitDYTemplateVaried(TH1D *hist, TF1 dyfit, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lsbl=30,int hsbh=250) {
+  //std::cout<<"+++++Doing Norm fits DY Shifted++++++"<<std::endl;
+  //std::cout<<"  TT fit    "<<std::endl;
+  TF1 *ttfit = gaus2Fit2(tthist,"ttl","QER0+",lsbl,400);
+  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QER0+",lsbl,hsbh);
+  Double_t par[17];
+  dyfit.GetParameters(&par[0]);
+  ttfit->GetParameters(&par[6]);
+  vvfit->GetParameters(&par[12]);
+
+  std::cout<<"    You have the max fixed at "<<225<<std::endl;
+  //std::cout<<"    Doing total bkg fit "<<std::endl;
+  TF1 *totalfit = new TF1("totalfitdy",totalBkgModel,lsbl,225,18);//17 without norms
+  totalfit->FixParameter(0,par[0]);
+  totalfit->FixParameter(1,par[1]);
+  totalfit->FixParameter(2,par[2]);
+  totalfit->FixParameter(3,par[3]);
+  totalfit->FixParameter(4,par[4]);
+  totalfit->FixParameter(5,par[5]);
+  totalfit->FixParameter(6,par[6]);
+  totalfit->FixParameter(7,par[7]);
+  totalfit->FixParameter(8,par[8]);
+  totalfit->FixParameter(9,par[9]);
+  totalfit->FixParameter(10,par[10]);
+  totalfit->FixParameter(11,par[11]);//norm of ttbar
+  totalfit->FixParameter(12,par[12]);//norm of dib
+  totalfit->FixParameter(13,par[13]);
+  totalfit->FixParameter(14,par[14]);
+  totalfit->FixParameter(15,par[15]);
+  totalfit->FixParameter(16,par[16]);
+  hist->Fit("totalfitdy","QER0L+");
+  TF1 *totmcfit = hist->GetFunction("totalfitdy");
+  
+  //Now do the extrapolation
+  //std::cout<<"    Doing sb data fit "<<std::endl;
+  TF1 *sbdatfit = new TF1("sbdatfitdyshift",totalBkgModelBlind,lsbl,225,18);
+  sbdatfit->FixParameter(0,par[0]);
+  sbdatfit->FixParameter(1,par[1]);
+  sbdatfit->FixParameter(2,par[2]);
+  sbdatfit->FixParameter(3,par[3]);
+  sbdatfit->FixParameter(4,par[4]);
+  sbdatfit->FixParameter(5,par[5]);
+  sbdatfit->FixParameter(6,par[6]);
+  sbdatfit->FixParameter(7,par[7]);
+  sbdatfit->FixParameter(8,par[8]);
+  sbdatfit->FixParameter(9,par[9]);
+  sbdatfit->FixParameter(10,par[10]);
+  sbdatfit->FixParameter(11,par[11]);//norm of ttbar
+  sbdatfit->FixParameter(12,par[12]);//norm of dib
+  sbdatfit->FixParameter(13,par[13]);
+  sbdatfit->FixParameter(14,par[14]);
+  sbdatfit->FixParameter(15,par[15]);
+  sbdatfit->FixParameter(16,par[16]);
+  dathist->Fit("sbdatfitdyshift","QELR0+");
+  TF1 *totsbdatfit = dathist->GetFunction("sbdatfitdyshift");
+
+  //Double_t parExtrap[18];
+  //totsbdatfit->GetParameters(parExtrap);
+  TF1 *totextrap = new TF1("totextrap",totalBkgModel,lsbl,225,18);
+  totextrap->FixParameter(0,par[0]);
+  totextrap->FixParameter(1,par[1]);
+  totextrap->FixParameter(2,par[2]);
+  totextrap->FixParameter(3,par[3]);
+  totextrap->FixParameter(4,par[4]);
+  totextrap->FixParameter(5,par[5]);
+  totextrap->FixParameter(6,par[6]);
+  totextrap->FixParameter(7,par[7]);
+  totextrap->FixParameter(8,par[8]);
+  totextrap->FixParameter(9,par[9]);
+  totextrap->FixParameter(10,par[10]);
+  totextrap->FixParameter(11,par[11]);
+  totextrap->FixParameter(12,par[12]);
+  totextrap->FixParameter(13,par[13]);
+  totextrap->FixParameter(14,par[14]);
+  totextrap->FixParameter(15,par[15]);
+  totextrap->FixParameter(16,par[16]);
+  totextrap->FixParameter(17,totsbdatfit->GetParameter(17));
+
+  std::vector<TF1*> fitvector;
+  fitvector.push_back(totmcfit);
+  fitvector.push_back(totsbdatfit);
+  fitvector.push_back(totextrap);
+  return fitvector;
+}
+
+vector<TF1 *> totalFitTTTemplateVaried(TH1D *hist, TF1 ttfit, TH1D *dyhist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",int lsbl=30,int hsbh=250) {
+  TF1 *dyfit = poly5mod5Fit(dyhist,"dyl","QER0+",lsbl,225);
+  TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QER0+",lsbl,hsbh);
+  Double_t par[17];
+  dyfit->GetParameters(&par[0]);
+  ttfit.GetParameters(&par[6]);
+  vvfit->GetParameters(&par[12]);
+  std::cout<<"    You have the max fixed at "<<225<<std::endl;
+  //std::cout<<"    Doing total bkg fit "<<std::endl;
+  TF1 *totalfit = new TF1("totalfittt",totalBkgModel,lsbl,225,18);//17 without norms
+  totalfit->FixParameter(0,par[0]);
+  totalfit->FixParameter(1,par[1]);
+  totalfit->FixParameter(2,par[2]);
+  totalfit->FixParameter(3,par[3]);
+  totalfit->FixParameter(4,par[4]);
+  totalfit->FixParameter(5,par[5]);
+  totalfit->FixParameter(6,par[6]);
+  totalfit->FixParameter(7,par[7]);
+  totalfit->FixParameter(8,par[8]);
+  totalfit->FixParameter(9,par[9]);
+  totalfit->FixParameter(10,par[10]);
+  totalfit->FixParameter(11,par[11]);//norm of ttbar
+  totalfit->FixParameter(12,par[12]);//norm of dib
+  totalfit->FixParameter(13,par[13]);
+  totalfit->FixParameter(14,par[14]);
+  totalfit->FixParameter(15,par[15]);
+  totalfit->FixParameter(16,par[16]);
+  hist->Fit("totalfittt","QER0L+");
+  TF1 *totmcfit = hist->GetFunction("totalfittt");
+  
+  //Now do the extrapolation
+  //std::cout<<"    Doing sb data fit "<<std::endl;
+  TF1 *sbdatfit = new TF1("sbdatfitttshift",totalBkgModelBlind,lsbl,225,18);
+  sbdatfit->FixParameter(0,par[0]);
+  sbdatfit->FixParameter(1,par[1]);
+  sbdatfit->FixParameter(2,par[2]);
+  sbdatfit->FixParameter(3,par[3]);
+  sbdatfit->FixParameter(4,par[4]);
+  sbdatfit->FixParameter(5,par[5]);
+  sbdatfit->FixParameter(6,par[6]);
+  sbdatfit->FixParameter(7,par[7]);
+  sbdatfit->FixParameter(8,par[8]);
+  sbdatfit->FixParameter(9,par[9]);
+  sbdatfit->FixParameter(10,par[10]);
+  sbdatfit->FixParameter(11,par[11]);//norm of ttbar
+  sbdatfit->FixParameter(12,par[12]);//norm of dib
+  sbdatfit->FixParameter(13,par[13]);
+  sbdatfit->FixParameter(14,par[14]);
+  sbdatfit->FixParameter(15,par[15]);
+  sbdatfit->FixParameter(16,par[16]);
+  dathist->Fit("sbdatfitttshift","QELR0+");
+  TF1 *totsbdatfit = dathist->GetFunction("sbdatfitttshift");
+
+  //Double_t parExtrap[18];
+  //totsbdatfit->GetParameters(parExtrap);
+  TF1 *totextrap = new TF1("totextrap",totalBkgModel,lsbl,225,18);
+  totextrap->FixParameter(0,par[0]);
+  totextrap->FixParameter(1,par[1]);
+  totextrap->FixParameter(2,par[2]);
+  totextrap->FixParameter(3,par[3]);
+  totextrap->FixParameter(4,par[4]);
+  totextrap->FixParameter(5,par[5]);
+  totextrap->FixParameter(6,par[6]);
+  totextrap->FixParameter(7,par[7]);
+  totextrap->FixParameter(8,par[8]);
+  totextrap->FixParameter(9,par[9]);
+  totextrap->FixParameter(10,par[10]);
+  totextrap->FixParameter(11,par[11]);
+  totextrap->FixParameter(12,par[12]);
+  totextrap->FixParameter(13,par[13]);
+  totextrap->FixParameter(14,par[14]);
+  totextrap->FixParameter(15,par[15]);
+  totextrap->FixParameter(16,par[16]);
+  totextrap->FixParameter(17,totsbdatfit->GetParameter(17));
+
+  std::vector<TF1*> fitvector;
+  fitvector.push_back(totmcfit);
+  fitvector.push_back(totsbdatfit);
+  fitvector.push_back(totextrap);
+  return fitvector;
+}
+
+vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1D *dathist, TString opt="R0+",Bool_t vr= false,int lsbl=lowsbl,int lsbh = lowsbh,int hsbl=highsbl,int hsbh=225) {
   //TF1 *dyfit = poly5Fit(dyhist,"dyl","QR0+",lsbl,hsbh);
   TF1 *dyfit = poly5mod5Fit(dyhist,"dyl","QER0+",lsbl,225);
-  TF1 *ttfit = gaus2Fit(tthist,"ttl","QER0+",lsbl,400);
+  TF1 *ttfit = gaus2Fit2(tthist,"ttl","QER0+",lsbl,400);
   TF1 *vvfit = gausPoly1Fit(vvhist,"vvl","QER0+",lsbl,hsbh);
 
   Double_t par[17];
@@ -848,6 +1566,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   vvfit->GetParameters(&par[12]);
 
   std::cout<<"You have the max fixed at "<<225<<std::endl;
+  std::cout<<"Doing total MC background fit with fixed templates"<<std::endl;
   TF1 *totalfit = new TF1("totalfit",totalBkgModel,lsbl,225,18);//17 without norms
   totalfit->FixParameter(0,par[0]);
   totalfit->FixParameter(1,par[1]);
@@ -879,6 +1598,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   }
   
   //Now do the extrapolation
+  std::cout<<"Doing sideband fit with fixed templates"<<std::endl;
   TF1 *sbdatfit = new TF1("sbdatfit",totalBkgModelBlind,lsbl,hsbh,18);
   sbdatfit->SetParameters(parData);
   sbdatfit->FixParameter(0,parData[0]);
@@ -899,11 +1619,12 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   sbdatfit->FixParameter(15,parData[15]);
   sbdatfit->FixParameter(16,parData[16]);
 
-  dathist->Fit("sbdatfit","QLR0+");
+  dathist->Fit("sbdatfit","QELR0+");
   TF1 *totsbdatfit = dathist->GetFunction("sbdatfit");
 
   Double_t parExtrap[18];
   totsbdatfit->GetParameters(parExtrap);
+  std::cout<<"remaking the extrapolation fit with new params"<<std::endl;
   TF1 *totextrap = new TF1("totextrap",totalBkgModel,lsbl,hsbh,18);
   totextrap->FixParameter(0,parExtrap[0]);
   totextrap->FixParameter(1,parExtrap[1]);
@@ -923,7 +1644,7 @@ vector<TF1 *> totalFit(TH1D *hist, TH1D *dyhist, TH1D *tthist, TH1D *vvhist, TH1
   totextrap->FixParameter(15,parExtrap[15]);
   totextrap->FixParameter(16,parExtrap[16]);
   totextrap->FixParameter(17,parExtrap[17]);
-  dathist->Fit("totextrap","QR0+");
+  dathist->Fit("totextrap","QER0+");
   TF1 *totnorm = dathist->GetFunction("totextrap");
 
   //Now seperate fits for visualization

@@ -134,7 +134,7 @@ TVectorD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+"
   TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
   eigvec.Transpose(eigvec);
   vdecorrparams = eigvec*oriparams;
-  vecout = eigvec.Invert()*(vdecorrparams+vdecorrerrs);
+  vecout = eigvec.Invert()*(vdecorrparams+vdecorrerrs.Sqrt());
   return vecout;
 }
 
@@ -171,7 +171,7 @@ TVectorD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0
   TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
   eigvec.Transpose(eigvec);
   vdecorrparams = eigvec*oriparams;
-  vecout = eigvec.Invert()*(vdecorrparams-vdecorrerrs);
+  vecout = eigvec.Invert()*(vdecorrparams-vdecorrerrs.Sqrt());
   return vecout;
 }
 

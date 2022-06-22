@@ -101,7 +101,7 @@ TF1 * expFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
   return expfit;
 }
 
-TVectorD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+TMatrixD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
   //Do the basic fit
   TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
   int binmax = hist->GetMaximumBin();
@@ -120,25 +120,75 @@ TVectorD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+"
   TVectorD oriparams = TVectorD(nPars);
   TVectorD vdecorrparams = TVectorD(nPars);
   TVectorD vdecorrerrs = TVectorD(nPars);
-  TVectorD vecout = TVectorD(nPars);
-
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
   //shift the params
   fitout->GetParameters(pars);
   for (int i = 0;i<nPars;i++){
     oriparams[i] = pars[i];
   }
+
+
+  
   ROOT::Math::WrappedTF1 wfit(*fitout);
   TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
   assert (nPars == fitter->GetNumberFreeParameters());
   TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
   TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
-  eigvec.Transpose(eigvec);
-  vdecorrparams = eigvec*oriparams;
-  vecout = eigvec.Invert()*(vdecorrparams+vdecorrerrs.Sqrt());
-  return vecout;
-}
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams+vdecorrerrs1.Sqrt();
+  //vecout = eigvec*(vdecorrshifted);
+  //std::cout<<"check the math -- return identity"<<std::endl;
+  //(eigvec*eigvecT).Print();
+  /*
+  std::cout<<"The covariance matrix"<<std::endl;
+  COV->Print();
 
-TVectorD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  std::cout<<"The eigenvectors"<<std::endl;
+  eigvec.Print();
+  std::cout<<"The eigenvectors, transposed"<<std::endl;
+  eigvecT.Print();
+
+  std::cout<<"The original parameters"<<std::endl;
+  oriparams.Print();
+
+  std::cout<<"The original parameters, rotated"<<std::endl;
+  vdecorrparams.Print();
+  
+  std::cout<<"The eigenvalues"<<std::endl;
+  vdecorrerrs.Print();
+
+  std::cout<<"The square roots of the eigenvalues"<<std::endl;
+  //(vdecorrerrs.Sqrt()).Print();
+  vdecorrerrs1.Print();
+
+  std::cout<<"The square roots added to the rotated params, original implementation"<<std::endl;
+  //(vdecorrparams+vdecorrerrs.Sqrt()).Print();
+  //vdecorrshifted.Print();
+  */
+
+
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    //sv.Print();
+    //(eigvec*sv).Print();
+    matout[i]= (eigvec*sv);
+  }
+
+  //std::cout<<"fluctuated back"<<std::endl;
+  //matout.Print();
+  //vecout[0].Print();
+  //std::cout<<" par 0 "<<vecout[0]<<std::endl;
+  //std::cout<<" par 1 "<<vecout[1]<<std::endl;
+  
+  return matout;
+ }
+
+TMatrixD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
   //Do the basic fit
   TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
   int binmax = hist->GetMaximumBin();
@@ -157,7 +207,98 @@ TVectorD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0
   TVectorD oriparams = TVectorD(nPars);
   TVectorD vdecorrparams = TVectorD(nPars);
   TVectorD vdecorrerrs = TVectorD(nPars);
-  TVectorD vecout = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
+
+  
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
+  //vecout = eigvec*(vdecorrshifted);
+  //std::cout<<"check the math -- return identity"<<std::endl;
+  //(eigvec*eigvecT).Print();
+
+  //std::cout<<"The covariance matrix"<<std::endl;
+  //COV->Print();
+
+  //std::cout<<"The eigenvectors"<<std::endl;
+  //eigvec.Print();
+  //std::cout<<"The eigenvectors, transposed"<<std::endl;
+  //eigvecT.Print();
+  /*
+  std::cout<<"The original parameters"<<std::endl;
+  oriparams.Print();
+
+  std::cout<<"The original parameters, rotated"<<std::endl;
+  vdecorrparams.Print();
+  
+  std::cout<<"The eigenvalues"<<std::endl;
+  vdecorrerrs.Print();
+
+  std::cout<<"The square roots of the eigenvalues"<<std::endl;
+  //(vdecorrerrs.Sqrt()).Print();
+  vdecorrerrs1.Print();
+
+  std::cout<<"The square roots added to the rotated params, original implementation"<<std::endl;
+  (vdecorrparams-vdecorrerrs.Sqrt()).Print();
+  vdecorrshifted.Print();
+  */
+
+
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    //sv.Print();
+    //(eigvec*sv).Print();
+    matout[i]= (eigvec*sv);
+  }
+
+  //std::cout<<"fluctuated back"<<std::endl;
+  //matout.Print();
+  //vecout[0].Print();
+  //std::cout<<" par 0 "<<vecout[0]<<std::endl;
+  //std::cout<<" par 1 "<<vecout[1]<<std::endl;
+  
+  return matout;
+ }
+
+
+/*
+TMatrixD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambdaOG = guessDecayConstantOG(hist,amp);
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 2;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
 
   //shift the params
   fitout->GetParameters(pars);
@@ -168,12 +309,48 @@ TVectorD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0
   TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
   assert (nPars == fitter->GetNumberFreeParameters());
   TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
   TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
   eigvec.Transpose(eigvec);
   vdecorrparams = eigvec*oriparams;
-  vecout = eigvec.Invert()*(vdecorrparams-vdecorrerrs.Sqrt());
-  return vecout;
+  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
+
+  std::cout<<"The covariance matrix"<<std::endl;
+  COV->Print();
+
+  std::cout<<"The eigenvectors"<<std::endl;
+  eigvec.Print();
+  std::cout<<"The eigenvectors, transposed"<<std::endl;
+  eigvecT.Print();
+
+  std::cout<<"The original parameters"<<std::endl;
+  oriparams.Print();
+
+  std::cout<<"The original parameters, rotated"<<std::endl;
+  vdecorrparams.Print();
+  
+  std::cout<<"The eigenvalues"<<std::endl;
+  vdecorrerrs.Print();
+
+  std::cout<<"The square roots of the eigenvalues"<<std::endl;
+  //(vdecorrerrs.Sqrt()).Print();
+  vdecorrerrs1.Print();
+
+  std::cout<<"The square roots subtracted to the rotated params, original implementation"<<std::endl;
+  //(vdecorrparams-vdecorrerrs.Sqrt()).Print();
+  vdecorrshifted.Print();
+
+
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    //sv.Print();
+    //(eigvec*sv).Print();
+    matout[i]= (eigvec*sv);
+  }
+  return matout;
 }
+*/
 
 TF1 * expNFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
   TF1 *expNfit = new TF1(name,expNModel,1500,5000,3);

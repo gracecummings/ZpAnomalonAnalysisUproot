@@ -482,6 +482,88 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,i
   //double acamp = fitout->GetParameter(0);
 }
 
+TH1D * expFitErrBandsVariableBins(TH1D *hist, TString name, Double_t* binedges, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
+  const Int_t nPars=2;
+  Double_t pars[nPars], grad[nPars];
+  int nbins  = hist->GetNbinsX();
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+
+  TH1D *errhist = new TH1D("errhist","Histogram with 2 sigma band for fit",nbins,binedges);
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,nPars);
+
+  expfit->SetParameter(0,TMath::Log(amp));
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  fitout->GetParameters(pars);
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+
+  //std::cout<<"Bin Width "<<binwidth<<std::endl;
+  //std::cout<<"Bin number "<<hist->GetNbinsX()<<std::endl;
+  //std::cout<<"First bin low edge "<<hist->GetBinLowEdge(1)<<std::endl;
+  //std::cout<<"Last  bin low edge "<<hist->GetBinLowEdge(hist->GetNbinsX())+binwidth<<std::endl;
+
+  //std::cout<<"hist low edge  "<<histlowed<<std::endl;
+  //std::cout<<"fit low edge   "<<lowr<<std::endl;
+  
+  float fitplace = (lowr-histlowed)/binwidth;
+  //std::cout<<"fit place "<<fitplace<<std::endl;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  //example: hist low edge = 0, fit low = 1500, binwidth = 200
+  //fitplace = 7.5, we actually know that 1500 is in bin 8
+  //we want the fit histogram to start at bin 8
+  //fit placer, when rounded, gives us 8
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+      fitstartbin = fitplacer+1;
+      //std::cout<<"calulated diff "<<(fitplace - fitplacer)<<std::endl;
+    }
+  else {
+    fitstartbin = fitplacer;
+  }
+  //std::cout<<"rounded fit placer "<<fitplacer<<std::endl;
+  //std::cout<<"fit start bin "<<fitstartbin<<std::endl;
+  //std::cout<<"Value in starting bin "<<hist->GetBinContent(fitplacer)<<std::endl;
+  //std::cout<<"Filling the UNC Bin histogram "<<std::endl;
+    
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  int finalbin = (highr-histlowed)/binwidth;
+  for (int ib = fitstartbin;ib<=finalbin;ib++){
+    //std::cout<<"Bin number "<<ib<<std::endl;
+    double x = hist->GetBinCenter(ib);
+    //std::cout<<"Bin Center "<<x<<std::endl;
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    //std::cout<<"Fit value  "<<(*fitout)(x)<<std::endl;
+    //std::cout<<"Hist value  "<<hist->GetBinContent(ib)<<std::endl;
+    errhist->SetBinContent(ib,(*fitout)(x));
+    errhist->SetBinError(ib,nsig*sigma);
+  }
+
+  //debug errors to show values are the same
+  //for (int ib=12;ib<=finalbin;ib++){
+  //double x = hist->GetBinCenter(ib);
+  // double fitval = (*fitout)(x);
+  //double sigma = GetError(wfit,x,pars,*COV,nPars);
+  //std::cout<<"sigma on the fit point is "<<2*sigma<<std::endl;
+  //std::cout<<"             fit point is "<<fitval<<std::endl;
+  //std::cout<<"          err hist val is "<<errhist->GetBinContent(ib)<<std::endl;
+  //std::cout<<"          err hist err is "<<errhist->GetBinError(ib)<<std::endl;
+  //}
+
+  return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error
+  //double acamp = fitout->GetParameter(0);
+}
+
 
 TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000){
   string sb = "sbl";
@@ -497,7 +579,8 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr,int lowrsb=1500, int highrsb=3000,
   Double_t sblambda = sbfit->GetParameter(1);
   Double_t sramp = srfit->GetParameter(0);
   Double_t srlambda = srfit->GetParameter(1);
-  TF1 *alpha = new TF1("alpha",expRatio,1500,5000,4);//was to 5000 previously
+  //TF1 *alpha = new TF1("alpha",expRatio,1500,5000,4);//was to 5000 previously
+  TF1 *alpha = new TF1("alpha",expRatio,1500,13000,4);//was to 5000 previously
   alpha->SetParameter(0,sramp);
   alpha->SetParameter(1,srlambda);
   alpha->SetParameter(2,sbamp);
@@ -511,7 +594,7 @@ TF1 * alphaRatioMakerExpExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
   Double_t sblambda = sbfit->GetParameter(1);
   Double_t sramp = srfit->GetParameter(0);
   Double_t srlambda = srfit->GetParameter(1);
-  TF1 *alpha = new TF1(name,expRatio,1500,5000,4);//was to 5000 previously
+  TF1 *alpha = new TF1(name,expRatio,1500,13000,4);//was to 5000 previously
   alpha->SetParameter(0,sramp);
   alpha->SetParameter(1,srlambda);
   alpha->SetParameter(2,sbamp);
@@ -535,7 +618,8 @@ TF1 * subtractionFromFits(TF1 *dataf, TF1 *ttf, TF1 *vvf,TString name){
   dataf->GetParameters(&par[0]);
   ttf->GetParameters(&par[2]);
   vvf->GetParameters(&par[4]);
-  TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSB,1500,3000,6);
+  //TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSB,1500,3000,6);
+  TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSB,1500,13000,6);
   subtracteddatasb->SetParameter(0,par[0]);
   subtracteddatasb->SetParameter(1,par[1]);
   subtracteddatasb->SetParameter(2,par[2]);
@@ -555,7 +639,8 @@ TF1 * alphaExtrapolationFromFits(TF1* subsb,TF1* alphar,TString name){
   Double_t par[10];
   subsb->GetParameters(&par[0]);
   alphar->GetParameters(&par[6]);
-  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapBuiltFromFunctions,1500,3000,10);
+  //TF1 *alphaextraptf1 = new TF1(name,alphaExtrapBuiltFromFunctions,1500,3000,10);
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapBuiltFromFunctions,1500,13000,10);
   //alphaextraptf1->SetParameters(par);
   alphaextraptf1->SetParameter(0,par[0]);
   alphaextraptf1->SetParameter(1,par[1]);
@@ -592,7 +677,7 @@ TF1 * alphaExtrapolation(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int lowrsb=1500, int
   Double_t srlambda = srfit->GetParameter(1);
   Double_t sbdatamp = sbdatfit->GetParameter(0);
   Double_t sbdatlambda = sbdatfit->GetParameter(1);
-  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,5000,6);
+  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,13000,6);//13 used to be 5000
   srextrap->SetParameter(0,sramp);
   srextrap->SetParameter(1,srlambda);
   srextrap->SetParameter(2,sbamp);
@@ -635,7 +720,7 @@ TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1,
   Double_t sbdatamp = sbdatfit->GetParameter(0);
   Double_t sbdatlambda = sbdatfit->GetParameter(1);
   //limits!!! NEEDs attention
-  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,5000,6);
+  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,13000,6);//used to be 5000
   srextrap->SetParameter(0,sramp);
   srextrap->SetParameter(1,srlambda);
   srextrap->SetParameter(2,sbamp);

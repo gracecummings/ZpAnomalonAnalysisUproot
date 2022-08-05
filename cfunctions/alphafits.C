@@ -46,7 +46,7 @@ Double_t expModel(Double_t *X, Double_t *par){
 
 Double_t expNModel(Double_t *X, Double_t *par){
   double x = X[0];
-  Double_t fitval = par[0]*TMath::Exp(par[1]*x+par[2]/x);
+  Double_t fitval = TMath::Exp(par[0]+par[1]*x+par[2]/x);
   return fitval;
 }
 
@@ -72,6 +72,48 @@ Double_t expRatioMultiply(Double_t *x, Double_t *par) {
   return numer/denom*multiplier;
 }
 
+Double_t expExpNRatioMultiply(Double_t *x, Double_t *par) {
+  double numer = expModel(x,par);
+  double denom = expModel(x,&par[2]);
+  double multiplier = expNModel(x,&par[4]);
+  if (denom==0) return -1.0;
+  return numer/denom*multiplier;
+}
+
+// here we can do error propagation for an arbitrary function
+// matrix and vector notation is used
+// return error on function evaluated at x, sigma_f(x;par)
+double GetError(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixD &COV, Int_t npar){
+  Double_t *grad=new Double_t[npar];
+  f.ParameterGradient(x,pars,grad);
+  TVectorD g(npar,grad);
+  double var = g*(COV*g);
+  //std::cout<<"the variance "<<var<<std::endl;
+  
+  delete[] grad;
+ return TMath::Sqrt(var);
+}
+
+double GetErrorDecorrelated(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixD &COV, Int_t npar){
+  Double_t *grad=new Double_t[npar];
+  f.ParameterGradient(x,pars,grad);
+  TVectorD g(npar,grad);
+  double var = g*(COV*g);
+  //std::cout<<"the variance "<<var<<std::endl;
+  
+  delete[] grad;
+ return TMath::Sqrt(var);
+}
+
+double GetErrorGEC(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixDSym &COV, Int_t npar){
+  Double_t *grad=new Double_t[npar];
+  f.ParameterGradient(x,pars,grad);
+  TVectorD g(npar,grad);
+  double var = g*(COV*g);
+  delete[] grad;
+  return TMath::Sqrt(var);
+}
+
 TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
   TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
   int binmax = hist->GetMaximumBin();
@@ -87,7 +129,7 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int high
   //expfit->SetParameter(0,amp);//just use amp for old way
   expfit->SetParameter(1,lambda);
   //double samp = lfit->GetParameter(0);
-  hist->Fit(name,opt);
+  hist->Fit(name,opt,"",lowr,highr);
   TF1* fitout = hist->GetFunction(name);
 
   return fitout;
@@ -129,6 +171,223 @@ TMatrixD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+"
     oriparams[i] = pars[i];
   }
 
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams+vdecorrerrs1.Sqrt();
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    matout[i]= (eigvec*sv);
+  }
+  return matout;
+}
+
+TMatrixD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambdaOG = guessDecayConstantOG(hist,amp);
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 2;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
+
+  
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
+
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    //sv.Print();
+    //(eigvec*sv).Print();
+    matout[i]= (eigvec*sv);
+  }
+
+  //std::cout<<"fluctuated back"<<std::endl;
+  //matout.Print();
+  //vecout[0].Print();
+  //std::cout<<" par 0 "<<vecout[0]<<std::endl;
+  //std::cout<<" par 1 "<<vecout[1]<<std::endl;
+  
+  return matout;
+ }
+
+
+TF1 * expNFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
+  TF1 *expNfit = new TF1(name,expNModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expNfit->SetParameter(0,TMath::Log(amp));
+  expNfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
+TF1 * expNFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
+  TF1 *expfit = new TF1(name,expNModel,lowr,highr,3);
+  expfit->SetParameter(0,pars[0]);
+  expfit->SetParameter(1,pars[1]);
+  expfit->SetParameter(2,pars[2]);
+  return expfit;
+}
+
+ 
+TH1D * expNFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
+  const Int_t nPars=3;
+  Double_t pars[nPars], grad[nPars];
+  int nbins  = hist->GetNbinsX();
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+  TH1D *errhist = new TH1D("errhist","Histogram with 2 sigma band for fit",nbins,histlowed,histhied);
+  TF1 *expfit = new TF1(name,expNModel,lowr,highr,nPars);
+  expfit->SetParameter(0,TMath::Log(amp));
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  fitout->GetParameters(pars);
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+      fitstartbin = fitplacer+1;
+    }
+  else {
+    fitstartbin = fitplacer;
+  }
+    
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  int finalbin = (13000-histlowed)/binwidth;
+  for (int ib = fitstartbin;ib<=finalbin;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    errhist->SetBinContent(ib,(*fitout)(x));
+    errhist->SetBinError(ib,nsig*sigma);
+  }
+  return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error
+}
+
+TMatrixD expNFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  const Int_t nPars = 3;
+  int nbins  = hist->GetNbinsX();
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  TF1 *expfit = new TF1(name,expNModel,lowr,highr,nPars);
+  expfit->SetParameter(0,TMath::Log(amp));
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+
+  //Make the stuff to hold the shifted params
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
+
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    matout[i]= (eigvec*sv);
+  }
+  return matout;
+ }
+
+TMatrixD expNFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expNModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambdaOG = guessDecayConstantOG(hist,amp);
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 3;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
 
   
   ROOT::Math::WrappedTF1 wfit(*fitout);
@@ -140,236 +399,128 @@ TMatrixD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+"
   eigvecT.Transpose(eigvecT);
   vdecorrparams = eigvecT*oriparams;
   vdecorrshifted = vdecorrparams+vdecorrerrs1.Sqrt();
-  //vecout = eigvec*(vdecorrshifted);
-  //std::cout<<"check the math -- return identity"<<std::endl;
-  //(eigvec*eigvecT).Print();
-  /*
-  std::cout<<"The covariance matrix"<<std::endl;
-  COV->Print();
-
-  std::cout<<"The eigenvectors"<<std::endl;
-  eigvec.Print();
-  std::cout<<"The eigenvectors, transposed"<<std::endl;
-  eigvecT.Print();
-
-  std::cout<<"The original parameters"<<std::endl;
-  oriparams.Print();
-
-  std::cout<<"The original parameters, rotated"<<std::endl;
-  vdecorrparams.Print();
-  
-  std::cout<<"The eigenvalues"<<std::endl;
-  vdecorrerrs.Print();
-
-  std::cout<<"The square roots of the eigenvalues"<<std::endl;
-  //(vdecorrerrs.Sqrt()).Print();
-  vdecorrerrs1.Print();
-
-  std::cout<<"The square roots added to the rotated params, original implementation"<<std::endl;
-  //(vdecorrparams+vdecorrerrs.Sqrt()).Print();
-  //vdecorrshifted.Print();
-  */
-
-
   for (int i = 0;i<nPars;i++){
     TVectorD sv = vdecorrparams;
     sv[i] = vdecorrshifted[i];
-    //sv.Print();
-    //(eigvec*sv).Print();
     matout[i]= (eigvec*sv);
   }
-
-  //std::cout<<"fluctuated back"<<std::endl;
-  //matout.Print();
-  //vecout[0].Print();
-  //std::cout<<" par 0 "<<vecout[0]<<std::endl;
-  //std::cout<<" par 1 "<<vecout[1]<<std::endl;
-  
   return matout;
  }
 
-TMatrixD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
-  //Do the basic fit
-  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
-  int binmax = hist->GetMaximumBin();
-  double max = hist->GetXaxis()->GetBinCenter(binmax);
-  double amp = hist->GetMaximum();
-  double_t lambdaOG = guessDecayConstantOG(hist,amp);
-  double_t lambda = guessDecayConstant(hist,amp);
-  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
-  expfit->SetParameter(1,lambda);
-  hist->Fit(name,opt);
-  TF1* fitout = hist->GetFunction(name);
-
-  //Make the stuff to hold the shifted params
-  const Int_t nPars = 2;
-  Double_t pars[nPars], grad[nPars];
-  TVectorD oriparams = TVectorD(nPars);
-  TVectorD vdecorrparams = TVectorD(nPars);
-  TVectorD vdecorrerrs = TVectorD(nPars);
-  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
-  TVectorD vdecorrshifted = TVectorD(nPars);
-  TMatrixD matout = TMatrixD(nPars,nPars);
-  //shift the params
-  fitout->GetParameters(pars);
-  for (int i = 0;i<nPars;i++){
-    oriparams[i] = pars[i];
-  }
-
-
-  
-  ROOT::Math::WrappedTF1 wfit(*fitout);
-  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
-  assert (nPars == fitter->GetNumberFreeParameters());
-  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
-  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
-  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
-  eigvecT.Transpose(eigvecT);
-  vdecorrparams = eigvecT*oriparams;
-  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
-  //vecout = eigvec*(vdecorrshifted);
-  //std::cout<<"check the math -- return identity"<<std::endl;
-  //(eigvec*eigvecT).Print();
-
-  //std::cout<<"The covariance matrix"<<std::endl;
-  //COV->Print();
-
-  //std::cout<<"The eigenvectors"<<std::endl;
-  //eigvec.Print();
-  //std::cout<<"The eigenvectors, transposed"<<std::endl;
-  //eigvecT.Print();
-  /*
-  std::cout<<"The original parameters"<<std::endl;
-  oriparams.Print();
-
-  std::cout<<"The original parameters, rotated"<<std::endl;
-  vdecorrparams.Print();
-  
-  std::cout<<"The eigenvalues"<<std::endl;
-  vdecorrerrs.Print();
-
-  std::cout<<"The square roots of the eigenvalues"<<std::endl;
-  //(vdecorrerrs.Sqrt()).Print();
-  vdecorrerrs1.Print();
-
-  std::cout<<"The square roots added to the rotated params, original implementation"<<std::endl;
-  (vdecorrparams-vdecorrerrs.Sqrt()).Print();
-  vdecorrshifted.Print();
-  */
-
-
-  for (int i = 0;i<nPars;i++){
-    TVectorD sv = vdecorrparams;
-    sv[i] = vdecorrshifted[i];
-    //sv.Print();
-    //(eigvec*sv).Print();
-    matout[i]= (eigvec*sv);
-  }
-
-  //std::cout<<"fluctuated back"<<std::endl;
-  //matout.Print();
-  //vecout[0].Print();
-  //std::cout<<" par 0 "<<vecout[0]<<std::endl;
-  //std::cout<<" par 1 "<<vecout[1]<<std::endl;
-  
-  return matout;
- }
-
-
-/*
-TMatrixD expFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
-  //Do the basic fit
-  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
-  int binmax = hist->GetMaximumBin();
-  double max = hist->GetXaxis()->GetBinCenter(binmax);
-  double amp = hist->GetMaximum();
-  double_t lambdaOG = guessDecayConstantOG(hist,amp);
-  double_t lambda = guessDecayConstant(hist,amp);
-  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
-  expfit->SetParameter(1,lambda);
-  hist->Fit(name,opt);
-  TF1* fitout = hist->GetFunction(name);
-
-  //Make the stuff to hold the shifted params
-  const Int_t nPars = 2;
-  Double_t pars[nPars], grad[nPars];
-  TVectorD oriparams = TVectorD(nPars);
-  TVectorD vdecorrparams = TVectorD(nPars);
-  TVectorD vdecorrerrs = TVectorD(nPars);
-  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
-  TVectorD vdecorrshifted = TVectorD(nPars);
-  TMatrixD matout = TMatrixD(nPars,nPars);
-
-  //shift the params
-  fitout->GetParameters(pars);
-  for (int i = 0;i<nPars;i++){
-    oriparams[i] = pars[i];
-  }
-  ROOT::Math::WrappedTF1 wfit(*fitout);
-  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
-  assert (nPars == fitter->GetNumberFreeParameters());
-  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
-  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
-  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
-  eigvec.Transpose(eigvec);
-  vdecorrparams = eigvec*oriparams;
-  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
-
-  std::cout<<"The covariance matrix"<<std::endl;
-  COV->Print();
-
-  std::cout<<"The eigenvectors"<<std::endl;
-  eigvec.Print();
-  std::cout<<"The eigenvectors, transposed"<<std::endl;
-  eigvecT.Print();
-
-  std::cout<<"The original parameters"<<std::endl;
-  oriparams.Print();
-
-  std::cout<<"The original parameters, rotated"<<std::endl;
-  vdecorrparams.Print();
-  
-  std::cout<<"The eigenvalues"<<std::endl;
-  vdecorrerrs.Print();
-
-  std::cout<<"The square roots of the eigenvalues"<<std::endl;
-  //(vdecorrerrs.Sqrt()).Print();
-  vdecorrerrs1.Print();
-
-  std::cout<<"The square roots subtracted to the rotated params, original implementation"<<std::endl;
-  //(vdecorrparams-vdecorrerrs.Sqrt()).Print();
-  vdecorrshifted.Print();
-
-
-  for (int i = 0;i<nPars;i++){
-    TVectorD sv = vdecorrparams;
-    sv[i] = vdecorrshifted[i];
-    //sv.Print();
-    //(eigvec*sv).Print();
-    matout[i]= (eigvec*sv);
-  }
-  return matout;
-}
-*/
-
-TF1 * expNFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
-  TF1 *expNfit = new TF1(name,expNModel,1500,5000,3);
-  int binmax = hist->GetMaximumBin();
-  double max = hist->GetXaxis()->GetBinCenter(binmax);
-  double amp = hist->GetMaximum();
-  double_t lambda = guessDecayConstant(hist,amp);
-  expNfit->SetParameter(0,amp);
-  expNfit->SetParameter(1,lambda);
-  hist->Fit(name,opt);
-  TF1* fitout = hist->GetFunction(name);
-
-  return fitout;
+Double_t subtractedFitsForDataSBExpN(Double_t *x,Double_t *par){
+  Double_t data = expNModel(x,par);
+  Double_t tt   = expModel(x,&par[3]);
+  Double_t vv   = expModel(x,&par[5]);
+  return data-tt-vv;
 }
 
+TF1 * subtractionFromFitsExpN(TF1 *dataf, TF1 *ttf, TF1 *vvf,TString name){
+  Double_t par[8];
+  dataf->GetParameters(&par[0]);
+  ttf->GetParameters(&par[3]);
+  vvf->GetParameters(&par[5]);
+  //TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSB,1500,3000,6);
+  TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSBExpN,1500,13000,9);
+  subtracteddatasb->SetParameter(0,par[0]);
+  subtracteddatasb->SetParameter(1,par[1]);
+  subtracteddatasb->SetParameter(2,par[2]);
+  subtracteddatasb->SetParameter(3,par[3]);
+  subtracteddatasb->SetParameter(4,par[4]);
+  subtracteddatasb->SetParameter(5,par[5]);
+  subtracteddatasb->SetParameter(6,par[6]);
+  subtracteddatasb->SetParameter(7,par[7]);
+  return subtracteddatasb;
+}
+
+TF1 * alphaExtrapolationExpN(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
+  string sb = "sbl";
+  string sr = "srl";
+  string dt = "dtl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  char dtl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  strcpy(dtl,dt.c_str());
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",lowrsr,highrsr);
+  TF1 *sbdatfit= expNFit(hdatsb,dtl,"R0+",lowrdat,3100);
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t sbdatamp = sbdatfit->GetParameter(0);
+  Double_t sbdatlambda = sbdatfit->GetParameter(1);
+  Double_t sbdatpar2 = sbdatfit->GetParameter(2);
+  TF1 *srextrap = new TF1("srextrap",expExpNRatioMultiply,1500,13000,7);//13 used to be 5000
+  srextrap->SetParameter(0,sramp);
+  srextrap->SetParameter(1,srlambda);
+  srextrap->SetParameter(3,sbamp);
+  srextrap->SetParameter(4,sblambda);
+  srextrap->SetParameter(6,sbdatamp);
+  srextrap->SetParameter(7,sbdatlambda);
+  srextrap->SetParameter(8,sbdatpar2);
+  return srextrap;
+}
+
+TH1D * alphaExtrapolationHistExpN(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
+  string sb = "sbl";
+  string sr = "srl";
+  string dt = "dtl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  char dtl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  strcpy(dtl,dt.c_str());
+  float nbins     = hsb->GetNbinsX();
+  float binwidth  = hsb->GetBinWidth(1);
+  float histlowed = hsb->GetBinLowEdge(1);
+  float histhied  = hsb->GetBinLowEdge(nbins)+binwidth;
+
+  TF1 *sbfit= expNFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expNFit(hsr,srl,"R0+",lowrsr,highrsr);
+  TF1 *sbdatfit= expNFit(hdatsb,dtl,"R0+",lowrdat,3000);
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sbpar2  = sbfit->GetParameter(2);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t srpar2  = srfit->GetParameter(2);
+  Double_t sbdatamp = sbdatfit->GetParameter(0);
+  Double_t sbdatlambda = sbdatfit->GetParameter(1);
+  Double_t sbdatpar2  = sbdatfit->GetParameter(2);
+  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,13000,6);//13 used to be 5000
+  srextrap->SetParameter(0,sramp);
+  srextrap->SetParameter(1,srlambda);
+  srextrap->SetParameter(2,srpar2);
+  srextrap->SetParameter(3,sbamp);
+  srextrap->SetParameter(4,sblambda);
+  srextrap->SetParameter(5,sbpar2);
+  srextrap->SetParameter(6,sbdatamp);
+  srextrap->SetParameter(7,sbdatlambda);
+  srextrap->SetParameter(8,sbdatpar2);
+
+  
+  //Make the histogram
+  TH1D *extrphist = new TH1D("extrphist","Histogram with DY extrap to SR",nbins/rebindiv,histlowed,histhied);
+  for (int ib = 0; ib <= (nbins/rebindiv); ib++){
+    double x = extrphist->GetBinCenter(ib);
+    double val = (*srextrap)(x);
+    extrphist->SetBinContent(ib,val);
+  }
+
+  return extrphist;
+}
+ 
 // here we can do error propagation for an arbitrary function
 // matrix and vector notation is used
 // return error on function evaluated at x, sigma_f(x;par)
+/*
 double GetError(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixD &COV, Int_t npar){
+  Double_t *grad=new Double_t[npar];double GetError(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatrixD &COV, Int_t npar){
   Double_t *grad=new Double_t[npar];
   f.ParameterGradient(x,pars,grad);
   TVectorD g(npar,grad);
@@ -400,6 +551,7 @@ double GetErrorGEC(ROOT::Math::WrappedTF1 &f, Double_t x, Double_t *pars, TMatri
   return TMath::Sqrt(var);
 }
 
+*/
 TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
   const Int_t nPars=2;
   Double_t pars[nPars], grad[nPars];
@@ -455,7 +607,7 @@ TH1D * expFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,i
   TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
   assert (nPars == fitter->GetNumberFreeParameters());
   TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
-  int finalbin = (highr-histlowed)/binwidth;
+  int finalbin = (10000-histlowed)/binwidth;
   for (int ib = fitstartbin;ib<=finalbin;ib++){
     //std::cout<<"Bin number "<<ib<<std::endl;
     double x = hist->GetBinCenter(ib);
@@ -739,6 +891,52 @@ TH1D * alphaExtrapolationHist(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1,
   return extrphist;
   
 }
+
+TF1 * alphaRatioMakerExpN(TH1D *hsb, TH1D *hsr,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000){
+  string sb = "sbl";
+  string sr = "srl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  TF1 *sbfit= expNFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expNFit(hsr,srl,"R0+",lowrsr,highrsr);
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sbpar2  = sbfit->GetParameter(2);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t srpar2  = srfit->GetParameter(2);
+  //TF1 *alpha = new TF1("alpha",expRatio,1500,5000,4);//was to 5000 previously
+  TF1 *alpha = new TF1("alpha",expNRatio,1500,13000,6);//was to 5000 previously
+  alpha->SetParameter(0,sramp);
+  alpha->SetParameter(1,srlambda);
+  alpha->SetParameter(2, srpar2);
+  alpha->SetParameter(3,sbamp);
+  alpha->SetParameter(4,sblambda);
+  alpha->SetParameter(5,sbpar2);
+  return alpha;
+}
+
+TF1 * alphaRatioMakerExpNExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sbpar2  = sbfit->GetParameter(2);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t srpar2  = srfit->GetParameter(2);
+  TF1 *alpha = new TF1(name,expNRatio,1500,13000,6);//was to 5000 previously
+  alpha->SetParameter(0,sramp);
+  alpha->SetParameter(1,srlambda);
+  alpha->SetParameter(2, srpar2);
+  alpha->SetParameter(2,sbamp);
+  alpha->SetParameter(3,sblambda);
+  alpha->SetParameter(5,sbpar2);
+  return alpha;
+}
+ 
+
 
 
 ///////Development for normalization//

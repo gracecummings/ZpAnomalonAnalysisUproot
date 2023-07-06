@@ -44,9 +44,27 @@ Double_t expModel(Double_t *X, Double_t *par){
   return fitval;
 }
 
+Double_t expPwrModel(Double_t *X, Double_t *par){
+  double x = X[0];
+  Double_t fitval = TMath::Exp(par[0]+par[1]*x+std::pow(x,par[2]));
+  return fitval;
+}
+
 Double_t expNModel(Double_t *X, Double_t *par){
   double x = X[0];
   Double_t fitval = TMath::Exp(par[0]+par[1]*x+par[2]/x);
+  return fitval;
+}
+
+Double_t expSqModel(Double_t *X, Double_t *par){
+  double x = X[0];
+  Double_t fitval = TMath::Exp(par[0]+par[1]*x+par[2]*sqrt(x));
+  return fitval;
+}
+
+Double_t expOffsetModel(Double_t *X, Double_t *par){
+  double x = X[0];
+  Double_t fitval = TMath::Exp(par[0]+par[1]*x)+par[2];
   return fitval;
 }
 
@@ -62,6 +80,36 @@ Double_t expNRatio(Double_t *x, Double_t *par) {
   double denom = expNModel(x,&par[2]);
   if (denom==0) return -1.0;
   return numer/denom;
+}
+
+
+Double_t expOffsetRatio(Double_t *x, Double_t *par) {
+  double numer = expOffsetModel(x,par);
+  double denom = expOffsetModel(x,&par[3]);
+  if (denom==0) return -1.0;
+  return numer/denom;
+}
+
+Double_t expExpOffsetRatio(Double_t *x, Double_t *par) {
+  double numer = expModel(x,par);//SR exp
+  double denom = expOffsetModel(x,&par[2]);//SB expoffset
+  if (denom==0) return -1.0;
+  return numer/denom;
+}
+
+Double_t expOffsetExpRatio(Double_t *x, Double_t *par) {
+  double numer = expOffsetModel(x,par);//SR expoffset
+  double denom = expModel(x,&par[3]);//SB exp
+  if (denom==0) return -1.0;
+  return numer/denom;
+}
+
+Double_t expExpOffsetRatioMultiply(Double_t *x, Double_t *par) {
+  double numer = expOffsetModel(x,par);
+  double denom = expOffsetModel(x,&par[3]);
+  double multiplier = expModel(x,&par[6]);
+  if (denom==0) return -1.0;
+  return numer/denom*multiplier;
 }
 
 Double_t expRatioMultiply(Double_t *x, Double_t *par) {
@@ -143,6 +191,22 @@ TF1 * expFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
   return expfit;
 }
 
+TF1 * expOffsetFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
+  TF1 *expfit = new TF1(name,expOffsetModel,lowr,highr,3);
+  expfit->SetParameter(0,pars[0]);
+  expfit->SetParameter(1,pars[1]);
+  expfit->SetParameter(2,pars[2]);
+  return expfit;
+}
+
+TF1 * expPwrFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
+  TF1 *expfit = new TF1(name,expPwrModel,lowr,highr,3);
+  expfit->SetParameter(0,pars[0]);
+  expfit->SetParameter(1,pars[1]);
+  expfit->SetParameter(2,pars[2]);
+  return expfit;
+}
+
 TMatrixD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
   //Do the basic fit
   TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
@@ -180,6 +244,96 @@ TMatrixD expFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+"
   eigvecT.Transpose(eigvecT);
   vdecorrparams = eigvecT*oriparams;
   vdecorrshifted = vdecorrparams+vdecorrerrs1.Sqrt();
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    matout[i]= (eigvec*sv);
+  }
+  return matout;
+}
+
+TMatrixD expFitOffsetDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expOffsetModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  expfit->SetParameter(2,0.001);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 3;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams+vdecorrerrs1.Sqrt();
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    matout[i]= (eigvec*sv);
+  }
+  return matout;
+}
+
+TMatrixD expFitOffsetDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expOffsetModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  expfit->SetParameter(2,0.001);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 3;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
   for (int i = 0;i<nPars;i++){
     TVectorD sv = vdecorrparams;
     sv[i] = vdecorrshifted[i];
@@ -260,8 +414,61 @@ TF1 * expNFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int hig
   return fitout;
 }
 
+TF1 * expSqFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
+  TF1 *expNfit = new TF1(name,expSqModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expNfit->SetParameter(0,TMath::Log(amp));
+  expNfit->SetParameter(1,lambda);
+  expNfit->SetParameter(2,-0.001);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
+TF1 * expOffsetFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
+  TF1 *expNfit = new TF1(name,expOffsetModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expNfit->SetParameter(0,TMath::Log(amp));
+  expNfit->SetParameter(1,lambda);
+  expNfit->SetParameter(2,0.1);//Was 0.001 for the SB 
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
+TF1 * expPwrFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=5000) {
+  TF1 *expNfit = new TF1(name,expPwrModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  expNfit->SetParameter(0,TMath::Log(amp));
+  expNfit->SetParameter(1,lambda);
+  //expNfit->SetParameter(2,1.0);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+}
+
 TF1 * expNFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
   TF1 *expfit = new TF1(name,expNModel,lowr,highr,3);
+  expfit->SetParameter(0,pars[0]);
+  expfit->SetParameter(1,pars[1]);
+  expfit->SetParameter(2,pars[2]);
+  return expfit;
+}
+
+TF1 * expSqFitSetParsAndErrs(TString name,TVector pars, int lowr,int highr){
+  TF1 *expfit = new TF1(name,expSqModel,lowr,highr,3);
   expfit->SetParameter(0,pars[0]);
   expfit->SetParameter(1,pars[1]);
   expfit->SetParameter(2,pars[2]);
@@ -313,6 +520,145 @@ TH1D * expNFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,
   return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error
 }
 
+TH1D * expOffsetFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
+  TF1 *expNfit = new TF1(name,expOffsetModel,lowr,highr,3);
+  const Int_t nPars=3;
+  Double_t pars[nPars], grad[nPars];
+  int nbins  = hist->GetNbinsX();
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+  TH1D *errhist = new TH1D("errhist","Histogram with 2 sigma band for fit",nbins,histlowed,histhied);
+
+  expNfit->SetParameter(0,TMath::Log(amp));
+  expNfit->SetParameter(1,lambda);
+  expNfit->SetParameter(2,0.1);//Was 0.001 for Sb
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  fitout->GetParameters(pars);
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+      fitstartbin = fitplacer+1;
+    }
+  else {
+    fitstartbin = fitplacer;
+  }
+    
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  int finalbin = (13000-histlowed)/binwidth;
+  for (int ib = fitstartbin;ib<=finalbin;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    errhist->SetBinContent(ib,(*fitout)(x));
+    errhist->SetBinError(ib,nsig*sigma);
+  }
+  return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error
+}
+
+TH1D * expPwrFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
+  TF1 *expNfit = new TF1(name,expPwrModel,lowr,highr,3);
+  const Int_t nPars=3;
+  Double_t pars[nPars], grad[nPars];
+  int nbins  = hist->GetNbinsX();
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+  TH1D *errhist = new TH1D("errhist","Histogram with 2 sigma band for fit",nbins,histlowed,histhied);
+
+  expNfit->SetParameter(0,TMath::Log(amp));
+  expNfit->SetParameter(1,lambda);
+  //expNfit->SetParameter(2,1.0);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  fitout->GetParameters(pars);
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+      fitstartbin = fitplacer+1;
+    }
+  else {
+    fitstartbin = fitplacer;
+  }
+    
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  int finalbin = (13000-histlowed)/binwidth;
+  for (int ib = fitstartbin;ib<=finalbin;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    errhist->SetBinContent(ib,(*fitout)(x));
+    errhist->SetBinError(ib,nsig*sigma);
+  }
+  return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error
+}
+
+
+TH1D * expSqFitErrBands(TH1D *hist, TString name, TString opt="R0+",Int_t nsig=2,int lowr=1500, int highr=3000) {
+  const Int_t nPars=3;
+  Double_t pars[nPars], grad[nPars];
+  int nbins  = hist->GetNbinsX();
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  float binwidth  = hist->GetBinWidth(1);
+  float histlowed = hist->GetBinLowEdge(1);
+  float histhied  = hist->GetBinLowEdge(nbins)+binwidth;
+  TH1D *errhist = new TH1D("errhist","Histogram with 2 sigma band for fit",nbins,histlowed,histhied);
+  TF1 *expfit = new TF1(name,expSqModel,lowr,highr,nPars);
+  expfit->SetParameter(0,TMath::Log(amp));
+  expfit->SetParameter(1,lambda);
+  expfit->SetParameter(2,-0.001);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+  fitout->GetParameters(pars);
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  float fitplace = (lowr-histlowed)/binwidth;
+  float fitplacer = round((lowr-histlowed)/binwidth);
+  float fitstartbin;
+  if (std::abs(fitplace - fitplacer) < 0.5) {
+      fitstartbin = fitplacer+1;
+    }
+  else {
+    fitstartbin = fitplacer;
+  }
+    
+  // Get the Covariance matrix
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  int finalbin = (13000-histlowed)/binwidth;
+  for (int ib = fitstartbin;ib<=finalbin;ib++){
+    double x = hist->GetBinCenter(ib);
+    double sigma = GetError(wfit,x,pars,*COV,nPars);
+    errhist->SetBinContent(ib,(*fitout)(x));
+    errhist->SetBinError(ib,nsig*sigma);
+  }
+  return errhist;//returns a histogram with the fit values as the bins and the 1 sigma band the error
+}
+
+
 TMatrixD expNFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
   //Do the basic fit
   const Int_t nPars = 3;
@@ -324,6 +670,54 @@ TMatrixD expNFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R
   TF1 *expfit = new TF1(name,expNModel,lowr,highr,nPars);
   expfit->SetParameter(0,TMath::Log(amp));
   expfit->SetParameter(1,lambda);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+
+  //Make the stuff to hold the shifted params
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams-vdecorrerrs1.Sqrt();
+
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    matout[i]= (eigvec*sv);
+  }
+  return matout;
+ }
+
+TMatrixD expSqFitDecorrParamsShiftedDown(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  const Int_t nPars = 3;
+  int nbins  = hist->GetNbinsX();
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambda = guessDecayConstant(hist,amp);
+  TF1 *expfit = new TF1(name,expSqModel,lowr,highr,nPars);
+  expfit->SetParameter(0,TMath::Log(amp));
+  expfit->SetParameter(1,lambda);
+  expfit->SetParameter(2,-0.001);
   hist->Fit(name,opt);
   TF1* fitout = hist->GetFunction(name);
 
@@ -407,8 +801,64 @@ TMatrixD expNFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+
   return matout;
  }
 
+TMatrixD expSqFitDecorrParamsShiftedUp(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  //Do the basic fit
+  TF1 *expfit = new TF1(name,expSqModel,lowr,highr,3);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambdaOG = guessDecayConstantOG(hist,amp);
+  double_t lambda = guessDecayConstant(hist,amp);
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  expfit->SetParameter(2,-0.001);
+  hist->Fit(name,opt);
+  TF1* fitout = hist->GetFunction(name);
+
+  //Make the stuff to hold the shifted params
+  const Int_t nPars = 3;
+  Double_t pars[nPars], grad[nPars];
+  TVectorD oriparams = TVectorD(nPars);
+  TVectorD vdecorrparams = TVectorD(nPars);
+  TVectorD vdecorrerrs = TVectorD(nPars);
+  TVectorD vdecorrerrs1 = TVectorD(nPars);//holder for second definition
+  TVectorD vdecorrshifted = TVectorD(nPars);
+  TMatrixD matout = TMatrixD(nPars,nPars);
+  //shift the params
+  fitout->GetParameters(pars);
+  for (int i = 0;i<nPars;i++){
+    oriparams[i] = pars[i];
+  }
+
+
+  
+  ROOT::Math::WrappedTF1 wfit(*fitout);
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();  // interface to the extract fitter info
+  assert (nPars == fitter->GetNumberFreeParameters());
+  TMatrixD* COV = new TMatrixD( nPars, nPars, fitter->GetCovarianceMatrix() );
+  TMatrixD eigvec = COV->EigenVectors(vdecorrerrs);
+  TMatrixD eigvecT = COV->EigenVectors(vdecorrerrs1);//hard make a new
+  eigvecT.Transpose(eigvecT);
+  vdecorrparams = eigvecT*oriparams;
+  vdecorrshifted = vdecorrparams+vdecorrerrs1.Sqrt();
+  for (int i = 0;i<nPars;i++){
+    TVectorD sv = vdecorrparams;
+    sv[i] = vdecorrshifted[i];
+    matout[i]= (eigvec*sv);
+  }
+  return matout;
+ }
+
+
 Double_t subtractedFitsForDataSBExpN(Double_t *x,Double_t *par){
   Double_t data = expNModel(x,par);
+  Double_t tt   = expModel(x,&par[3]);
+  Double_t vv   = expModel(x,&par[5]);
+  return data-tt-vv;
+}
+
+Double_t subtractedFitsForDataSBExpSq(Double_t *x,Double_t *par){
+  Double_t data = expSqModel(x,par);
   Double_t tt   = expModel(x,&par[3]);
   Double_t vv   = expModel(x,&par[5]);
   return data-tt-vv;
@@ -431,6 +881,25 @@ TF1 * subtractionFromFitsExpN(TF1 *dataf, TF1 *ttf, TF1 *vvf,TString name){
   subtracteddatasb->SetParameter(7,par[7]);
   return subtracteddatasb;
 }
+
+TF1 * subtractionFromFitsExpSq(TF1 *dataf, TF1 *ttf, TF1 *vvf,TString name){
+  Double_t par[7];
+  dataf->GetParameters(&par[0]);
+  ttf->GetParameters(&par[3]);
+  vvf->GetParameters(&par[5]);
+  //TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSB,1500,3000,6);
+  TF1 *subtracteddatasb = new TF1(name,subtractedFitsForDataSBExpSq,1500,13000,7);
+  subtracteddatasb->SetParameter(0,par[0]);
+  subtracteddatasb->SetParameter(1,par[1]);
+  subtracteddatasb->SetParameter(2,par[2]);
+  subtracteddatasb->SetParameter(3,par[3]);
+  subtracteddatasb->SetParameter(4,par[4]);
+  subtracteddatasb->SetParameter(5,par[5]);
+  subtracteddatasb->SetParameter(6,par[6]);
+  //subtracteddatasb->SetParameter(7,par[7]);
+  return subtracteddatasb;
+}
+
 
 TF1 * alphaExtrapolationExpN(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
   string sb = "sbl";
@@ -456,11 +925,43 @@ TF1 * alphaExtrapolationExpN(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int lowrsb=1500,
   TF1 *srextrap = new TF1("srextrap",expExpNRatioMultiply,1500,13000,7);//13 used to be 5000
   srextrap->SetParameter(0,sramp);
   srextrap->SetParameter(1,srlambda);
-  srextrap->SetParameter(3,sbamp);
-  srextrap->SetParameter(4,sblambda);
-  srextrap->SetParameter(6,sbdatamp);
-  srextrap->SetParameter(7,sbdatlambda);
-  srextrap->SetParameter(8,sbdatpar2);
+  srextrap->SetParameter(2,sbamp);
+  srextrap->SetParameter(3,sblambda);
+  srextrap->SetParameter(4,sbdatamp);
+  srextrap->SetParameter(5,sbdatlambda);
+  srextrap->SetParameter(6,sbdatpar2);
+  return srextrap;
+}
+
+TF1 * alphaExtrapolationExpSq(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
+  string sb = "sbl";
+  string sr = "srl";
+  string dt = "dtl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  char dtl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  strcpy(dtl,dt.c_str());
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",lowrsr,highrsr);
+  TF1 *sbdatfit= expSqFit(hdatsb,dtl,"R0+",lowrdat,highrdat);
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t sbdatamp = sbdatfit->GetParameter(0);
+  Double_t sbdatlambda = sbdatfit->GetParameter(1);
+  Double_t sbdatpar2 = sbdatfit->GetParameter(2);
+  TF1 *srextrap = new TF1("srextrap",expExpNRatioMultiply,1500,13000,7);//13 used to be 5000
+  srextrap->SetParameter(0,sramp);
+  srextrap->SetParameter(1,srlambda);
+  srextrap->SetParameter(2,sbamp);
+  srextrap->SetParameter(3,sblambda);
+  srextrap->SetParameter(4,sbdatamp);
+  srextrap->SetParameter(5,sbdatlambda);
+  srextrap->SetParameter(6,sbdatpar2);
   return srextrap;
 }
 
@@ -480,28 +981,24 @@ TH1D * alphaExtrapolationHistExpN(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindi
   float histlowed = hsb->GetBinLowEdge(1);
   float histhied  = hsb->GetBinLowEdge(nbins)+binwidth;
 
-  TF1 *sbfit= expNFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
-  TF1 *srfit= expNFit(hsr,srl,"R0+",lowrsr,highrsr);
-  TF1 *sbdatfit= expNFit(hdatsb,dtl,"R0+",lowrdat,3000);
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",lowrsr,highrsr);
+  TF1 *sbdatfit= expNFit(hdatsb,dtl,"R0+",lowrdat,highrdat);
   Double_t sbamp = sbfit->GetParameter(0);
   Double_t sblambda = sbfit->GetParameter(1);
-  Double_t sbpar2  = sbfit->GetParameter(2);
   Double_t sramp = srfit->GetParameter(0);
   Double_t srlambda = srfit->GetParameter(1);
-  Double_t srpar2  = srfit->GetParameter(2);
   Double_t sbdatamp = sbdatfit->GetParameter(0);
   Double_t sbdatlambda = sbdatfit->GetParameter(1);
   Double_t sbdatpar2  = sbdatfit->GetParameter(2);
   TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,13000,6);//13 used to be 5000
   srextrap->SetParameter(0,sramp);
   srextrap->SetParameter(1,srlambda);
-  srextrap->SetParameter(2,srpar2);
-  srextrap->SetParameter(3,sbamp);
-  srextrap->SetParameter(4,sblambda);
-  srextrap->SetParameter(5,sbpar2);
-  srextrap->SetParameter(6,sbdatamp);
-  srextrap->SetParameter(7,sbdatlambda);
-  srextrap->SetParameter(8,sbdatpar2);
+  srextrap->SetParameter(2,sbamp);
+  srextrap->SetParameter(3,sblambda);
+  srextrap->SetParameter(4,sbdatamp);
+  srextrap->SetParameter(5,sbdatlambda);
+  srextrap->SetParameter(6,sbdatpar2);
 
   
   //Make the histogram
@@ -514,7 +1011,369 @@ TH1D * alphaExtrapolationHistExpN(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindi
 
   return extrphist;
 }
- 
+
+TH1D * alphaExtrapolationHistExpSq(TH1D *hsb, TH1D *hsr, TH1D *hdatsb,int rebindiv=1,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000,int lowrdat = 1500,int highrdat = 3000){
+  string sb = "sbl";
+  string sr = "srl";
+  string dt = "dtl";
+  int len = sb.length();
+  char sbl[len+1];
+  char srl[len+1];
+  char dtl[len+1];
+  strcpy(sbl,sb.c_str());
+  strcpy(srl,sr.c_str());
+  strcpy(dtl,dt.c_str());
+  float nbins     = hsb->GetNbinsX();
+  float binwidth  = hsb->GetBinWidth(1);
+  float histlowed = hsb->GetBinLowEdge(1);
+  float histhied  = hsb->GetBinLowEdge(nbins)+binwidth;
+
+  TF1 *sbfit= expFit(hsb,sbl,"R0+",lowrsb,highrsb);//added ranges
+  TF1 *srfit= expFit(hsr,srl,"R0+",lowrsr,highrsr);
+  TF1 *sbdatfit= expSqFit(hdatsb,dtl,"R0+",lowrdat,highrdat);
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t sbdatamp = sbdatfit->GetParameter(0);
+  Double_t sbdatlambda = sbdatfit->GetParameter(1);
+  Double_t sbdatpar2  = sbdatfit->GetParameter(2);
+  TF1 *srextrap = new TF1("srextrap",expRatioMultiply,1500,13000,7);//13 used to be 5000
+  srextrap->SetParameter(0,sramp);
+  srextrap->SetParameter(1,srlambda);
+  srextrap->SetParameter(2,sbamp);
+  srextrap->SetParameter(3,sblambda);
+  srextrap->SetParameter(4,sbdatamp);
+  srextrap->SetParameter(5,sbdatlambda);
+  srextrap->SetParameter(6,sbdatpar2);
+
+  
+  //Make the histogram
+  TH1D *extrphist = new TH1D("extrphist","Histogram with DY extrap to SR",nbins/rebindiv,histlowed,histhied);
+  for (int ib = 0; ib <= (nbins/rebindiv); ib++){
+    double x = extrphist->GetBinCenter(ib);
+    double val = (*srextrap)(x);
+    extrphist->SetBinContent(ib,val);
+  }
+
+  return extrphist;
+}
+
+
+Double_t flatdiffup(Double_t *x,Double_t *par){
+  Double_t nom = expModel(x,par);
+  Double_t alt = expOffsetModel(x,&par[2]);
+  return (alt-nom)*2/sqrt(12)+nom;
+}
+
+Double_t flatdiffdwn(Double_t *x,Double_t *par){
+  Double_t nom = expModel(x,par);
+  Double_t alt = expSqModel(x,&par[2]);
+  return nom - (nom-alt)*2/sqrt(12);
+}
+
+TF1 * altUpFunc(TF1 *nom, TF1 *alt, TString name){
+  Double_t par[5];
+  nom->GetParameters(&par[0]);
+  alt->GetParameters(&par[2]);
+  TF1 * altup = new TF1(name,flatdiffup,1500,13000,5);
+  altup->SetParameter(0,par[0]);
+  altup->SetParameter(1,par[1]);
+  altup->SetParameter(2,par[2]);
+  altup->SetParameter(3,par[3]);
+  altup->SetParameter(4,par[4]);
+  return altup;
+}
+
+TF1 * altDwnFunc(TF1 *nom, TF1 *alt, TString name){
+  Double_t par[5];
+  nom->GetParameters(&par[0]);
+  alt->GetParameters(&par[2]);
+  TF1 * altdn = new TF1(name,flatdiffdwn,1500,13000,5);
+  altdn->SetParameter(0,par[0]);
+  altdn->SetParameter(1,par[1]);
+  altdn->SetParameter(2,par[2]);
+  altdn->SetParameter(3,par[3]);
+  altdn->SetParameter(4,par[4]);
+  return altdn;
+}
+
+Double_t subaltdatup(Double_t *x,Double_t *par){
+  Double_t up = flatdiffup(x,par);
+  Double_t tt   = expModel(x,&par[5]);
+  Double_t vv   = expModel(x,&par[7]);
+  return up-tt-vv;
+}
+
+Double_t subaltdatdn(Double_t *x,Double_t *par){
+  Double_t dn = flatdiffdwn(x,par);
+  Double_t tt   = expModel(x,&par[5]);
+  Double_t vv   = expModel(x,&par[7]);
+  return dn-tt-vv;
+}
+
+TF1 * subtractionFromUpAltFitUnc(TF1 *altup, TF1 *ttf, TF1 *vvf, TString name){
+  Double_t par[9];
+  altup->GetParameters(&par[0]);
+  ttf->GetParameters(&par[5]);
+  vvf->GetParameters(&par[7]);
+  TF1 *subfunc = new TF1(name,subaltdatup,1500,13000,9);
+  subfunc->SetParameter(0,par[0]);
+  subfunc->SetParameter(1,par[1]);
+  subfunc->SetParameter(2,par[2]);
+  subfunc->SetParameter(3,par[3]);
+  subfunc->SetParameter(4,par[4]);
+  subfunc->SetParameter(5,par[5]);
+  subfunc->SetParameter(6,par[6]);
+  subfunc->SetParameter(7,par[7]);
+  subfunc->SetParameter(8,par[8]);
+  return subfunc;
+}
+
+TF1 * subtractionFromDwnAltFitUnc(TF1 *altup, TF1 *ttf, TF1 *vvf, TString name){
+  Double_t par[9];
+  altup->GetParameters(&par[0]);
+  ttf->GetParameters(&par[5]);
+  vvf->GetParameters(&par[7]);
+  TF1 *subfunc = new TF1(name,subaltdatdn,1500,13000,9);
+  subfunc->SetParameter(0,par[0]);
+  subfunc->SetParameter(1,par[1]);
+  subfunc->SetParameter(2,par[2]);
+  subfunc->SetParameter(3,par[3]);
+  subfunc->SetParameter(4,par[4]);
+  subfunc->SetParameter(5,par[5]);
+  subfunc->SetParameter(6,par[6]);
+  subfunc->SetParameter(7,par[7]);
+  subfunc->SetParameter(8,par[8]);
+  return subfunc;
+}
+
+Double_t alphaAltUpExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatup(x,par);
+  Double_t alpha  = expRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+Double_t alphaAltUpExpExpOffExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatup(x,par);
+  Double_t alpha  = expExpOffsetRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+Double_t alphaAltUpExpOffExpExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatup(x,par);
+  Double_t alpha  = expOffsetExpRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+Double_t alphaAltDwnExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatdn(x,par);
+  Double_t alpha  = expRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+Double_t alphaAltDwnExpExpOffExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatdn(x,par);
+  Double_t alpha  = expExpOffsetRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+Double_t alphaAltDwnExpOffExpExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatdn(x,par);
+  Double_t alpha  = expOffsetExpRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+Double_t alphaAltDwnExpOffExpOffExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatdn(x,par);
+  Double_t alpha  = expOffsetRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+Double_t alphaAltUpExpOffExpOffExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subaltdatup(x,par);
+  Double_t alpha  = expOffsetRatio(x,&par[9]);
+  return subdat*alpha;
+}
+
+
+TF1 * alphaExtrapolationAltDataSbUp(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[13];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltup = new TF1(name,alphaAltUpExtrapBuiltFromFunctions,1500,13000,13);
+  alphaextrapaltup->SetParameter(0,par[0]);
+  alphaextrapaltup->SetParameter(1,par[1]);
+  alphaextrapaltup->SetParameter(2,par[2]);
+  alphaextrapaltup->SetParameter(3,par[3]);
+  alphaextrapaltup->SetParameter(4,par[4]);
+  alphaextrapaltup->SetParameter(5,par[5]);
+  alphaextrapaltup->SetParameter(6,par[6]);
+  alphaextrapaltup->SetParameter(7,par[7]);
+  alphaextrapaltup->SetParameter(8,par[8]);
+  alphaextrapaltup->SetParameter(9,par[9]);
+  alphaextrapaltup->SetParameter(10,par[10]);
+  alphaextrapaltup->SetParameter(11,par[11]);
+  alphaextrapaltup->SetParameter(12,par[12]);
+  return alphaextrapaltup;
+}
+
+TF1 * alphaExpExpOffExtrapolationAltDataSbUp(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[14];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltup = new TF1(name,alphaAltUpExpExpOffExtrapBuiltFromFunctions,1500,13000,14);
+  alphaextrapaltup->SetParameter(0,par[0]);
+  alphaextrapaltup->SetParameter(1,par[1]);
+  alphaextrapaltup->SetParameter(2,par[2]);
+  alphaextrapaltup->SetParameter(3,par[3]);
+  alphaextrapaltup->SetParameter(4,par[4]);
+  alphaextrapaltup->SetParameter(5,par[5]);
+  alphaextrapaltup->SetParameter(6,par[6]);
+  alphaextrapaltup->SetParameter(7,par[7]);
+  alphaextrapaltup->SetParameter(8,par[8]);
+  alphaextrapaltup->SetParameter(9,par[9]);
+  alphaextrapaltup->SetParameter(10,par[10]);
+  alphaextrapaltup->SetParameter(11,par[11]);
+  alphaextrapaltup->SetParameter(12,par[12]);
+  alphaextrapaltup->SetParameter(13,par[13]);
+  return alphaextrapaltup;
+}
+
+TF1 * alphaExpOffExpExtrapolationAltDataSbUp(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[14];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltup = new TF1(name,alphaAltUpExpOffExpExtrapBuiltFromFunctions,1500,13000,14);
+  alphaextrapaltup->SetParameter(0,par[0]);
+  alphaextrapaltup->SetParameter(1,par[1]);
+  alphaextrapaltup->SetParameter(2,par[2]);
+  alphaextrapaltup->SetParameter(3,par[3]);
+  alphaextrapaltup->SetParameter(4,par[4]);
+  alphaextrapaltup->SetParameter(5,par[5]);
+  alphaextrapaltup->SetParameter(6,par[6]);
+  alphaextrapaltup->SetParameter(7,par[7]);
+  alphaextrapaltup->SetParameter(8,par[8]);
+  alphaextrapaltup->SetParameter(9,par[9]);
+  alphaextrapaltup->SetParameter(10,par[10]);
+  alphaextrapaltup->SetParameter(11,par[11]);
+  alphaextrapaltup->SetParameter(12,par[12]);
+  alphaextrapaltup->SetParameter(13,par[13]);
+  return alphaextrapaltup;
+}
+
+TF1 * alphaExpOffExpExtrapolationAltDataSbDwn(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[14];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltup = new TF1(name,alphaAltDwnExpOffExpExtrapBuiltFromFunctions,1500,13000,14);
+  alphaextrapaltup->SetParameter(0,par[0]);
+  alphaextrapaltup->SetParameter(1,par[1]);
+  alphaextrapaltup->SetParameter(2,par[2]);
+  alphaextrapaltup->SetParameter(3,par[3]);
+  alphaextrapaltup->SetParameter(4,par[4]);
+  alphaextrapaltup->SetParameter(5,par[5]);
+  alphaextrapaltup->SetParameter(6,par[6]);
+  alphaextrapaltup->SetParameter(7,par[7]);
+  alphaextrapaltup->SetParameter(8,par[8]);
+  alphaextrapaltup->SetParameter(9,par[9]);
+  alphaextrapaltup->SetParameter(10,par[10]);
+  alphaextrapaltup->SetParameter(11,par[11]);
+  alphaextrapaltup->SetParameter(12,par[12]);
+  alphaextrapaltup->SetParameter(13,par[13]);
+  return alphaextrapaltup;
+}
+
+TF1 * alphaExpOffExpOffExtrapolationAltDataSbUp(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[15];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltup = new TF1(name,alphaAltUpExpOffExpOffExtrapBuiltFromFunctions,1500,13000,15);
+  alphaextrapaltup->SetParameter(0,par[0]);
+  alphaextrapaltup->SetParameter(1,par[1]);
+  alphaextrapaltup->SetParameter(2,par[2]);
+  alphaextrapaltup->SetParameter(3,par[3]);
+  alphaextrapaltup->SetParameter(4,par[4]);
+  alphaextrapaltup->SetParameter(5,par[5]);
+  alphaextrapaltup->SetParameter(6,par[6]);
+  alphaextrapaltup->SetParameter(7,par[7]);
+  alphaextrapaltup->SetParameter(8,par[8]);
+  alphaextrapaltup->SetParameter(9,par[9]);
+  alphaextrapaltup->SetParameter(10,par[10]);
+  alphaextrapaltup->SetParameter(11,par[11]);
+  alphaextrapaltup->SetParameter(12,par[12]);
+  alphaextrapaltup->SetParameter(13,par[13]);
+  alphaextrapaltup->SetParameter(14,par[14]);
+  return alphaextrapaltup;
+}
+
+TF1 * alphaExpExpOffExtrapolationAltDataSbDwn(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[14];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltdwn = new TF1(name,alphaAltDwnExpExpOffExtrapBuiltFromFunctions,1500,13000,14);
+  alphaextrapaltdwn->SetParameter(0,par[0]);
+  alphaextrapaltdwn->SetParameter(1,par[1]);
+  alphaextrapaltdwn->SetParameter(2,par[2]);
+  alphaextrapaltdwn->SetParameter(3,par[3]);
+  alphaextrapaltdwn->SetParameter(4,par[4]);
+  alphaextrapaltdwn->SetParameter(5,par[5]);
+  alphaextrapaltdwn->SetParameter(6,par[6]);
+  alphaextrapaltdwn->SetParameter(7,par[7]);
+  alphaextrapaltdwn->SetParameter(8,par[8]);
+  alphaextrapaltdwn->SetParameter(9,par[9]);
+  alphaextrapaltdwn->SetParameter(10,par[10]);
+  alphaextrapaltdwn->SetParameter(11,par[11]);
+  alphaextrapaltdwn->SetParameter(12,par[12]);
+  alphaextrapaltdwn->SetParameter(13,par[13]);
+  return alphaextrapaltdwn;
+}
+
+TF1 * alphaExpOffExpOffExtrapolationAltDataSbDwn(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[15];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltdwn = new TF1(name,alphaAltDwnExpOffExpOffExtrapBuiltFromFunctions,1500,13000,15);
+  alphaextrapaltdwn->SetParameter(0,par[0]);
+  alphaextrapaltdwn->SetParameter(1,par[1]);
+  alphaextrapaltdwn->SetParameter(2,par[2]);
+  alphaextrapaltdwn->SetParameter(3,par[3]);
+  alphaextrapaltdwn->SetParameter(4,par[4]);
+  alphaextrapaltdwn->SetParameter(5,par[5]);
+  alphaextrapaltdwn->SetParameter(6,par[6]);
+  alphaextrapaltdwn->SetParameter(7,par[7]);
+  alphaextrapaltdwn->SetParameter(8,par[8]);
+  alphaextrapaltdwn->SetParameter(9,par[9]);
+  alphaextrapaltdwn->SetParameter(10,par[10]);
+  alphaextrapaltdwn->SetParameter(11,par[11]);
+  alphaextrapaltdwn->SetParameter(12,par[12]);
+  alphaextrapaltdwn->SetParameter(13,par[13]);
+  alphaextrapaltdwn->SetParameter(14,par[14]);
+  return alphaextrapaltdwn;
+}
+
+TF1 * alphaExtrapolationAltDataSbDwn(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[13];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[9]);
+  TF1 *alphaextrapaltdn = new TF1(name,alphaAltDwnExtrapBuiltFromFunctions,1500,13000,13);
+  alphaextrapaltdn->SetParameter(0,par[0]);
+  alphaextrapaltdn->SetParameter(1,par[1]);
+  alphaextrapaltdn->SetParameter(2,par[2]);
+  alphaextrapaltdn->SetParameter(3,par[3]);
+  alphaextrapaltdn->SetParameter(4,par[4]);
+  alphaextrapaltdn->SetParameter(5,par[5]);
+  alphaextrapaltdn->SetParameter(6,par[6]);
+  alphaextrapaltdn->SetParameter(7,par[7]);
+  alphaextrapaltdn->SetParameter(8,par[8]);
+  alphaextrapaltdn->SetParameter(9,par[9]);
+  alphaextrapaltdn->SetParameter(10,par[10]);
+  alphaextrapaltdn->SetParameter(11,par[11]);
+  alphaextrapaltdn->SetParameter(12,par[12]);
+  return alphaextrapaltdn;
+}
+  
+
 // here we can do error propagation for an arbitrary function
 // matrix and vector notation is used
 // return error on function evaluated at x, sigma_f(x;par)
@@ -716,6 +1575,60 @@ TH1D * expFitErrBandsVariableBins(TH1D *hist, TString name, Double_t* binedges, 
   //double acamp = fitout->GetParameter(0);
 }
 
+TF1 * alphaRatioMakerExpExpOff(TF1 *fitsb, TF1 *fitsr){
+  Double_t parsSR[2];//two exp fits params
+  Double_t parsSB[3];//three exp offset params
+  fitsb->GetParameters(parsSB);
+  fitsr->GetParameters(parsSR);
+  TF1 *alpha = new TF1("alpha",expExpOffsetRatio,1500,13000,5);//was to 5000 previously
+  alpha->SetParameter(0,parsSR[0]);
+  alpha->SetParameter(1,parsSR[1]);
+  alpha->SetParameter(2,parsSB[0]);
+  alpha->SetParameter(3,parsSB[1]);
+  alpha->SetParameter(4,parsSB[2]);
+  //std::cout<<"SR fit at 5000: "<<fitsr->Eval(5000)<<std::endl;
+  //std::cout<<"SB fit at 5000: "<<fitsb->Eval(5000)<<std::endl;
+  //std::cout<<"alpha at 5000: "<<alpha->Eval(5000)<<std::endl;
+
+  return alpha;
+  
+}
+
+TF1 * alphaRatioMakerExpOffExpOff(TF1 *fitsb, TF1 *fitsr){
+  Double_t parsSR[3];//two exp fits params
+  Double_t parsSB[3];//three exp offset params
+  fitsb->GetParameters(parsSB);
+  fitsr->GetParameters(parsSR);
+  TF1 *alpha = new TF1("alpha",expOffsetRatio,1500,13000,6);//was to 5000 previously
+  alpha->SetParameter(0,parsSR[0]);
+  alpha->SetParameter(1,parsSR[1]);
+  alpha->SetParameter(2,parsSR[2]);
+  alpha->SetParameter(3,parsSB[0]);
+  alpha->SetParameter(4,parsSB[1]);
+  alpha->SetParameter(5,parsSB[2]);
+   return alpha;
+  
+}
+
+TF1 * alphaRatioMakerExpOffExp(TF1 *fitsb, TF1 *fitsr){
+  Double_t parsSR[3];//two exp fits params
+  Double_t parsSB[2];//three exp offset params
+  fitsb->GetParameters(parsSB);
+  fitsr->GetParameters(parsSR);
+  TF1 *alpha = new TF1("alpha",expOffsetExpRatio,1500,13000,5);//was to 5000 previously
+  alpha->SetParameter(0,parsSR[0]);
+  alpha->SetParameter(1,parsSR[1]);
+  alpha->SetParameter(2,parsSR[2]);
+  alpha->SetParameter(3,parsSB[0]);
+  alpha->SetParameter(4,parsSB[1]);
+  std::cout<<"SR fit at 5000: "<<fitsr->Eval(5000)<<std::endl;
+  std::cout<<"SB fit at 5000: "<<fitsb->Eval(5000)<<std::endl;
+  std::cout<<"alpha at 5000: "<<alpha->Eval(5000)<<std::endl;
+
+  return alpha;
+  
+}
+
 
 TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr,int lowrsb=1500, int highrsb=3000,int lowrsr=1500, int highrsr=3000){
   string sb = "sbl";
@@ -740,6 +1653,23 @@ TF1 * alphaRatioMakerExp(TH1D *hsb, TH1D *hsr,int lowrsb=1500, int highrsb=3000,
   return alpha;
 }
 
+TF1 * alphaRatioMakerExpOffExpOffExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sboffset = sbfit->GetParameter(2);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  Double_t sroffset = srfit->GetParameter(2);
+  TF1 *alpha = new TF1(name,expOffsetRatio,1500,13000,6);//was to 5000 previously
+  alpha->SetParameter(0,sramp);
+  alpha->SetParameter(1,srlambda);
+  alpha->SetParameter(2,sroffset);
+  alpha->SetParameter(3,sbamp);
+  alpha->SetParameter(4,sblambda);
+  alpha->SetParameter(5,sboffset);
+  return alpha;
+}
+
 
 TF1 * alphaRatioMakerExpExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
   Double_t sbamp = sbfit->GetParameter(0);
@@ -751,6 +1681,36 @@ TF1 * alphaRatioMakerExpExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
   alpha->SetParameter(1,srlambda);
   alpha->SetParameter(2,sbamp);
   alpha->SetParameter(3,sblambda);
+  return alpha;
+}
+
+TF1 * alphaRatioMakerExpExpOffExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sboff = sbfit->GetParameter(2);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  TF1 *alpha = new TF1(name,expExpOffsetRatio,1500,13000,5);//was to 5000 previously
+  alpha->SetParameter(0,sramp);
+  alpha->SetParameter(1,srlambda);
+  alpha->SetParameter(2,sbamp);
+  alpha->SetParameter(3,sblambda);
+  alpha->SetParameter(4,sboff);
+  return alpha;
+}
+
+TF1 * alphaRatioMakerExpOffExpExternalParams(TF1 *sbfit,TF1 *srfit, TString name) {
+  Double_t sbamp = sbfit->GetParameter(0);
+  Double_t sblambda = sbfit->GetParameter(1);
+  Double_t sroff = srfit->GetParameter(2);
+  Double_t sramp = srfit->GetParameter(0);
+  Double_t srlambda = srfit->GetParameter(1);
+  TF1 *alpha = new TF1(name,expOffsetExpRatio,1500,13000,5);//was to 5000 previously
+  alpha->SetParameter(0,sramp);
+  alpha->SetParameter(1,srlambda);
+  alpha->SetParameter(2,sroff);
+  alpha->SetParameter(3,sbamp);
+  alpha->SetParameter(4,sblambda);
   return alpha;
 }
 
@@ -787,6 +1747,60 @@ Double_t alphaExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
   return subdat*alpha;
 }
 
+Double_t alphaExtrapBuiltFromFunctionsClosure(Double_t *x,Double_t *par){
+  Double_t subdat = expModel(x,par);
+  Double_t alpha  = expRatio(x,&par[2]);
+  return subdat*alpha;
+}
+
+Double_t alphaExtrapExpExpOffBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subtractedFitsForDataSB(x,par);
+  Double_t alpha  = expExpOffsetRatio(x,&par[6]);
+  return subdat*alpha;
+}
+
+Double_t alphaExtrapExpOffExpBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subtractedFitsForDataSB(x,par);
+  Double_t alpha  = expOffsetExpRatio(x,&par[6]);
+  return subdat*alpha;
+}
+
+Double_t alphaExtrapExpOffExpOffBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subtractedFitsForDataSB(x,par);
+  Double_t alpha  = expOffsetRatio(x,&par[6]);
+  return subdat*alpha;
+}
+
+Double_t alphaExtrapExpExpOffBuiltFromFunctionsClosure(Double_t *x,Double_t *par){
+  Double_t subdat = expOffsetModel(x,par);
+  Double_t alpha  = expExpOffsetRatio(x,&par[3]);
+  return subdat*alpha;
+}
+
+Double_t alphaExtrapExpSbExpSRFromFunctionsClosure(Double_t *x,Double_t *par){
+  Double_t subdat = expModel(x,par);
+  Double_t alpha  = expOffsetExpRatio(x,&par[2]);
+  return subdat*alpha;
+}
+
+Double_t alphaExtrapExpOffSbExpOffSRFromFunctionsClosure(Double_t *x,Double_t *par){
+  Double_t subdat = expOffsetModel(x,par);
+  Double_t alpha  = expOffsetRatio(x,&par[3]);
+  return subdat*alpha;
+}
+
+Double_t alphaExpNExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subtractedFitsForDataSBExpN(x,par);
+  Double_t alpha  = expRatio(x,&par[7]);
+  return subdat*alpha;
+}
+
+Double_t alphaExpSqExtrapBuiltFromFunctions(Double_t *x,Double_t *par){
+  Double_t subdat = subtractedFitsForDataSBExpSq(x,par);
+  Double_t alpha  = expRatio(x,&par[7]);
+  return subdat*alpha;
+}
+
 TF1 * alphaExtrapolationFromFits(TF1* subsb,TF1* alphar,TString name){
   Double_t par[10];
   subsb->GetParameters(&par[0]);
@@ -804,6 +1818,177 @@ TF1 * alphaExtrapolationFromFits(TF1* subsb,TF1* alphar,TString name){
   alphaextraptf1->SetParameter(7,par[7]);
   alphaextraptf1->SetParameter(8,par[8]);
   alphaextraptf1->SetParameter(9,par[9]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsClosure(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[6];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[2]);//closure different because less params in form
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapBuiltFromFunctionsClosure,1500,13000,10);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpExpOff(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[11];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[6]);
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapExpExpOffBuiltFromFunctions,1500,13000,11);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  alphaextraptf1->SetParameter(7,par[7]);
+  alphaextraptf1->SetParameter(8,par[8]);
+  alphaextraptf1->SetParameter(9,par[9]);
+  alphaextraptf1->SetParameter(10,par[10]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpOffExp(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[11];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[6]);
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapExpOffExpBuiltFromFunctions,1500,13000,11);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  alphaextraptf1->SetParameter(7,par[7]);
+  alphaextraptf1->SetParameter(8,par[8]);
+  alphaextraptf1->SetParameter(9,par[9]);
+  alphaextraptf1->SetParameter(10,par[10]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpOffExpOff(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[12];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[6]);
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapExpOffExpOffBuiltFromFunctions,1500,13000,12);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  alphaextraptf1->SetParameter(7,par[7]);
+  alphaextraptf1->SetParameter(8,par[8]);
+  alphaextraptf1->SetParameter(9,par[9]);
+  alphaextraptf1->SetParameter(10,par[10]);
+  alphaextraptf1->SetParameter(11,par[11]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpOffExpOffClosure(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[9];
+  subsb->GetParameters(&par[0]);//3 from sb dy fit with offset
+  alphar->GetParameters(&par[3]);//6 form alpha ratio of 3 exppffet sr / 3 offset sb
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapExpOffSbExpOffSRFromFunctionsClosure,1500,13000,9);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  alphaextraptf1->SetParameter(7,par[7]);
+  alphaextraptf1->SetParameter(8,par[8]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpSBExpOffSRClosure(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[8];
+  subsb->GetParameters(&par[0]);//2 from sb dy fit with offset
+  alphar->GetParameters(&par[2]);//5 form alpha ratio of 3 exp offset sr / 2 exp sb
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapExpSbExpSRFromFunctionsClosure,1500,13000,7);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpOffSBExpOffSRClosure(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[8];
+  subsb->GetParameters(&par[0]);//3 from sb dy fit with offset
+  alphar->GetParameters(&par[3]);//6 form alpha ratio of 3 exp offset sr / 2 exp sb
+  TF1 *alphaextraptf1 = new TF1(name,alphaExtrapExpSbExpSRFromFunctionsClosure,1500,13000,7);
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpN(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[11];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[7]);
+  //TF1 *alphaextraptf1 = new TF1(name,alphaExtrapBuiltFromFunctions,1500,3000,10);
+  TF1 *alphaextraptf1 = new TF1(name,alphaExpNExtrapBuiltFromFunctions,1500,13000,11);
+  //alphaextraptf1->SetParameters(par);
+  std::cout<<"In ExpN exttrap function"<<std::endl;
+  std::cout<<par[0]<<std::endl;
+  std::cout<<par[2]<<std::endl;
+  std::cout<<par[3]<<std::endl;
+  std::cout<<par[4]<<std::endl;
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  alphaextraptf1->SetParameter(7,par[7]);
+  alphaextraptf1->SetParameter(8,par[8]);
+  alphaextraptf1->SetParameter(9,par[9]);
+  alphaextraptf1->SetParameter(10,par[10]);
+  return alphaextraptf1;
+}
+
+TF1 * alphaExtrapolationFromFitsExpSq(TF1* subsb,TF1* alphar,TString name){
+  Double_t par[11];
+  subsb->GetParameters(&par[0]);
+  alphar->GetParameters(&par[7]);
+  //TF1 *alphaextraptf1 = new TF1(name,alphaExtrapBuiltFromFunctions,1500,3000,10);
+  TF1 *alphaextraptf1 = new TF1(name,alphaExpSqExtrapBuiltFromFunctions,1500,13000,11);
+  //alphaextraptf1->SetParameters(par);
+  std::cout<<"In ExpN exttrap function"<<std::endl;
+  std::cout<<par[0]<<std::endl;
+  std::cout<<par[2]<<std::endl;
+  std::cout<<par[3]<<std::endl;
+  std::cout<<par[4]<<std::endl;
+  alphaextraptf1->SetParameter(0,par[0]);
+  alphaextraptf1->SetParameter(1,par[1]);
+  alphaextraptf1->SetParameter(2,par[2]);
+  alphaextraptf1->SetParameter(3,par[3]);
+  alphaextraptf1->SetParameter(4,par[4]);
+  alphaextraptf1->SetParameter(5,par[5]);
+  alphaextraptf1->SetParameter(6,par[6]);
+  alphaextraptf1->SetParameter(7,par[7]);
+  alphaextraptf1->SetParameter(8,par[8]);
+  alphaextraptf1->SetParameter(9,par[9]);
+  alphaextraptf1->SetParameter(10,par[10]);
   return alphaextraptf1;
 }
 

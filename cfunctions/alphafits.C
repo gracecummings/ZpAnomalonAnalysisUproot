@@ -6,6 +6,7 @@
 #include "TROOT.h"
 #include "TF1.h"
 #include "TH1D.h"
+#include "TH1F.h"
 #include "TMath.h"
 #include "TGraphErrors.h"
 #include "TVirtualFitter.h"
@@ -26,7 +27,24 @@ Double_t guessDecayConstantOG(TH1D *hist,double max) {
   return guess;
 }
 
+Double_t guessDecayConstantOGTH1F(TH1F *hist,double max) {
+  double halfmax  = max/2;
+  int halflifebin = hist->FindLastBinAbove(halfmax);
+  Double_t halflife = hist->GetBinCenter(halflifebin);
+  Double_t guess = TMath::Log(0.5)/halflife;
+  return guess;
+}
+
 Double_t guessDecayConstant(TH1D *hist,double max) {
+  int maxbin = hist->GetMaximumBin();
+  int intbin = maxbin+4;
+  int xval = hist->GetBinCenter(intbin);
+  Double_t bincont = hist->GetBinContent(intbin);
+  Double_t guess = (TMath::Log(bincont)-TMath::Log(max))/xval;
+  return guess;
+}
+
+Double_t guessDecayConstantTH1F(TH1F *hist,double max) {
   int maxbin = hist->GetMaximumBin();
   int intbin = maxbin+4;
   int xval = hist->GetBinCenter(intbin);
@@ -169,6 +187,28 @@ TF1 * expFit(TH1D *hist, TString name, TString opt="R0+",int lowr=1500, int high
   double amp = hist->GetMaximum();
   double_t lambdaOG = guessDecayConstantOG(hist,amp);
   double_t lambda = guessDecayConstant(hist,amp);
+
+  std::cout<<" Max guess> "<<amp<<std::endl;
+  std::cout<<" lamda guess OG > "<<lambdaOG<<std::endl;
+  std::cout<<" lamda guess> "<<lambda<<std::endl;
+  expfit->SetParameter(0,TMath::Log(amp));//just use amp for old way
+  //expfit->SetParameter(0,amp);//just use amp for old way
+  expfit->SetParameter(1,lambda);
+  //double samp = lfit->GetParameter(0);
+  hist->Fit(name,opt,"",lowr,highr);
+  TF1* fitout = hist->GetFunction(name);
+
+  return fitout;
+  //double acamp = fitout->GetParameter(0);
+}
+
+TF1 * expFitTH1F(TH1F *hist, TString name, TString opt="R0+",int lowr=1500, int highr=3000) {
+  TF1 *expfit = new TF1(name,expModel,lowr,highr,2);
+  int binmax = hist->GetMaximumBin();
+  double max = hist->GetXaxis()->GetBinCenter(binmax);
+  double amp = hist->GetMaximum();
+  double_t lambdaOG = guessDecayConstantOGTH1F(hist,amp);
+  double_t lambda = guessDecayConstantTH1F(hist,amp);
 
   std::cout<<" Max guess> "<<amp<<std::endl;
   std::cout<<" lamda guess OG > "<<lambdaOG<<std::endl;
